@@ -1,19 +1,47 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Longmotive M&amp;E Engineering | Johor, Malaysia</title>
 <meta name="description" content="Longmotive delivers data-centre M&amp;E construction in Johor. Send a project enquiry or apply for engineering careers with your CV.">
-<script src="./support.js"></script>
+<link rel="canonical" href="https://www.longmotive-m.com/">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta name="theme-color" content="#0f52a0">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Longmotive">
+<meta property="og:locale" content="en_MY">
+<meta property="og:url" content="https://www.longmotive-m.com/">
+<meta property="og:title" content="Longmotive M&amp;E Engineering | Johor, Malaysia">
+<meta property="og:description" content="Data-centre mechanical &amp; electrical construction in Johor, Malaysia &#8212; chiller plants, switchboards, generators, data halls and controls, delivered with BIM coordination.">
+<meta property="og:image" content="https://www.longmotive-m.com/assets/og-cover.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="BIM model of a chilled-water plant room with pumps and headers">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Longmotive M&amp;E Engineering | Johor, Malaysia">
+<meta name="twitter:description" content="Data-centre mechanical &amp; electrical construction in Johor, Malaysia &#8212; chiller plants, switchboards, generators, data halls and controls, delivered with BIM coordination.">
+<meta name="twitter:image" content="https://www.longmotive-m.com/assets/og-cover.jpg">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preload" as="style" href="_ds/longmotive-design-system-8d1e5cc8-409c-43e1-9315-92313b8f450f/styles.css">
+<link rel="preload" as="image" href="uploads/campus-v2-merged16-poster-eae9bed7.jpg" fetchpriority="high">
+<!-- Deferred, and in this order: support.js boots the page as soon as parsing
+     finishes, and its reveal choreography looks for window.gsap at that moment,
+     so GSAP has to be the earlier deferred script. -->
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script defer src="campus-hero.js"></script>
+<script defer src="./support.js"></script>
 </head>
 <body>
 <x-dc>
 <helmet>
 <link rel="stylesheet" href="_ds/longmotive-design-system-8d1e5cc8-409c-43e1-9315-92313b8f450f/styles.css">
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
-<script src="campus-hero.js"></script>
+<!-- gsap, ScrollTrigger and campus-hero.js are loaded from <head> with defer.
+     Keeping them here as well made the browser run each of them twice: once
+     while parsing the body, then again when the helmet cloned them into head. -->
 <style>
   html{scroll-behavior:smooth}
   html,body{margin:0;padding:0;background:var(--surface-page)}
@@ -89,7 +117,10 @@
           <sc-if value="{{ isVideoScrub }}" hint-placeholder-val="{{ false }}"><video ref="{{ heroVideoRef }}" poster="uploads/campus-v2-merged16-poster-eae9bed7.jpg" muted="{{ true }}" playsinline="{{ true }}" preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video></sc-if>
           <sc-if value="{{ is3dHero }}" hint-placeholder-val="{{ true }}"><lm-campus-hero ref="{{ campusRef }}" style="position:absolute;inset:0"></lm-campus-hero></sc-if>
           <div ref="{{ heroTintRef }}" style="position:absolute;inset:0;background:rgba(7,36,72,.45);pointer-events:none"></div>
-          <img ref="{{ heroPhotoRef }}" src="uploads/frames/f10.jpg" alt="Aerial view of the completed DAY ONE data centre" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:opacity,transform"/>
+          <!-- Starts at opacity:0 and is revealed at the end of the 500vh scroll, so
+               it must not compete with the poster and video for early bandwidth.
+               loading="lazy" would not help: the element is inside the viewport. -->
+          <img ref="{{ heroPhotoRef }}" src="uploads/frames/f10.jpg" alt="Aerial view of the completed DAY ONE data centre" fetchpriority="low" decoding="async" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:opacity,transform"/>
           
           <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,36,72,.6) 0%,rgba(7,36,72,0) 15%,rgba(7,36,72,0) 85%,rgba(7,36,72,.6) 100%),linear-gradient(180deg,rgba(7,36,72,.6) 0%,rgba(7,36,72,0) 15%,rgba(7,36,72,0) 85%,rgba(7,36,72,.6) 100%);pointer-events:none"></div>
           
@@ -246,9 +277,9 @@
         <div style="flex:1;display:flex;align-items:center;padding:0 var(--gutter);min-height:0">
           <div class="lm-split2" style="max-width:var(--container-max);margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1.05fr;gap:clamp(24px,4vw,56px);align-items:center">
             <div data-reveal="0" style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(10px,1.6vh,16px)">
-              <div style="grid-column:1/-1;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-lg);height:clamp(190px,34vh,330px)"><img src="assets/img/about-2.jpg" alt="Rack systems being installed in a data hall" style="width:100%;height:100%;object-fit:cover"/></div>
-              <div style="border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);height:clamp(115px,20vh,200px)"><img src="assets/img/about-1.jpg" alt="Technicians working on rooftop cooling towers" style="width:100%;height:100%;object-fit:cover"/></div>
-              <div style="border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);height:clamp(115px,20vh,200px)"><img src="assets/img/about-5.jpg" alt="Structured cabling inside network racks" style="width:100%;height:100%;object-fit:cover"/></div>
+              <div style="grid-column:1/-1;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-lg);height:clamp(190px,34vh,330px)"><img src="assets/img/about-2.jpg" alt="Rack systems being installed in a data hall" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover"/></div>
+              <div style="border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);height:clamp(115px,20vh,200px)"><img src="assets/img/about-1.jpg" alt="Technicians working on rooftop cooling towers" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover"/></div>
+              <div style="border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);height:clamp(115px,20vh,200px)"><img src="assets/img/about-5.jpg" alt="Structured cabling inside network racks" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover"/></div>
             </div>
             <div data-reveal="1">
               <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent)"><span style="width:28px;height:2px;background:currentColor"></span>Who We Are</span>
@@ -313,7 +344,7 @@
             <p style="margin:0;font-size:16px;color:var(--text-muted);line-height:1.6;max-width:70ch">Relying on a strong team and the right development philosophy, Longmotive has steadily built a dependable presence in the electromechanical industry.</p>
           </div>
           <div data-reveal="2" style="border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border-subtle);box-shadow:var(--shadow-lg);background:var(--lm-blue-900)">
-            <img data-parallax="1" src="uploads/hf_20260724_082014_acbf4dcc-fbba-4224-80e9-1281580f6fc6.png" alt="The Longmotive team in a data hall" style="width:100%;height:auto;display:block;transform:scale(1.08)"/>
+            <img data-parallax="1" src="uploads/hf_20260724_082014_acbf4dcc-fbba-4224-80e9-1281580f6fc6.png" alt="The Longmotive team in a data hall" loading="lazy" decoding="async" style="width:100%;height:auto;display:block;transform:scale(1.08)"/>
           </div>
         </div>
       </section>
@@ -328,7 +359,7 @@
           <div class="lm-g4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-top:48px">
             <sc-for list="{{ certs }}" as="c" hint-placeholder-count="8">
               <div data-reveal="{{ $index }}" style="position:relative;background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:var(--radius-md);box-shadow:var(--shadow-xs);display:flex;flex-direction:column;transition:box-shadow .25s,transform .25s" style-hover="box-shadow:var(--shadow-lg);transform:translateY(-3px);z-index:6">
-                <div style="background:#fff;padding:14px 14px 0;display:flex;justify-content:center"><sc-if value="{{ c.img }}" hint-placeholder-val="{{ false }}"><img data-src="{{ c.img }}" alt="{{ c.alt }}" style="width:100%;max-width:200px;height:auto;display:block;position:relative;z-index:1;border:1px solid var(--border-subtle);cursor:zoom-in;transition:transform .28s ease,box-shadow .28s ease" style-hover="transform:scale(1.6);box-shadow:0 18px 48px rgba(7,36,72,.45)"/></sc-if></div>
+                <div style="background:#fff;padding:14px 14px 0;display:flex;justify-content:center"><sc-if value="{{ c.img }}" hint-placeholder-val="{{ false }}"><img data-src="{{ c.img }}" alt="{{ c.alt }}" loading="lazy" decoding="async" style="width:100%;max-width:200px;height:auto;display:block;position:relative;z-index:1;border:1px solid var(--border-subtle);cursor:zoom-in;transition:transform .28s ease,box-shadow .28s ease" style-hover="transform:scale(1.6);box-shadow:0 18px 48px rgba(7,36,72,.45)"/></sc-if></div>
                 <div style="padding:16px 18px 18px">
                   <div style="font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--color-brand)">{{ c.code }}</div>
                   <div style="font-family:var(--font-display);font-weight:700;font-size:16px;color:var(--text-strong);margin-top:3px">{{ c.title }}</div>
@@ -361,7 +392,7 @@
           <div class="lm-g3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px">
             <sc-for list="{{ filteredProjects }}" as="p" hint-placeholder-count="6">
               <div data-comment-anchor="project-card-{{ p.title }}" onClick="{{ p.onOpen }}" style="{{ p.cardStyle }}" style-hover="box-shadow:var(--shadow-md);transform:translateY(-3px);border-color:var(--lm-blue-200)">
-                <div onMouseEnter="{{ p.onHover }}" style="height:200px;overflow:hidden;background:var(--lm-blue-50)"><img data-src="{{ p.img }}" alt="{{ p.title }}" style="width:100%;height:100%;object-fit:cover;display:block"/></div>
+                <div onMouseEnter="{{ p.onHover }}" style="height:200px;overflow:hidden;background:var(--lm-blue-50)"><img data-src="{{ p.img }}" alt="{{ p.title }}" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block"/></div>
                 <div style="padding:16px 18px 18px;display:flex;flex-direction:column;gap:6px">
                   <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent)">{{ p.cat }}</span>
                   <h3 style="margin:0;font-size:18px;color:var(--text-strong)">{{ p.title }}</h3>
