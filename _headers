@@ -1,0 +1,19 @@
+# Cloudflare Pages header rules.
+#
+# Only content-addressed / never-edited-in-place assets get the immutable
+# year-long cache. HTML and the root-level *-viewer.js bundles deliberately
+# keep the default (max-age=0, must-revalidate) so a deploy is picked up
+# immediately.
+#
+# Because these responses are immutable, replacing an image, model or video
+# means shipping it under a NEW filename. Overwriting one in place will leave
+# returning visitors on the old copy for up to a year.
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/uploads/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/_ds/*
+  Cache-Control: public, max-age=31536000, immutable
