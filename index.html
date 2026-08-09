@@ -180,7 +180,9 @@
 
       <section class="lm-snapsec" style="position:relative;height:100vh;overflow:hidden;background:var(--surface-page);scroll-snap-align:start">
         <div style="position:relative;height:100%;display:flex;flex-direction:column;justify-content:center;padding:0 var(--gutter)">
-        <video ref="{{ principlesVideoRef }}" src="https://www.longmotive-m.com/data/cms/images/1710215268_longmotive.mp4" muted="{{ true }}" loop="{{ true }}" playsinline="{{ true }}" preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center bottom;opacity:.42;pointer-events:none"></video>
+        <!-- 182 MB file on the old CMS host: preload="none" plus play-on-intersect
+             keeps it off the critical path until this section is reached. -->
+        <video ref="{{ principlesVideoRef }}" src="https://www.longmotive-m.com/data/cms/images/1710215268_longmotive.mp4" muted="{{ true }}" loop="{{ true }}" playsinline="{{ true }}" preload="none" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center bottom;opacity:.42;pointer-events:none"></video>
         <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.88) 0%,rgba(255,255,255,.55) 40%,rgba(255,255,255,0) 75%);pointer-events:none"></div>
         <div style="position:relative;max-width:var(--container-max);margin:0 auto;width:100%">
           <div data-reveal="0" style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:clamp(6px,1.2vh,12px);max-width:60ch;margin:0 auto">
@@ -691,8 +693,10 @@ class Component extends DCLogic {
   _principlesVideoRef=(el)=>{
     if(this._bgVideoObs){ this._bgVideoObs.disconnect(); this._bgVideoObs=null; }
     if(el){
-      el.muted=true; const p=el.play(); if(p&&p.catch) p.catch(()=>{});
-      // Browsers pause offscreen muted videos — resume when it nears the viewport
+      el.muted=true;
+      // Playback starts on the first intersection rather than on mount: this is a
+      // decorative 182 MB background clip several screens down, so starting it
+      // eagerly streamed it on every visit to the home screen.
       this._bgVideoObs=new IntersectionObserver((es)=>{
         es.forEach(e=>{
           if(e.isIntersecting){ if(el.paused){ const q=el.play(); if(q&&q.catch) q.catch(()=>{}); } }
