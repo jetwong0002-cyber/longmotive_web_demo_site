@@ -6,6 +6,11 @@
  *   RESEND_API_KEY
  *   CONTACT_TO
  *   CONTACT_FROM
+ *
+ * Optional R2 bucket binding (Settings -> Functions -> R2 bucket bindings):
+ *   CV_BUCKET  -> bucket "longmotive-cv"
+ *   When bound, career CVs are archived to R2. If the binding is missing or
+ *   storage fails, the email is still sent (archiving never blocks submission).
  */
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -102,6 +107,7 @@ export async function onRequestPost({ request, env }) {
   }
 
   let attachment = null;
+  let cvBuffer = null;
   if (isCareers && hasCv) {
     if (cv.size > MAX_FILE_SIZE) {
       errors.push('CV file must be under 5MB');
@@ -109,15 +115,32 @@ export async function onRequestPost({ request, env }) {
       errors.push('CV must be PDF, DOC, or DOCX');
     } else {
       const safeName = name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5 _-]/g, '').slice(0, 50) || 'applicant';
+      cvBuffer = await cv.arrayBuffer();
       attachment = {
         filename: `CV_${safeName}${ALLOWED_TYPES[cv.type]}`,
-        content: bufferToBase64(await cv.arrayBuffer()),
+        content: bufferToBase64(cvBuffer),
       };
     }
   }
 
   if (errors.length > 0) {
     return json({ ok: false, error: errors.join('; ') }, 400);
+  }
+
+  // Archive CV to R2 (non-blocking: email still sends if storage fails)
+  let storedKey = null;
+  if (attachment && cvBuffer && env.CV_BUCKET) {
+    try {
+      const date = new Date().toISOString().slice(0, 10);
+      storedKey = `cv/${date}/${Date.now()}_${attachment.filename}`;
+      await env.CV_BUCKET.put(storedKey, cvBuffer, {
+        httpMetadata: { contentType: cv.type },
+        customMetadata: { name, email, jobTitle, contact },
+      });
+    } catch (storageError) {
+      console.error('R2 storage error:', storageError);
+      storedKey = null; // archiving failure must not block the email
+    }
   }
 
   const emailHtml = isCareers
@@ -130,6 +153,7 @@ export async function onRequestPost({ request, env }) {
         <tr><td><b>Email</b></td><td>${escapeHtml(email)}</td></tr>
         <tr><td><b>Job Title</b></td><td>${escapeHtml(jobTitle)}</td></tr>
         <tr><td><b>CV</b></td><td>${attachment ? escapeHtml(attachment.filename) : 'Not attached'}</td></tr>
+        <tr><td><b>Archived</b></td><td>${storedKey ? escapeHtml(storedKey) : '-'}</td></tr>
       </table>`
     : `
       <h2>New Business Enquiry</h2>
