@@ -25,6 +25,9 @@
 <meta name="twitter:description" content="Data-centre mechanical &amp; electrical construction in Johor, Malaysia &#8212; chiller plants, switchboards, generators, data halls and controls, delivered with BIM coordination.">
 <meta name="twitter:image" content="https://www.longmotive-m.com/assets/og-cover.jpg">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<!-- support.js loads react + react-dom from unpkg (with SRI, so CORS mode) as
+     part of its boot, which puts a second origin on the critical path. -->
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
 <link rel="preload" as="style" href="_ds/longmotive-design-system-8d1e5cc8-409c-43e1-9315-92313b8f450f/styles.css">
 <link rel="preload" as="image" href="uploads/campus-v2-merged16-poster-eae9bed7.jpg" fetchpriority="high">
 <!-- Deferred, and in this order: support.js boots the page as soon as parsing
@@ -39,9 +42,9 @@
 <x-dc>
 <helmet>
 <link rel="stylesheet" href="_ds/longmotive-design-system-8d1e5cc8-409c-43e1-9315-92313b8f450f/styles.css">
-<!-- gsap, ScrollTrigger and campus-hero.js are loaded from <head> with defer.
-     Keeping them here as well made the browser run each of them twice: once
-     while parsing the body, then again when the helmet cloned them into head. -->
+<!-- gsap, ScrollTrigger and campus-hero.js moved to <head> with defer. Declared
+     here they were plain body scripts, so the parser stopped to fetch and run
+     each one before it could get to the markup below. -->
 <style>
   html{scroll-behavior:smooth}
   html,body{margin:0;padding:0;background:var(--surface-page)}
