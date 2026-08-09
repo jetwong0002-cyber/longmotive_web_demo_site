@@ -1,0 +1,37 @@
+:root{
+  /* Corner radii — restrained, engineering-precise (not pill-y) */
+  --radius-none:0;
+  --radius-xs:2px;
+  --radius-sm:4px;
+  --radius-md:6px;
+  --radius-lg:10px;
+  --radius-xl:16px;
+  --radius-pill:999px;
+
+  /* Borders */
+  --border-width:1px;
+  --border-width-strong:2px;
+  --border-width-accent:3px;   /* brand top/left accent bars */
+
+  /* Shadows — cool, low-diffusion (blueprint-clean, not soft/fluffy) */
+  --shadow-xs:0 1px 2px rgba(13,27,42,.06);
+  --shadow-sm:0 1px 3px rgba(13,27,42,.08),0 1px 2px rgba(13,27,42,.06);
+  --shadow-md:0 4px 12px rgba(13,27,42,.10);
+  --shadow-lg:0 12px 28px rgba(13,27,42,.14);
+  --shadow-brand:0 10px 30px rgba(15,82,160,.28);
+  --shadow-inset:inset 0 0 0 1px var(--border-subtle);
+
+  /* Focus ring */
+  --ring:0 0 0 3px rgba(0,176,240,.35);
+
+  /* Motion */
+  --ease-standard:cubic-bezier(.2,0,0,1); /* @kind other */
+  --ease-out:cubic-bezier(0,0,.2,1); /* @kind other */
+  --dur-fast:120ms; /* @kind other */
+  --dur-base:200ms; /* @kind other */
+  --dur-slow:320ms; /* @kind other */
+
+  /* Signature diagonal for hero/section accents */
+  --lm-gradient-brand:linear-gradient(120deg,var(--lm-blue-800) 0%,var(--lm-blue-600) 55%,var(--lm-cyan-500) 130%);
+  --lm-gradient-deep:linear-gradient(160deg,var(--lm-blue-900) 0%,var(--lm-blue-700) 100%);
+}

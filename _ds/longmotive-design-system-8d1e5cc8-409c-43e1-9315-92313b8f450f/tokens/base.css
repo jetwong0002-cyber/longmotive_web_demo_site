@@ -1,0 +1,48 @@
+/* Base element defaults — applied globally by consumers. */
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:var(--font-sans);
+  font-size:var(--fs-body);
+  line-height:var(--lh-normal);
+  color:var(--text-body);
+  background:var(--surface-page);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+h1,h2,h3,h4,h5{
+  font-family:var(--font-display);
+  color:var(--text-strong);
+  font-weight:var(--fw-bold);
+  line-height:var(--lh-snug);
+  letter-spacing:var(--ls-tight);
+  margin:0 0 .5em;
+}
+h1{font-size:var(--fs-h1)}
+h2{font-size:var(--fs-h2)}
+h3{font-size:var(--fs-h3)}
+h4{font-size:var(--fs-h4)}
+p{margin:0 0 1em;text-wrap:pretty}
+a{color:var(--text-link);text-decoration:none;transition:color var(--dur-fast) var(--ease-standard)}
+a:hover{color:var(--text-link-hover);text-decoration:underline}
+small{font-size:var(--fs-caption)}
+code,kbd,samp{font-family:var(--font-mono)}
+::selection{background:var(--lm-cyan-500);color:#fff}
+
+/* Reusable text utilities */
+.lm-overline{
+  font-family:var(--font-mono);
+  font-size:var(--fs-overline);
+  font-weight:var(--fw-semibold);
+  letter-spacing:var(--ls-overline);
+  text-transform:uppercase;
+  color:var(--text-brand);
+}
+.lm-eyebrow{
+  font-family:var(--font-display);
+  font-size:var(--fs-body-sm);
+  font-weight:var(--fw-bold);
+  letter-spacing:var(--ls-wide);
+  text-transform:uppercase;
+  color:var(--color-accent);
+}

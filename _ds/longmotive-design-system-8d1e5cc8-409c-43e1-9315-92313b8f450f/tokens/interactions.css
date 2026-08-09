@@ -1,0 +1,33 @@
+/* Interaction states for components (hover/active/focus) — inline styles
+   can't express pseudo-classes, so components expose class hooks handled here. */
+
+/* ---- Button ---- */
+.lm-btn:focus-visible{outline:none;box-shadow:var(--ring)}
+.lm-btn--primary:hover{background:var(--lm-blue-700)!important;border-color:var(--lm-blue-700)!important}
+.lm-btn--primary:active{background:var(--lm-blue-800)!important;transform:translateY(1px)}
+.lm-btn--secondary:hover{background:var(--lm-blue-50)!important}
+.lm-btn--secondary:active{background:var(--lm-blue-100)!important;transform:translateY(1px)}
+.lm-btn--accent:hover{background:var(--lm-cyan-400)!important;border-color:var(--lm-cyan-400)!important}
+.lm-btn--accent:active{transform:translateY(1px)}
+.lm-btn--ghost:hover{background:var(--lm-slate-100)!important}
+.lm-btn--ghost:active{background:var(--lm-slate-200)!important}
+.lm-btn--inverse:hover{background:var(--lm-slate-100)!important;border-color:var(--lm-slate-100)!important}
+.lm-btn--inverse:active{transform:translateY(1px)}
+
+/* ---- IconButton ---- */
+.lm-iconbtn:focus-visible{outline:none;box-shadow:var(--ring)}
+.lm-iconbtn--solid:hover{background:var(--lm-blue-700)!important}
+.lm-iconbtn--soft:hover{background:var(--lm-blue-100)!important}
+.lm-iconbtn--ghost:hover{background:var(--lm-slate-100)!important}
+.lm-iconbtn:active{transform:translateY(1px)}
+
+/* ---- Inputs ---- */
+.lm-field:focus{outline:none;border-color:var(--border-brand)!important;box-shadow:var(--ring)}
+.lm-field::placeholder{color:var(--text-muted)}
+
+/* ---- Card (interactive) ---- */
+.lm-card--interactive{cursor:pointer;transition:box-shadow var(--dur-base) var(--ease-standard),transform var(--dur-base) var(--ease-standard),border-color var(--dur-base) var(--ease-standard)}
+.lm-card--interactive:hover{box-shadow:var(--shadow-lg)!important;transform:translateY(-3px);border-color:var(--border-default)!important}
+
+/* ---- Tag / Checkbox affordances ---- */
+.lm-checkbox input:focus-visible + .lm-checkbox__box{box-shadow:var(--ring)}

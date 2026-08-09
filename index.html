@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Longmotive M&amp;E Engineering | Johor, Malaysia</title>
+<meta name="description" content="Longmotive delivers data-centre M&amp;E construction in Johor. Send a project enquiry or apply for engineering careers with your CV.">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/longmotive-design-system-8d1e5cc8-409c-43e1-9315-92313b8f450f/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script src="campus-hero.js"></script>
+<style>
+  html{scroll-behavior:smooth}
+  html,body{margin:0;padding:0;background:var(--surface-page)}
+  *{box-sizing:border-box}
+  a{color:var(--text-link);text-decoration:none}
+  a:hover{color:var(--text-link-hover)}
+  img{display:block}
+  @keyframes lmPop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+  @keyframes lmSheetIn{from{opacity:0}to{opacity:1}}
+  @keyframes lmPieceL{0%{opacity:0;transform:translateX(-90px)}55%{opacity:1;transform:translateX(6px)}100%{opacity:1;transform:none}}
+  @keyframes lmPieceR{0%{opacity:0;transform:translateX(110px)}55%{opacity:1;transform:translateX(-6px)}100%{opacity:1;transform:none}}
+  @keyframes lmPieceT{0%{opacity:0;transform:translateY(-90px)}55%{opacity:1;transform:translateY(5px)}100%{opacity:1;transform:none}}
+  @keyframes lmPieceD{0%{opacity:0;transform:translateY(-70px)}55%{opacity:1;transform:translateY(4px)}100%{opacity:1;transform:none}}
+  /* responsive: fixed desktop grids collapse by class; snap sections release their
+     100vh/hidden-overflow lock so content can never clip on small screens */
+  @media(max-width:900px){.lm-g3,.lm-g4{grid-template-columns:repeat(2,1fr)!important}}
+  @media(max-width:760px){
+    .lm-split2,.lm-foot{grid-template-columns:1fr!important}
+    .lm-snapsec{height:auto!important;min-height:100vh;overflow:visible!important}
+    .lm-cardimg{min-height:150px!important}
+    .lm-swapcard{width:min(88vw,420px)!important;height:320px!important;flex-direction:column!important}
+    .lm-swapcard > div{border-left:none!important}
+    .lm-swaparrow{width:38px!important;height:38px!important}
+    .lm-capnum{font-size:40px!important}
+    .lm-captitle{font-size:18px!important}
+  }
+  @media(max-width:640px){.lm-nav{display:none!important}}
+  @media(max-width:600px){.lm-g3,.lm-g4{grid-template-columns:1fr!important}}
+</style>
+</helmet>
+<div style="min-height:100%;display:flex;flex-direction:column;background:var(--surface-page);color:var(--text-body);font-family:var(--font-sans)">
+
+  <header ref="{{ headerRef }}" style="position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border-subtle);transform:translateY(-100%);transition:transform .6s cubic-bezier(.22,1,.36,1)">
+    <div style="max-width:var(--container-max);margin:0 auto;padding:0 var(--gutter);height:72px;display:flex;align-items:center;justify-content:space-between;gap:24px">
+      <a ref="{{ brandRef }}" onClick="{{ goHome }}" style="cursor:pointer;font-family:var(--font-display);font-weight:800;font-size:26px;letter-spacing:.02em;color:var(--color-brand);text-decoration:none;transition:opacity .2s linear;display:inline-flex;align-items:center;gap:6.5px"><svg viewBox="0 0 228 240" style="height:26px;width:25px;display:block;flex-shrink:0"><rect x="0" y="0" width="48" height="240" fill="#0f52a0"></rect><rect x="56" y="0" width="172" height="58" fill="#00b0f0"></rect><rect x="56" y="58" width="36" height="104" fill="#00b0f0"></rect><rect x="114" y="58" width="38" height="104" fill="#00b0f0"></rect><rect x="174" y="58" width="54" height="104" fill="#00b0f0"></rect><rect x="0" y="192" width="228" height="48" fill="#0f52a0"></rect></svg><span>LONG<span style="color:var(--color-accent)">MOTIVE</span></span></a>
+      <nav class="lm-nav" style="display:flex;gap:4px;align-items:center">
+        <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="4">
+          <a onClick="{{ n.onClick }}" style="{{ n.style }}">{{ n.label }}</a>
+        </sc-for>
+      </nav>
+      <button onClick="{{ goEnquiry }}" style="display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid transparent;border-radius:var(--radius-sm);cursor:pointer;background:var(--color-brand);color:#fff;padding:11px 18px;font-size:.8rem" style-hover="background:var(--lm-blue-700)">Enquire {{ arrowIcon }}</button>
+    </div>
+  </header>
+
+  <sc-if value="{{ needTopPad }}" hint-placeholder-val="{{ false }}"><div style="height:72px"></div></sc-if>
+
+  <sc-if value="{{ showLogoOverlay }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;z-index:60;pointer-events:none">
+    <div style="{{ logoSheetStyle }}"></div>
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+      <div ref="{{ flyRef }}" style="{{ logoFlyStyle }}">
+        <svg viewBox="0 0 228 240" style="{{ logoMarkStyle }}">
+          <rect x="0" y="0" width="48" height="240" fill="#0f52a0" style="animation:lmPieceL .55s cubic-bezier(.22,1,.36,1) .15s both"></rect>
+          <rect x="56" y="0" width="172" height="58" fill="#00b0f0" style="animation:lmPieceT .55s cubic-bezier(.22,1,.36,1) .4s both"></rect>
+          <rect x="56" y="58" width="36" height="104" fill="#00b0f0" style="animation:lmPieceD .5s cubic-bezier(.22,1,.36,1) .62s both"></rect>
+          <rect x="114" y="58" width="38" height="104" fill="#00b0f0" style="animation:lmPieceD .5s cubic-bezier(.22,1,.36,1) .74s both"></rect>
+          <rect x="174" y="58" width="54" height="104" fill="#00b0f0" style="animation:lmPieceD .5s cubic-bezier(.22,1,.36,1) .86s both"></rect>
+          <rect x="0" y="192" width="228" height="48" fill="#0f52a0" style="animation:lmPieceR .55s cubic-bezier(.22,1,.36,1) 1.1s both"></rect>
+        </svg>
+        <span style="{{ logoRestA }}">LONG<span style="color:var(--color-accent)">MOTIVE</span></span>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <main style="flex:1">
+
+    <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+    <div>
+      <sc-if value="{{ isVideoHero }}" hint-placeholder-val="{{ true }}">
+      <section ref="{{ heroTrackRef }}" style="position:relative;height:500vh;background:var(--lm-blue-900);scroll-snap-align:start">
+        <div style="position:sticky;top:0;height:100vh;overflow:hidden">
+          <sc-if value="{{ isVideoScrub }}" hint-placeholder-val="{{ false }}"><video ref="{{ heroVideoRef }}" poster="uploads/campus-v2-merged16-poster-eae9bed7.jpg" muted="{{ true }}" playsinline="{{ true }}" preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video></sc-if>
+          <sc-if value="{{ is3dHero }}" hint-placeholder-val="{{ true }}"><lm-campus-hero ref="{{ campusRef }}" style="position:absolute;inset:0"></lm-campus-hero></sc-if>
+          <div ref="{{ heroTintRef }}" style="position:absolute;inset:0;background:rgba(7,36,72,.45);pointer-events:none"></div>
+          <img ref="{{ heroPhotoRef }}" src="uploads/frames/f10.jpg" alt="Aerial view of the completed DAY ONE data centre" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:opacity,transform"/>
+          
+          <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,36,72,.6) 0%,rgba(7,36,72,0) 15%,rgba(7,36,72,0) 85%,rgba(7,36,72,.6) 100%),linear-gradient(180deg,rgba(7,36,72,.6) 0%,rgba(7,36,72,0) 15%,rgba(7,36,72,0) 85%,rgba(7,36,72,.6) 100%);pointer-events:none"></div>
+          
+          <div ref="{{ heroPatchRef }}" style="position:absolute;top:0;left:0;right:0;height:32%;background:linear-gradient(180deg,rgba(7,36,72,.92) 0%,rgba(7,36,72,.55) 55%,rgba(7,36,72,0) 100%);opacity:0;pointer-events:none"></div>
+          <div ref="{{ heroScrimRef }}" style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,36,72,.88) 0%,rgba(7,36,72,.6) 32%,rgba(7,36,72,.15) 54%,rgba(7,36,72,0) 70%);pointer-events:none"></div>
+          <div ref="{{ heroScrimBottomRef }}" style="position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(180deg,rgba(7,36,72,0),rgba(7,36,72,.82));pointer-events:none"></div>
+          <div style="position:relative;max-width:var(--container-max);margin:0 auto;height:100%;display:flex;flex-direction:column;justify-content:center;padding:0 var(--gutter) clamp(96px,18vh,150px)">
+            <div ref="{{ heroCopyRef }}" style="will-change:opacity,transform">
+              <div style="display:inline-block;position:relative;margin-bottom:clamp(12px,2.5vh,24px)"><div style="position:absolute;inset:-40% -55%;background:radial-gradient(ellipse at center,rgba(255,255,255,.2),rgba(255,255,255,.08) 45%,rgba(255,255,255,0) 72%);pointer-events:none"></div><img src="assets/lm-mark.png" alt="Longmotive" style="position:relative;height:clamp(40px,8vh,64px);width:auto;display:block;filter:drop-shadow(0 6px 22px rgba(7,36,72,.35))"></div>
+              <div style="display:inline-flex;align-items:center;gap:10px;font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--lm-cyan-400)"><span style="width:30px;height:2px;background:currentColor"></span>Mechanical &amp; Electrical Engineering</div>
+              <h1 style="color:#fff;font-size:var(--fs-display-lg);line-height:1.02;margin:20px 0 0;max-width:16ch">We build the <span style="background:linear-gradient(90deg,var(--lm-cyan-400),var(--lm-cyan-500));-webkit-background-clip:text;background-clip:text;color:transparent">data-center</span> backbone.</h1>
+              <p style="color:#fff;font-weight:600;font-size:19px;line-height:1.65;max-width:56ch;margin:22px 0 34px;text-shadow:0 1px 3px rgba(7,36,72,.55),0 5px 26px rgba(7,36,72,.5)">CIDB G7 contractor &#183; 20+ years &#183; 500+ workforce &#8212; delivering MEP construction across Malaysia, Indonesia and China.</p>
+              <div style="display:flex;gap:14px;flex-wrap:wrap">
+                <button onClick="{{ goProjects }}" style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid transparent;border-radius:var(--radius-sm);cursor:pointer;background:var(--color-accent);color:var(--lm-blue-900);padding:15px 26px;font-size:.9rem" style-hover="background:var(--lm-cyan-400)">View Projects {{ arrowIcon }}</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:22px;margin-top:clamp(16px,4vh,40px);flex-wrap:wrap">
+                <div style="display:inline-flex;align-items:center;gap:10px;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--lm-blue-200)">{{ chevronIcon }} Scroll to watch the campus rise</div>
+              </div>
+            </div>
+          </div>
+          <div style="position:absolute;left:var(--gutter);right:var(--gutter);bottom:78px;height:170px;max-width:540px;pointer-events:none">
+            <sc-for list="{{ heroPhases }}" as="ph" hint-placeholder-count="3">
+              <div ref="{{ ph.capRef }}" style="position:absolute;bottom:0;left:0;right:0;opacity:0;transition:opacity .35s;background:linear-gradient(90deg,rgba(7,36,72,.82),rgba(7,36,72,.55));backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-left:3px solid var(--lm-cyan-500);border-radius:var(--radius-sm);padding:16px 22px;box-shadow:0 8px 28px rgba(7,36,72,.35)">
+                <div class="lm-capnum" style="font-family:var(--font-display);font-weight:800;font-size:58px;line-height:1;color:var(--lm-cyan-400)">{{ ph.number }}</div>
+                <div class="lm-captitle" style="font-family:var(--font-display);font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:23px;line-height:1.2;color:#fff;margin-top:8px">{{ ph.label }}</div>
+                <p style="margin:6px 0 0;font-size:15px;line-height:1.55;color:var(--lm-blue-100)">{{ ph.blurb }}</p>
+              </div>
+            </sc-for>
+          </div>
+          <div style="position:absolute;left:var(--gutter);right:var(--gutter);bottom:36px;display:flex;flex-direction:column;gap:9px">
+            <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(214,228,245,.55)"><span>Campus Growth</span><span>Nusajaya Tech Park · Johor</span></div>
+            <div style="height:3px;border-radius:999px;background:rgba(214,228,245,.16);overflow:hidden">
+              <div ref="{{ heroBarRef }}" style="height:100%;border-radius:999px;background:linear-gradient(90deg,var(--lm-blue-600),var(--lm-cyan-500));transform:scaleX(0);transform-origin:left center"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      </sc-if>
+
+      <sc-if value="{{ isStaticHero }}" hint-placeholder-val="{{ false }}">
+      <section style="position:relative;overflow:hidden;background:var(--lm-blue-900)">
+        <sc-if value="{{ heroSrc }}" hint-placeholder-val="{{ false }}"><img data-src="{{ heroSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"/></sc-if>
+        <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,36,72,.9) 0%,rgba(7,36,72,.64) 32%,rgba(7,36,72,.2) 54%,rgba(7,36,72,0) 70%)"></div>
+        <div style="position:relative;max-width:var(--container-max);margin:0 auto;padding:116px var(--gutter) 108px">
+          <div style="display:inline-block;position:relative;margin-bottom:clamp(12px,2.5vh,24px)"><div style="position:absolute;inset:-40% -55%;background:radial-gradient(ellipse at center,rgba(255,255,255,.2),rgba(255,255,255,.08) 45%,rgba(255,255,255,0) 72%);pointer-events:none"></div><img src="assets/lm-mark.png" alt="Longmotive" style="position:relative;height:clamp(40px,8vh,64px);width:auto;display:block;filter:drop-shadow(0 6px 22px rgba(7,36,72,.35))"></div>
+          <div style="display:inline-flex;align-items:center;gap:10px;font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--lm-cyan-400)"><span style="width:30px;height:2px;background:currentColor"></span>Mechanical &amp; Electrical Engineering</div>
+          <h1 style="color:#fff;font-size:var(--fs-display-lg);line-height:1.02;margin:20px 0 0;max-width:16ch">We build the <span style="background:linear-gradient(90deg,var(--lm-cyan-400),var(--lm-cyan-500));-webkit-background-clip:text;background-clip:text;color:transparent">data-center</span> backbone.</h1>
+          <p style="color:#fff;font-weight:600;font-size:19px;line-height:1.65;max-width:56ch;margin:22px 0 34px;text-shadow:0 1px 3px rgba(7,36,72,.55),0 5px 26px rgba(7,36,72,.5)">CIDB G7 contractor &#183; 20+ years &#183; 500+ workforce &#8212; delivering MEP construction across Malaysia, Indonesia and China.</p>
+          <div style="display:flex;gap:14px;flex-wrap:wrap">
+            <button onClick="{{ goProjects }}" style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid transparent;border-radius:var(--radius-sm);cursor:pointer;background:var(--color-accent);color:var(--lm-blue-900);padding:15px 26px;font-size:.9rem" style-hover="background:var(--lm-cyan-400)">View Projects {{ arrowIcon }}</button>
+            <button onClick="{{ goEnquiry }}" style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid rgba(255,255,255,.4);border-radius:var(--radius-sm);cursor:pointer;background:transparent;color:#fff;padding:15px 26px;font-size:.9rem" style-hover="background:rgba(255,255,255,.1)">Submit Enquiry</button>
+          </div>
+        </div>
+      </section>
+      </sc-if>
+
+
+      <section class="lm-snapsec" style="position:relative;height:100vh;overflow:hidden;background:var(--surface-page);scroll-snap-align:start">
+        <div style="position:relative;height:100%;display:flex;flex-direction:column;justify-content:center;padding:0 var(--gutter)">
+        <video ref="{{ principlesVideoRef }}" src="https://www.longmotive-m.com/data/cms/images/1710215268_longmotive.mp4" muted="{{ true }}" loop="{{ true }}" playsinline="{{ true }}" preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center bottom;opacity:.42;pointer-events:none"></video>
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.88) 0%,rgba(255,255,255,.55) 40%,rgba(255,255,255,0) 75%);pointer-events:none"></div>
+        <div style="position:relative;max-width:var(--container-max);margin:0 auto;width:100%">
+          <div data-reveal="0" style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:clamp(6px,1.2vh,12px);max-width:60ch;margin:0 auto">
+            <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent)"><span style="width:28px;height:2px;background:currentColor"></span>What We Do</span>
+            <h2 style="margin:0;font-size:min(var(--fs-display),4.8vh);color:var(--text-strong)">Full-scope electromechanical delivery</h2>
+            <p style="margin:0;font-size:clamp(14px,1.9vh,17px);color:var(--text-body);line-height:1.55">One accountable contractor across every MEP discipline — from BIM coordination to on-site commissioning.</p>
+          </div>
+          <div class="lm-g3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(12px,2vh,22px);margin-top:clamp(16px,3.5vh,48px)">
+            <sc-for list="{{ services }}" as="s" hint-placeholder-count="6">
+              <div data-reveal="{{ $index }}" style="background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:clamp(14px,2.2vh,26px);box-shadow:var(--shadow-xs);transition:box-shadow .25s,transform .25s,border-color .25s" style-hover="box-shadow:var(--shadow-lg);transform:translateY(-3px);border-color:var(--border-default)">
+                <span style="width:clamp(34px,5vh,46px);height:clamp(34px,5vh,46px);border-radius:var(--radius-sm);background:var(--lm-blue-50);color:var(--color-brand);display:inline-flex;align-items:center;justify-content:center;margin-bottom:clamp(8px,1.4vh,14px)">{{ s.iconEl }}</span>
+                <h3 style="margin:0 0 4px;font-size:clamp(17px,2.5vh,21px);color:var(--text-strong)">{{ s.title }}</h3>
+                <p style="margin:0;font-size:clamp(13px,1.8vh,15px);color:var(--text-muted);line-height:1.5">{{ s.desc }}</p>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <section class="lm-snapsec" style="background:var(--surface-subtle);height:100vh;overflow:hidden;display:flex;flex-direction:column;scroll-snap-align:start">
+        <sc-if value="{{ isStats }}" hint-placeholder-val="{{ true }}">
+        <div style="background:var(--lm-blue-700);padding:calc(72px + clamp(12px,2vh,18px)) var(--gutter) clamp(12px,2vh,18px)">
+          <div class="lm-g4" style="max-width:var(--container-max);margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:24px">
+            <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
+              <div data-reveal="{{ $index }}" style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+                <div data-stat="1" style="font-family:var(--font-display);font-weight:800;font-size:clamp(24px,3.6vh,32px);line-height:1;color:#fff">{{ s.value }}<span style="color:var(--lm-cyan-400)">{{ s.suffix }}</span></div>
+                <div style="font-size:11px;letter-spacing:.04em;color:var(--lm-blue-200);text-transform:uppercase;font-family:var(--font-mono)">{{ s.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+        <div style="flex:1;display:flex;align-items:stretch;padding:clamp(8px,1.4vh,16px) var(--gutter);min-height:0">
+        <div style="max-width:var(--container-max);margin:0 auto;width:100%;display:flex;flex-direction:column;height:100%;min-height:0">
+          <div data-reveal="0" style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;flex:none;position:relative;z-index:8">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:clamp(20px,3vh,28px);letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent)"><span style="width:28px;height:2px;background:currentColor"></span>Selected Work</span>
+            </div>
+            <button onClick="{{ goProjects }}" style="display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid var(--border-default);border-radius:var(--radius-sm);cursor:pointer;background:transparent;color:var(--color-brand);padding:11px 18px;font-size:.8rem" style-hover="background:var(--lm-blue-50)">All Projects {{ arrowIcon }}</button>
+          </div>
+          <div ref="{{ swapTitleRef }}" style="flex:none;text-align:center;padding:clamp(4px,1vh,10px) 0 0;position:relative;z-index:8">
+            <div style="font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.2em;color:var(--color-accent);margin-bottom:3px">{{ swapCount }}</div>
+            <h3 style="margin:0;font-size:clamp(24px,4.2vh,40px);color:var(--text-strong);letter-spacing:.01em;line-height:1.1">{{ swapTitle }}</h3>
+          </div>
+          <div ref="{{ swapWrapRef }}" style="flex:1;min-height:0;position:relative;perspective:1100px;touch-action:pan-y;margin-top:clamp(4px,1vh,10px)">
+              <div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(58% 64% at 50% 46%,rgba(18,48,79,.07),rgba(18,48,79,0) 72%),repeating-linear-gradient(0deg,rgba(15,82,160,.05) 0 1px,transparent 1px 48px),repeating-linear-gradient(90deg,rgba(15,82,160,.05) 0 1px,transparent 1px 48px)"></div>
+              <div style="position:absolute;left:50%;top:calc(52px + min(74%,450px));transform:translateX(-44%);width:58%;height:44px;background:radial-gradient(ellipse at center,rgba(7,36,72,.20),rgba(7,36,72,0) 66%);pointer-events:none"></div>
+              <button class="lm-swaparrow" onClick="{{ swapPrev }}" aria-label="Previous project" style="position:absolute;left:clamp(4px,2vw,28px);top:50%;transform:translateY(-50%);z-index:9;width:46px;height:46px;border-radius:50%;border:2px solid var(--border-default);background:rgba(255,255,255,.88);color:var(--color-brand);font-size:1.05rem;cursor:pointer;display:inline-flex;align-items:center;justify-content:center" style-hover="background:#fff;border-color:var(--color-brand)">&#8592;</button>
+              <button class="lm-swaparrow" onClick="{{ swapNext }}" aria-label="Next project" style="position:absolute;right:clamp(4px,2vw,28px);top:50%;transform:translateY(-50%);z-index:9;width:46px;height:46px;border-radius:50%;border:2px solid var(--border-default);background:rgba(255,255,255,.88);color:var(--color-brand);font-size:1.05rem;cursor:pointer;display:inline-flex;align-items:center;justify-content:center" style-hover="background:#fff;border-color:var(--color-brand)">&#8594;</button>
+              <sc-for list="{{ swapCards }}" as="c" hint-placeholder-count="6">
+                <div class="lm-swapcard" ref="{{ c.cardRef }}" onClick="{{ c.onOpen }}" style="position:absolute;top:34px;left:50%;width:min(58vw,860px);height:min(74%,450px);border-radius:var(--radius-lg);overflow:hidden;background:var(--lm-blue-900);border:1px solid rgba(255,255,255,.35);box-shadow:0 16px 44px rgba(7,36,72,.35);cursor:pointer;will-change:transform;backface-visibility:hidden;display:flex;flex-direction:row">
+                  <div style="flex:1.15;overflow:hidden;position:relative;min-width:0">
+                    <img data-src="{{ c.img }}" alt="{{ c.title }} site photo" style="width:100%;height:100%;object-fit:cover;display:block"/>
+                    <span style="position:absolute;bottom:10px;left:10px;padding:3px 9px;border-radius:3px;background:rgba(7,36,72,.78);color:#fff;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.08em">SITE PHOTO</span>
+                  </div>
+                  <div style="flex:1;overflow:hidden;position:relative;min-width:0;border-left:2px solid var(--color-accent)">
+                    <img data-src="{{ c.render }}" alt="{{ c.title }} BIM model" style="width:100%;height:100%;object-fit:cover;display:block"/>
+                    <span style="position:absolute;bottom:10px;left:10px;padding:3px 9px;border-radius:3px;background:rgba(0,176,240,.85);color:var(--lm-blue-900);font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.08em">BIM MODEL</span>
+                  </div>
+                </div>
+              </sc-for>
+          </div>
+          <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:clamp(6px,1.2vh,10px);padding:clamp(8px,1.6vh,14px) 0 clamp(2px,0.8vh,6px);position:relative;z-index:8">
+            <div style="display:flex;align-items:center;justify-content:center">
+              <button onClick="{{ swapOpenFront }}" style="display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid transparent;border-radius:var(--radius-sm);cursor:pointer;background:var(--color-brand);color:#fff;padding:11px 18px;font-size:.8rem" style-hover="background:var(--lm-blue-700)">Open 3D viewer {{ arrowIcon }}</button>
+            </div>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <section style="background:var(--lm-gradient-brand);scroll-snap-align:start">
+        <div data-reveal="0" style="max-width:var(--container-max);margin:0 auto;padding:72px var(--gutter);display:flex;justify-content:space-between;align-items:center;gap:32px;flex-wrap:wrap">
+          <div>
+            <h2 style="color:#fff;font-size:var(--fs-display);margin:0 0 8px">Have a project in mind?</h2>
+            <p style="color:rgba(255,255,255,.9);font-size:18px;margin:0">Tell us the scope — we'll bring the team, the technology and the track record.</p>
+          </div>
+          <button onClick="{{ goEnquiry }}" style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid transparent;border-radius:var(--radius-sm);cursor:pointer;background:#fff;color:var(--color-brand);padding:15px 26px;font-size:.9rem" style-hover="background:var(--lm-blue-50)">Submit Enquiry {{ arrowIcon }}</button>
+        </div>
+      </section>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isAbout }}">
+    <div>
+      <section class="lm-snapsec" style="height:100vh;overflow:hidden;display:flex;flex-direction:column;background:var(--surface-page);scroll-snap-align:start">
+        <div style="background:var(--lm-gradient-deep);padding:calc(72px + clamp(14px,2.6vh,26px)) var(--gutter) clamp(14px,2.6vh,26px)">
+          <div data-reveal="0" style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;gap:clamp(4px,0.9vh,8px)">
+            <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--lm-cyan-400)"><span style="width:28px;height:2px;background:currentColor"></span>About Longmotive</span>
+            <h1 style="margin:0;font-size:min(var(--fs-h1),3.6vh);color:#fff;line-height:1.1">An M&amp;E company built on quality, technology and service</h1>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;align-items:center;padding:0 var(--gutter);min-height:0">
+          <div class="lm-split2" style="max-width:var(--container-max);margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1.05fr;gap:clamp(24px,4vw,56px);align-items:center">
+            <div data-reveal="0" style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(10px,1.6vh,16px)">
+              <div style="grid-column:1/-1;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-lg);height:clamp(190px,34vh,330px)"><img src="assets/img/about-2.jpg" alt="Rack systems being installed in a data hall" style="width:100%;height:100%;object-fit:cover"/></div>
+              <div style="border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);height:clamp(115px,20vh,200px)"><img src="assets/img/about-1.jpg" alt="Technicians working on rooftop cooling towers" style="width:100%;height:100%;object-fit:cover"/></div>
+              <div style="border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);height:clamp(115px,20vh,200px)"><img src="assets/img/about-5.jpg" alt="Structured cabling inside network racks" style="width:100%;height:100%;object-fit:cover"/></div>
+            </div>
+            <div data-reveal="1">
+              <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent)"><span style="width:28px;height:2px;background:currentColor"></span>Who We Are</span>
+              <h2 style="margin:clamp(8px,1.4vh,12px) 0 0;font-size:min(var(--fs-h1),4.8vh);color:var(--text-strong)">Top-tier M&amp;E engineering, delivered by one accountable team</h2>
+              <p style="margin:clamp(12px,2.2vh,20px) 0 0;color:var(--text-strong);font-size:clamp(14px,2vh,17px);line-height:1.6">We specialize in delivering top-tier mechanical &amp; electrical engineering services tailored to the data-center industry — standardized construction, safe operations, and efficient service delivery for our clients.</p>
+              <p style="color:var(--text-body);font-size:clamp(13px,1.9vh,16px);line-height:1.65;margin-top:clamp(10px,2vh,18px)">Longmotive (M) Sdn. Bhd. is a mechanical &amp; electrical engineering company registered in Johor Bahru, Johor under the Malaysian Companies Act, serving enterprise and data-center clients across the region with one integrated team spanning every MEP discipline.</p>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,1.4vh,12px) 20px;margin-top:clamp(12px,2.2vh,20px)">
+                <sc-for list="{{ strongPoints }}" as="sp" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:flex-start;gap:9px;font-size:clamp(13px,1.7vh,14.5px);line-height:1.45;color:var(--text-body)"><span style="color:var(--color-accent);flex-shrink:0;margin-top:1px">{{ checkIcon }}</span>{{ sp }}</div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="background:var(--lm-blue-900);padding:clamp(16px,3.4vh,34px) var(--gutter)">
+          <div class="lm-g4" style="max-width:var(--container-max);margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:24px" data-about-stats="true">
+            <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
+              <div data-reveal="{{ $index }}">
+                <div data-stat="1" style="font-family:var(--font-display);font-weight:800;font-size:clamp(28px,4.4vh,44px);line-height:1;color:#fff">{{ s.value }}<span style="color:var(--lm-cyan-400)">{{ s.suffix }}</span></div>
+                <div style="font-size:clamp(11px,1.5vh,13px);letter-spacing:.03em;color:var(--lm-blue-200);margin-top:clamp(4px,1vh,8px);text-transform:uppercase;font-family:var(--font-mono)">{{ s.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </section>
+
+      <section class="lm-snapsec" style="height:100vh;overflow:hidden;display:flex;flex-direction:column;background:var(--surface-page);scroll-snap-align:start">
+        <div style="height:72px;flex-shrink:0"></div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(18px,4.2vh,52px);padding:0 var(--gutter);min-height:0">
+          <div class="lm-g3" style="max-width:var(--container-max);margin:0 auto;width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:22px">
+            <sc-for list="{{ aboutGallery }}" as="g" hint-placeholder-count="3">
+              <figure data-reveal="{{ $index }}" style="margin:0;display:flex;flex-direction:column;gap:10px">
+                <div style="border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);height:clamp(140px,26vh,265px)"><sc-if value="{{ g.vid }}" hint-placeholder-val="{{ false }}"><video ref="{{ galleryVideoRef }}" data-src="{{ g.vid }}" autoPlay="{{ true }}" loop="{{ true }}" muted="{{ true }}" playsinline="{{ true }}" preload="auto" style="width:100%;height:100%;object-fit:cover;display:block"></video></sc-if></div>
+                <figcaption style="display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)"><span style="width:18px;height:2px;background:var(--color-accent)"></span>{{ g.cap }}</figcaption>
+              </figure>
+            </sc-for>
+          </div>
+          <div style="max-width:var(--container-max);margin:0 auto;width:100%">
+            <div data-reveal="0" style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:clamp(6px,1.3vh,12px);max-width:64ch;margin:0 auto">
+              <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent)"><span style="width:28px;height:2px;background:currentColor"></span>Our Philosophy</span>
+              <h2 style="margin:0;font-size:min(var(--fs-display),4.8vh);color:var(--text-strong)">Survival by quality. Development by technology. Growth by service.</h2>
+              <p style="margin:0;font-size:clamp(14px,1.9vh,17px);color:var(--text-muted);line-height:1.6">A win-win partnership with customers at affordable prices — the principles behind our robust and growing market.</p>
+            </div>
+            <div class="lm-g4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-top:clamp(16px,4vh,48px)">
+              <sc-for list="{{ values }}" as="v" hint-placeholder-count="4">
+                <div data-reveal="{{ $index }}" style="background:var(--surface-card);border:1px solid var(--border-subtle);border-top:3px solid var(--color-accent);border-radius:var(--radius-lg);padding:clamp(14px,2.4vh,24px);box-shadow:var(--shadow-xs)">
+                  <span style="color:var(--color-accent);margin-bottom:clamp(4px,1vh,10px);display:inline-flex">{{ v.iconEl }}</span>
+                  <h3 style="margin:2px 0 4px;font-size:clamp(15px,2.1vh,18px);color:var(--text-strong)">{{ v.title }}</h3>
+                  <p style="margin:0;font-size:clamp(13px,1.7vh,14px);color:var(--text-muted);line-height:1.55">{{ v.desc }}</p>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section style="background:var(--surface-page);padding:var(--section-y) var(--gutter);scroll-snap-align:start">
+        <div style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;gap:52px">
+          <div data-reveal="0">
+            <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent)"><span style="width:28px;height:2px;background:currentColor"></span>Our Principles</span>
+            <h2 style="margin:12px 0 14px;font-size:var(--fs-display);color:var(--text-strong)">A robust market, earned project by project</h2>
+            <p style="margin:0;font-size:16px;color:var(--text-muted);line-height:1.6;max-width:70ch">Relying on a strong team and the right development philosophy, Longmotive has steadily built a dependable presence in the electromechanical industry.</p>
+          </div>
+          <div data-reveal="2" style="border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border-subtle);box-shadow:var(--shadow-lg);background:var(--lm-blue-900)">
+            <img data-parallax="1" src="uploads/hf_20260724_082014_acbf4dcc-fbba-4224-80e9-1281580f6fc6.png" alt="The Longmotive team in a data hall" style="width:100%;height:auto;display:block;transform:scale(1.08)"/>
+          </div>
+        </div>
+      </section>
+
+      <section style="background:var(--surface-subtle);padding:calc(72px + clamp(28px,5vh,52px)) var(--gutter) var(--section-y);scroll-snap-align:start">
+        <div style="max-width:var(--container-max);margin:0 auto">
+          <div data-reveal="0" style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;max-width:64ch;margin:0 auto">
+            <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent)"><span style="width:28px;height:2px;background:currentColor"></span>Certifications</span>
+            <h2 style="margin:0;font-size:var(--fs-display);color:var(--text-strong)">Independently certified, system by system</h2>
+            <p style="margin:0;font-size:17px;color:var(--text-muted);line-height:1.6">Eight management-system certifications registered to Longmotive (M) Sdn. Bhd. (1473095-A), covering quality, environment, safety, energy, continuity and ethics.</p>
+          </div>
+          <div class="lm-g4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-top:48px">
+            <sc-for list="{{ certs }}" as="c" hint-placeholder-count="8">
+              <div data-reveal="{{ $index }}" style="position:relative;background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:var(--radius-md);box-shadow:var(--shadow-xs);display:flex;flex-direction:column;transition:box-shadow .25s,transform .25s" style-hover="box-shadow:var(--shadow-lg);transform:translateY(-3px);z-index:6">
+                <div style="background:#fff;padding:14px 14px 0;display:flex;justify-content:center"><sc-if value="{{ c.img }}" hint-placeholder-val="{{ false }}"><img data-src="{{ c.img }}" alt="{{ c.alt }}" style="width:100%;max-width:200px;height:auto;display:block;position:relative;z-index:1;border:1px solid var(--border-subtle);cursor:zoom-in;transition:transform .28s ease,box-shadow .28s ease" style-hover="transform:scale(1.6);box-shadow:0 18px 48px rgba(7,36,72,.45)"/></sc-if></div>
+                <div style="padding:16px 18px 18px">
+                  <div style="font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--color-brand)">{{ c.code }}</div>
+                  <div style="font-family:var(--font-display);font-weight:700;font-size:16px;color:var(--text-strong);margin-top:3px">{{ c.title }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </section>
+
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isProjects }}">
+    <div>
+      <section style="background:var(--lm-gradient-deep);padding:76px var(--gutter) 64px">
+        <div data-reveal="0" style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;gap:12px;max-width:64ch">
+          <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--lm-cyan-400)"><span style="width:28px;height:2px;background:currentColor"></span>Portfolio</span>
+          <h1 style="margin:0;font-size:var(--fs-display-lg);color:#fff">Our Projects</h1>
+          <p style="margin:0;font-size:18px;color:var(--lm-blue-100);line-height:1.6">Representative MEP works from the data-center projects we have delivered &#8212; plant rooms, power distribution, data halls and controls.</p>
+        </div>
+      </section>
+      <section style="background:var(--surface-page);padding:44px var(--gutter) var(--section-y)">
+        <div style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;gap:30px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <sc-for list="{{ filters }}" as="f" hint-placeholder-count="6">
+              <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}</button>
+            </sc-for>
+          </div>
+          <div class="lm-g3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px">
+            <sc-for list="{{ filteredProjects }}" as="p" hint-placeholder-count="6">
+              <div data-comment-anchor="project-card-{{ p.title }}" onClick="{{ p.onOpen }}" style="{{ p.cardStyle }}" style-hover="box-shadow:var(--shadow-md);transform:translateY(-3px);border-color:var(--lm-blue-200)">
+                <div onMouseEnter="{{ p.onHover }}" style="height:200px;overflow:hidden;background:var(--lm-blue-50)"><img data-src="{{ p.img }}" alt="{{ p.title }}" style="width:100%;height:100%;object-fit:cover;display:block"/></div>
+                <div style="padding:16px 18px 18px;display:flex;flex-direction:column;gap:6px">
+                  <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent)">{{ p.cat }}</span>
+                  <h3 style="margin:0;font-size:18px;color:var(--text-strong)">{{ p.title }}</h3>
+                  <p style="margin:0;font-size:13.5px;color:var(--text-muted);line-height:1.5">{{ p.meta }}</p>
+                  <sc-if value="{{ p.viewer3d }}" hint-placeholder-val="{{ false }}"><span style="margin-top:6px;display:inline-flex;align-items:center;gap:7px;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-brand)">Open 3D viewer</span></sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </section>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isContact }}">
+    <div>
+      <section style="background:var(--lm-gradient-deep);padding:76px var(--gutter) 64px">
+        <div data-reveal="0" style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;gap:12px;max-width:66ch">
+          <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--lm-cyan-400)"><span style="width:28px;height:2px;background:currentColor"></span>{{ contactEyebrow }}</span>
+          <h1 style="margin:0;font-size:var(--fs-display-lg);color:#fff">{{ contactHeading }}</h1>
+          <p style="margin:0;font-size:18px;color:var(--lm-blue-100);line-height:1.6">{{ contactDescription }}</p>
+        </div>
+      </section>
+      <section style="padding:var(--section-y) var(--gutter)">
+        <div style="max-width:var(--container-max);margin:0 auto">
+          <div role="tablist" aria-label="Contact form type" style="display:inline-flex;gap:6px;padding:6px;margin-bottom:30px;border:1px solid var(--border-subtle);border-radius:999px;background:var(--surface-subtle)">
+            <button type="button" role="tab" aria-selected="{{ isEnquiryTab }}" disabled="{{ submitting }}" onClick="{{ showEnquiry }}" style="{{ enquiryTabStyle }}">Enquiry</button>
+            <button type="button" role="tab" aria-selected="{{ isCareersTab }}" disabled="{{ submitting }}" onClick="{{ showCareers }}" style="{{ careersTabStyle }}">Careers</button>
+          </div>
+        <div class="lm-split2" style="display:grid;grid-template-columns:0.85fr 1.15fr;gap:56px">
+          <div data-reveal="0">
+            <h3 style="font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-strong);margin:0 0 22px">Business Office</h3>
+            <div style="display:flex;gap:14px;margin-bottom:22px">
+              <span style="width:42px;height:42px;flex-shrink:0;border-radius:var(--radius-sm);background:var(--lm-blue-50);color:var(--color-brand);display:inline-flex;align-items:center;justify-content:center">{{ mapIcon }}</span>
+              <div><div style="font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:3px">Address</div><div style="font-size:15px;color:var(--text-strong);line-height:1.5">No. 9, Jalan Teknologi Perintis 1/2,<br/>Taman Teknologi Nusajaya,<br/>79250 Iskandar Puteri, Johor.</div></div>
+            </div>
+            <div style="display:flex;gap:14px;margin-bottom:22px">
+              <span style="width:42px;height:42px;flex-shrink:0;border-radius:var(--radius-sm);background:var(--lm-blue-50);color:var(--color-brand);display:inline-flex;align-items:center;justify-content:center">{{ phoneIcon }}</span>
+              <div><div style="font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:3px">Phone</div><div style="font-size:15px;color:var(--text-strong);line-height:1.5">+607-550 5651</div></div>
+            </div>
+            <div style="display:flex;gap:14px;margin-bottom:22px">
+              <span style="width:42px;height:42px;flex-shrink:0;border-radius:var(--radius-sm);background:var(--lm-blue-50);color:var(--color-brand);display:inline-flex;align-items:center;justify-content:center">{{ mailIcon }}</span>
+              <div><div style="font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:3px">Email</div><div style="font-size:15px;color:var(--text-strong);line-height:1.5">info@longmotive.com</div></div>
+            </div>
+            <div style="margin-top:26px;padding:16px 18px;background:var(--surface-subtle);border-radius:var(--radius-md);font-family:var(--font-mono);font-size:11px;line-height:1.7;color:var(--text-muted)">LONGMOTIVE (M) SDN. BHD.<br/>202201027398 (1473095-A)</div>
+          </div>
+          <div data-reveal="1" style="background:#fff;border:1px solid var(--border-subtle);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:32px">
+            <sc-if value="{{ sent }}" hint-placeholder-val="{{ false }}">
+              <div role="status" style="margin-bottom:20px;display:flex;gap:12px;padding:14px 16px;border-radius:var(--radius-md);background:#e7f6ec;border:1px solid #b7e0c4;color:#1c6b38"><span style="font-weight:700">{{ successTitle }}</span><span style="color:#2f7d4c">{{ successMessage }}</span></div>
+            </sc-if>
+            <sc-if value="{{ err }}" hint-placeholder-val="{{ false }}">
+              <div role="alert" style="margin-bottom:20px;display:flex;gap:12px;padding:14px 16px;border-radius:var(--radius-md);background:var(--lm-danger-bg);border:1px solid #eebcbc;color:var(--lm-danger)"><span style="font-weight:700">Unable to submit.</span><span>{{ errorMessage }}</span></div>
+            </sc-if>
+            <sc-if value="{{ isEnquiryTab }}">
+            <form onSubmit="{{ submitEnquiry }}" role="tabpanel" aria-label="Business enquiry form" style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+              <input type="hidden" name="formType" value="enquiry"/>
+              <input type="text" name="website" value="{{ enquiry.website }}" onChange="{{ setEnquiryWebsite }}" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"/>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Name <span style="color:var(--lm-danger)">*</span></label>
+                <input name="name" value="{{ enquiry.name }}" onChange="{{ setEnquiryName }}" autocomplete="name" placeholder="Name" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Email <span style="color:var(--lm-danger)">*</span></label>
+                <input type="email" name="email" value="{{ enquiry.email }}" onChange="{{ setEnquiryEmail }}" autocomplete="email" placeholder="Email" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
+              </div>
+              <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
+                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Contact No. <span style="font-weight:400;color:var(--text-muted);text-transform:none;letter-spacing:0">(optional)</span></label>
+                <input name="contact" value="{{ enquiry.contact }}" onChange="{{ setEnquiryContact }}" autocomplete="tel" placeholder="Contact No." style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
+              </div>
+              <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
+                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Subject <span style="color:var(--lm-danger)">*</span></label>
+                <input name="subject" value="{{ enquiry.subject }}" onChange="{{ setEnquirySubject }}" placeholder="Subject" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
+              </div>
+              <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
+                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Message <span style="color:var(--lm-danger)">*</span></label>
+                <textarea rows="5" name="message" value="{{ enquiry.message }}" onChange="{{ setEnquiryMessage }}" placeholder="Message" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff;resize:vertical"></textarea>
+              </div>
+              <div style="grid-column:1 / -1;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px">
+                <span style="font-size:12px;color:var(--lm-danger)">* indicates mandatory field</span>
+                <button type="submit" disabled="{{ submitting }}" aria-busy="{{ submitting }}" style="display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid transparent;border-radius:var(--radius-sm);cursor:pointer;background:var(--color-brand);color:#fff;padding:15px 26px;font-size:.9rem" style-hover="background:var(--lm-blue-700)">{{ submitLabel }} {{ arrowIcon }}</button>
+              </div>
+            </form>
+            </sc-if>
+            <sc-if value="{{ isCareersTab }}">
+            <form onSubmit="{{ submitCareers }}" role="tabpanel" aria-label="Careers application form" style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+              <input type="hidden" name="formType" value="careers"/>
+              <input type="text" name="website" value="{{ form.website }}" onChange="{{ setWebsite }}" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"/>
+              <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
+                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Salutation</label>
+                <select name="salutation" value="{{ form.salutation }}" onChange="{{ setSalutation }}" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff">
+                  <sc-for list="{{ salutations }}" as="o" hint-placeholder-count="5"><option value="{{ o }}">{{ o }}</option></sc-for>
+                </select>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Name <span style="color:var(--lm-danger)">*</span></label>
+                <input name="name" value="{{ form.name }}" onChange="{{ setName }}" placeholder="Name" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Contact No. <span style="color:var(--lm-danger)">*</span></label>
+                <input name="contact" value="{{ form.contact }}" onChange="{{ setContact }}" placeholder="Contact No." style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Email <span style="color:var(--lm-danger)">*</span></label>
+                <input type="email" name="email" value="{{ form.email }}" onChange="{{ setEmail }}" placeholder="Email" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
+              </div>
+              <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
+                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Job Title <span style="color:var(--lm-danger)">*</span></label>
+                <select name="jobTitle" value="{{ form.jobTitle }}" onChange="{{ setJobTitle }}" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff">
+                  <sc-for list="{{ jobTitles }}" as="o" hint-placeholder-count="11"><option value="{{ o }}">{{ o }}</option></sc-for>
+                </select>
+              </div>
+              <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
+                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Upload CV <span style="font-weight:400;color:var(--text-muted);text-transform:none;letter-spacing:0">(PDF / DOC)</span></label>
+                <label style="display:flex;align-items:center;gap:12px;cursor:pointer;flex-wrap:wrap">
+                  <span style="display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid var(--border-default);border-radius:var(--radius-sm);background:transparent;color:var(--color-brand);padding:11px 18px;font-size:.8rem">Choose File</span>
+                  <span style="font-size:13px;color:var(--text-muted)">{{ cvName }}</span>
+                  <input type="file" name="cv" accept=".pdf,.doc,.docx" onChange="{{ setCv }}" style="display:none"/>
+                </label>
+              </div>
+              <div style="grid-column:1 / -1;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px">
+                <span style="font-size:12px;color:var(--lm-danger)">* indicates mandatory field</span>
+                <button type="submit" disabled="{{ submitting }}" aria-busy="{{ submitting }}" style="display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid transparent;border-radius:var(--radius-sm);cursor:pointer;background:var(--color-brand);color:#fff;padding:15px 26px;font-size:.9rem" style-hover="background:var(--lm-blue-700)">{{ submitLabel }} {{ arrowIcon }}</button>
+              </div>
+            </form>
+            </sc-if>
+          </div>
+        </div>
+        </div>
+      </section>
+    </div>
+    </sc-if>
+
+  </main>
+
+  <footer style="background:var(--lm-blue-900);color:var(--lm-blue-100)">
+    <div class="lm-foot" style="max-width:var(--container-max);margin:0 auto;padding:56px var(--gutter) 32px;display:grid;grid-template-columns:1.6fr 1fr 1.4fr;gap:40px">
+      <div>
+        <div style="font-family:var(--font-display);font-weight:800;font-size:26px;letter-spacing:.02em;color:#fff">LONG<span style="color:var(--lm-cyan-400)">MOTIVE</span></div>
+        <p style="margin-top:16px;font-size:14px;line-height:1.6;max-width:40ch;color:var(--lm-blue-200)">Electromechanical construction contractor delivering standardized, safe and efficient MEP works for the data-center industry across Malaysia and China.</p>
+        <div style="font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;color:var(--lm-blue-300);margin-top:18px">LONGMOTIVE (M) SDN. BHD. · 202201027398 (1473095-A)</div>
+      </div>
+      <div>
+        <h4 style="color:#fff;font-size:13px;text-transform:uppercase;letter-spacing:.1em;margin:0 0 14px">Explore</h4>
+        <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="4">
+          <div style="margin-bottom:9px"><a onClick="{{ n.onClick }}" style="cursor:pointer;color:var(--lm-blue-200);font-size:14px">{{ n.label }}</a></div>
+        </sc-for>
+      </div>
+      <div>
+        <h4 style="color:#fff;font-size:13px;text-transform:uppercase;letter-spacing:.1em;margin:0 0 14px">Business Office</h4>
+        <div style="display:flex;gap:10px;margin-bottom:12px;font-size:14px;line-height:1.5;color:var(--lm-blue-200)"><span style="color:var(--color-accent);flex-shrink:0;margin-top:2px">{{ mapIcon }}</span><span>No. 9, Jalan Teknologi Perintis 1/2,<br/>Taman Teknologi Nusajaya,<br/>79250 Iskandar Puteri, Johor.</span></div>
+        <div style="display:flex;gap:10px;margin-bottom:12px;font-size:14px;line-height:1.5;color:var(--lm-blue-200)"><span style="color:var(--color-accent);flex-shrink:0;margin-top:2px">{{ phoneIcon }}</span><span>+607-550 5651</span></div>
+        <div style="display:flex;gap:10px;margin-bottom:12px;font-size:14px;line-height:1.5;color:var(--lm-blue-200)"><span style="color:var(--color-accent);flex-shrink:0;margin-top:2px">{{ mailIcon }}</span><span>info@longmotive.com</span></div>
+      </div>
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,.1);padding:18px var(--gutter);max-width:var(--container-max);margin:0 auto;font-size:12px;color:var(--lm-blue-300);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <span>© 2026 Longmotive (M) Sdn. Bhd. All rights reserved.</span>
+      <span>Survival by quality · Development by technology · Growth by service</span>
+    </div>
+  </footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900},&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Home&quot;,&quot;About&quot;,&quot;Projects&quot;,&quot;Contact&quot;],&quot;default&quot;:&quot;Home&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Page&quot;},&quot;videoHero&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Home&quot;},&quot;heroMode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Video scrub&quot;,&quot;3D build&quot;],&quot;default&quot;:&quot;Video scrub&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Home&quot;},&quot;heroImage&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;datacenter-aerial.jpg&quot;,&quot;datacenter-hall.jpg&quot;,&quot;chiller-plant.jpg&quot;,&quot;cooling-tower-works.jpg&quot;],&quot;default&quot;:&quot;datacenter-aerial.jpg&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Home&quot;},&quot;showStats&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Home&quot;}}">
+const ICONS={
+  Arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
+  Wind:'<path d="M17.7 7.7A2.5 2.5 0 1 1 19.5 12H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/>',
+  Zap:'<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+  Flame:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1.1-2-.5-4 1-5.5.6 3 2.5 5 4 6 1.5 1 2 2.5 2 4a5 5 0 1 1-10 0c0-.5 0-1 .5-2z"/>',
+  Droplet:'<path d="M12 2.7 6.3 8.4a8 8 0 1 0 11.4 0z"/>',
+  Cpu:'<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/>',
+  Wrench:'<path d="M14.7 6.3a4 4 0 0 0-5.2 5.2L3 18l3 3 6.5-6.5a4 4 0 0 0 5.2-5.2l-2.7 2.7-2.3-2.3 2.7-2.7z"/>',
+  Shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  Clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  Users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',
+  Phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.5 2.1L8 9.6a16 16 0 0 0 6 6l1.1-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.7 2z"/>',
+  Mail:'<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/>',
+  MapPin:'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
+  ChevronDown:'<path d="m6 9 6 6 6-6"/>',
+  Check:'<path d="M20 6 9 17l-5-5"/>'
+};
+
+const SERVICES=[
+  {icon:'Wind',title:'HVAC & Chilled Water',desc:'Central plant rooms, cooling towers, AHUs and chilled-water reticulation for high-density data centers.'},
+  {icon:'Zap',title:'Electrical & Power',desc:'MV/LV distribution, busway, generators, UPS and switchgear installation and commissioning.'},
+  {icon:'Flame',title:'Fire Protection',desc:'Sprinkler, gaseous suppression and fire-fighting pump systems to international standards.'},
+  {icon:'Droplet',title:'Plumbing & Drainage',desc:'Domestic water, drainage, and process piping fabricated and installed to spec.'},
+  {icon:'Cpu',title:'BIM Coordination',desc:'Full 3D MEP modelling, clash detection and prefabrication drawings before a pipe is cut.'},
+  {icon:'Wrench',title:'Prefabrication',desc:'Automated pipe-spool cutting, beveling and welding in our controlled fabrication yard.'}
+];
+const STATS=[
+  {value:'20',suffix:'+',label:'Years Experience'},
+  {value:'50',suffix:'+',label:'Data-Center Projects'},
+  {value:'100',suffix:'+',label:'Professionals'},
+  {value:'100',suffix:'%',label:'QA / QC Coverage'}
+];
+const PROJECTS=[
+  {img:'uploads/generated-views/rackrow-frame-start.png',abs:true,rack:true,cat:'Data Hall',title:'Data Hall',meta:'Racks, busway & containment',tags:['Data Hall']},
+  {img:'projects/chiller-plant-room.jpg',cat:'Cooling',title:'Chiller Plant Room',meta:'Chilled-water plant install & commissioning',tags:['HVAC & Cooling']},
+  {img:'projects/msb.jpg',cat:'Electrical',title:'Main Switchboard (MSB)',meta:'Power-distribution module interior',tags:['Electrical']},
+  {img:'projects/generator.jpg',cat:'Electrical',title:'Generator Plant',meta:'Standby power installation',tags:['Electrical']},
+  {img:'projects/roof-diesel-generator.jpg',cat:'Electrical',title:'Rooftop Diesel Generators',meta:'Roof-mounted standby power',tags:['Electrical']},
+  {img:'projects/open-cooling-tower.jpg',cat:'Cooling',title:'Open Cooling Towers',meta:'Heat-rejection plant',tags:['HVAC & Cooling']},
+  {img:'projects/chilled-water-tank.jpg',cat:'Cooling',title:'Outdoor Chilled-Water Storage Tank',meta:'Thermal energy storage',tags:['HVAC & Cooling']},
+  {img:'projects/chiller-piping.jpg',cat:'Cooling',title:'Chiller Piping',meta:'Large-bore chilled-water piping',tags:['HVAC & Cooling']},
+  {img:'projects/cooling-room.jpg',cat:'Cooling',title:'Level 3 Chiller Room',meta:'Refrigeration plant works',tags:['HVAC & Cooling']},
+  {img:'projects/ahu-room.jpg',cat:'HVAC',title:'Air Handling Unit Room',meta:'Fresh-air AHU installation',tags:['HVAC & Cooling']},
+  {img:'projects/crah-room.jpg',cat:'HVAC',title:'CRAH Room',meta:'Fluorine-pump AC system',tags:['HVAC & Cooling']},
+  {img:'projects/roof-ac-unit.jpg',cat:'HVAC',title:'Rooftop AC Outdoor Units',meta:'Roof-mounted condensing units',tags:['HVAC & Cooling']},
+  {img:'projects/fluorine-pump-system.jpg',cat:'HVAC',title:'Rooftop Fluorine-Pump System',meta:'Roof-level pump skids & piping',tags:['HVAC & Cooling']},
+  {img:'projects/fluorine-pump-cooling-tower.jpg',cat:'Cooling',title:'Fluorine-Pump Cooling Towers',meta:'Rooftop heat rejection',tags:['HVAC & Cooling']},
+  {img:'projects/makeup-water-pump.jpg',cat:'Cooling',title:'AC Makeup-Water Pump Room',meta:'Condenser make-up water plant',tags:['HVAC & Cooling']},
+  {img:'projects/pre-action-valve-room.jpg',cat:'Fire',title:'Pre-Action Sprinkler Valve Room',meta:'Pre-action valve assemblies',tags:['Fire Protection']},
+  {img:'projects/ba-control-room.jpg',cat:'ELV',title:'BA Control Room',meta:'Building-automation control suite',tags:['ELV & Controls']},
+  {img:'projects/ecc-room.jpg',cat:'ELV',title:'ECC Monitoring Room',meta:'Campus monitoring & command',tags:['ELV & Controls']},
+  {img:'projects/elv-room.jpg',cat:'ELV',title:'ELV Room',meta:'Extra-low-voltage equipment room',tags:['ELV & Controls']},
+  {img:'projects/telecom-access-room.jpg',cat:'ELV',title:'Telecom Operator Access Room',meta:'Carrier meet-me room fit-out',tags:['ELV & Controls']}
+];
+const VALUES=[
+  {icon:'Shield',title:'Survival by Quality',desc:'Standardized construction and rigorous QA/QC on every project.'},
+  {icon:'Cpu',title:'Development by Technology',desc:'BIM-led coordination and automated prefabrication.'},
+  {icon:'Users',title:'Growth by Service',desc:'Efficient service and a win-win partnership with every client.'},
+  {icon:'Clock',title:'Safe, On-Time Delivery',desc:'Safe operation and dependable schedules, project after project.'}
+];
+const HERO_PHASES=[
+  {number:'01',label:'Earthworks & Piling',blurb:'Site clearing, piling and deep excavation carve the campus out of raw ground.'},
+  {number:'02',label:'Foundations & Structure',blurb:'Pile caps, slabs and precast columns rise floor by floor across the halls.'},
+  {number:'03',label:'Superstructure & Envelope',blurb:'Steel roof decks top out and the building envelope closes in.'},
+  {number:'04',label:'M&E Fit-Out & Rooftop Plant',blurb:'Facade cladding lands while rows of rooftop cooling plant are set and piped.'},
+  {number:'05',label:'Live Data Centre Campus',blurb:'Commissioned, energised and operational — a hyperscale campus, delivered.'}
+];
+// CardSwap deck (adapted from React Bits CardSwap): 6 flagship projects that
+// have both a reference photo and a 3D model render + a locked viewer page
+const SWAP=[
+  {title:'Pre-Action Sprinkler Valve Room',cat:'Fire Protection',meta:'Pre-action valve assemblies & supervisory air',img:'projects/pre-action-valve-room.jpg',render:'uploads/3d/preaction-valve-room-hero.png',href:'pre-action-valve-room-viewer.dc.html'},
+  {title:'BA Control Room',cat:'ELV & Controls',meta:'Building-automation control suite',img:'projects/ba-control-room.jpg',render:'uploads/3d/ba-control-room-hero.png',href:'ba-control-room-viewer.dc.html'},
+  {title:'Main Switchboard (MSB)',cat:'Electrical',meta:'Power-distribution module interior',img:'projects/msb.jpg',render:'uploads/3d/msb-render-hero.png',href:'msb-viewer.dc.html'},
+  {title:'ELV Room',cat:'ELV & Controls',meta:'Extra-low-voltage equipment room',img:'projects/elv-room.jpg',render:'uploads/3d/elv-room-hero.png',href:'elv-room-viewer.dc.html'},
+  {title:'Generator Plant',cat:'Electrical',meta:'Standby power installation',img:'projects/generator.jpg',render:'uploads/3d/generator-room-hero.png',href:'generator-room-viewer.dc.html'},
+  {title:'AC Makeup-Water Pump Room',cat:'HVAC & Cooling',meta:'Condenser make-up water plant',img:'projects/makeup-water-pump.jpg',render:'uploads/3d/makeup-water-hero.png',href:'makeup-water-viewer.dc.html'}
+];
+
+const CERTS=[
+  {img:'assets/certs/cert-3.jpg',code:'ISO 9001:2015',title:'Quality Management'},
+  {img:'assets/certs/cert-6.jpg',code:'ISO 14001:2015',title:'Environmental Management'},
+  {img:'assets/certs/cert-7.jpg',code:'ISO 45001:2018',title:'Occupational Health & Safety'},
+  {img:'assets/certs/cert-1.jpg',code:'ISO 50001:2018',title:'Energy Management'},
+  {img:'assets/certs/cert-8.jpg',code:'ISO 22301:2019',title:'Business Continuity'},
+  {img:'assets/certs/cert-4.jpg',code:'ISO 37001:2016',title:'Anti-Bribery Management'},
+  {img:'assets/certs/cert-5.jpg',code:'DS 49001:2012',title:'Social Responsibility (CSR)'},
+  {img:'assets/certs/cert-2.jpg',code:'ESG',title:'ESG Compliance'}
+];
+const NAV=['Home','About','Projects','Contact'];
+const FILTERS=['All','HVAC & Cooling','Electrical','ELV & Controls','Fire Protection','Data Hall'];
+const IMG='assets/img/';
+const HOME_TITLE='Longmotive M&E Engineering | Johor, Malaysia';
+const HOME_DESCRIPTION='Longmotive delivers data-centre M&E construction in Johor. Send a project enquiry or apply for engineering careers with your CV.';
+const CONTACT_TITLE='Contact Longmotive | Enquiries & Careers';
+const CONTACT_DESCRIPTION='Contact Longmotive for a project enquiry or submit a careers application with your CV. Our Johor team will respond as soon as possible.';
+
+class Component extends DCLogic {
+  state = { screen:null, filter:'All', contactTab:'careers', sent:false, err:false, submitting:false, errorMessage:'', openCert:null, logoStage:0, navRevealed:false, flyT:null, swapFront:0,
+    enquiry:{name:'',email:'',contact:'',subject:'',message:'',website:''},
+    form:{salutation:'~ Please select one. ~',name:'',contact:'',email:'',jobTitle:'~ Please select one. ~',cv:'',website:''} };
+
+  icon(name,size){
+    return React.createElement('svg',{viewBox:'0 0 24 24',width:size||24,height:size||24,fill:'none',
+      stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round',
+      dangerouslySetInnerHTML:{__html:ICONS[name]||''}});
+  }
+  _caps=[];
+  _target=null; _cur=null;
+  _heroTrackRef=(el)=>{ this._track=el; if(el) this._updateHero(); };
+  _heroVideoRef=(el)=>{
+    if(this._video===el) return;
+    this._video=el;
+    if(el){
+      el.addEventListener('loadedmetadata',this._updateHero);
+      // Load as blob: a streamed response can report seekable [0,0], pinning currentTime to 0.
+      // File is used byte-for-byte — never re-encoded; the template src stays as a direct fallback.
+      if(!Component._heroBlobUrl){
+        const load=(tries)=>fetch('uploads/merged16-scrub-1080p.mp4')
+          .then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.blob(); })
+          .then(b=>URL.createObjectURL(b))
+          .catch(e=>{ if(tries>0) return new Promise(res=>setTimeout(res,1200)).then(()=>load(tries-1)); Component._heroBlobUrl=null; throw e; });
+        Component._heroBlobUrl = load(3);
+      }
+      Component._heroBlobUrl.then(u=>{ if(this._video===el){ el.src=u; el.load(); this._heroBlobReady=true; } })
+        .catch(()=>{ if(this._video===el&&!el.getAttribute('src')){ el.src='uploads/merged16-scrub-1080p.mp4'; el.load(); } });
+    }
+  };
+  _heroCopyRef=(el)=>{ this._copy=el; };
+  _campusRef=(el)=>{ this._campus=el; if(el) this._heroUpdate(); };
+  // scroll→scrub remap: the last growth stage (video 0.86..1, the finished campus)
+  // gets the final 28% of the track so it holds on screen longer before the logo hand-off
+  _mapScrub(p){ const c=.72,v=.86; return p<c?(p/c)*v:v+((p-c)/(1-c))*(1-v); }
+  _principlesVideoRef=(el)=>{
+    if(this._bgVideoObs){ this._bgVideoObs.disconnect(); this._bgVideoObs=null; }
+    if(el){
+      el.muted=true; const p=el.play(); if(p&&p.catch) p.catch(()=>{});
+      // Browsers pause offscreen muted videos — resume when it nears the viewport
+      this._bgVideoObs=new IntersectionObserver((es)=>{
+        es.forEach(e=>{
+          if(e.isIntersecting){ if(el.paused){ const q=el.play(); if(q&&q.catch) q.catch(()=>{}); } }
+          else if(!el.paused) el.pause();
+        });
+      },{rootMargin:'200px'});
+      this._bgVideoObs.observe(el);
+    }
+  };
+  // GSAP ScrollTrigger choreography (falls back to the IntersectionObserver path below)
+  _gsapScan(){
+    const g=window.gsap,ST=window.ScrollTrigger;
+    if(!g||!ST) return false;
+    if(!this._gsapReady){ g.registerPlugin(ST); this._gsapReady=true; }
+    const reduce=typeof matchMedia!=='undefined'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.querySelectorAll('[data-reveal]').forEach(el=>{
+      if(el._lmRv) return; el._lmRv=true;
+      if(reduce) return;
+      const d=Math.min((parseFloat(el.getAttribute('data-reveal'))||0)*.08,.4);
+      g.from(el,{opacity:0,y:34,scale:.975,duration:.85,delay:d,ease:'power3.out',
+        scrollTrigger:{trigger:el,start:'top 88%',once:true}});
+    });
+    // stat strips count up as they arrive
+    document.querySelectorAll('[data-stat]').forEach(el=>{
+      if(el._lmCt) return; el._lmCt=true;
+      const tn=el.firstChild;
+      if(!tn||tn.nodeType!==3) return;
+      const target=parseFloat(tn.nodeValue);
+      if(!isFinite(target)) return;
+      if(reduce) return;
+      const o={v:0}; tn.nodeValue='0';
+      g.to(o,{v:target,duration:1.5,ease:'power2.out',
+        scrollTrigger:{trigger:el,start:'top 90%',once:true},
+        onUpdate:()=>{ tn.nodeValue=String(Math.round(o.v)); },
+        onComplete:()=>{ tn.nodeValue=String(target); }});
+    });
+    // slow parallax on the team masthead
+    document.querySelectorAll('[data-parallax]').forEach(el=>{
+      if(el._lmPx) return; el._lmPx=true;
+      if(reduce) return;
+      g.fromTo(el,{y:-24},{y:24,ease:'none',
+        scrollTrigger:{trigger:el,start:'top bottom',end:'bottom top',scrub:.6}});
+    });
+    return true;
+  }
+  _revealScan=()=>{
+    if(typeof document==='undefined') return;
+    if(this._gsapScan()) return;
+    if(!this._revObs){
+      this._revObs=new IntersectionObserver((es)=>{
+        es.forEach(e=>{
+          if(!e.isIntersecting) return;
+          const el=e.target; this._revObs.unobserve(el);
+          const d=Math.min((parseFloat(el.getAttribute('data-reveal'))||0)*.09,.45);
+          el.style.transitionDelay=d+'s';
+          requestAnimationFrame(()=>{ el.style.opacity='1'; el.style.transform='none'; });
+          setTimeout(()=>{ el.style.transition=el._lmT||''; el.style.transitionDelay=''; el.style.transform=''; el.style.opacity=''; },950+d*1000);
+        });
+      },{threshold:.12});
+    }
+    document.querySelectorAll('[data-reveal]').forEach(el=>{
+      if(el._lmRv) return; el._lmRv=true;
+      el._lmT=el.style.transition;
+      el.style.opacity='0'; el.style.transform='translateY(30px) scale(.97)';
+      el.style.transition='opacity .75s cubic-bezier(.22,1,.36,1),transform .75s cubic-bezier(.22,1,.36,1)';
+      this._revObs.observe(el);
+    });
+  };
+  _galleryVideoRef=(el)=>{
+    if(!el||el._lmWired) return; el._lmWired=true;
+    const tryPlay=()=>{ el.muted=true; el.defaultMuted=true; el.volume=0; const p=el.play(); if(p&&p.catch) p.catch(()=>{}); };
+    el.addEventListener('volumechange',()=>{ if(!el.muted||el.volume>0){ el.muted=true; el.volume=0; } });
+    el.addEventListener('loadeddata',tryPlay);
+    el.addEventListener('canplay',tryPlay);
+    new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting&&el.paused) tryPlay(); }); },{rootMargin:'200px'}).observe(el);
+    tryPlay();
+  };
+  _heroBarRef=(el)=>{ this._bar=el; };
+  _heroScrimRef=(el)=>{ this._scrim=el; };
+  _heroPatchRef=(el)=>{ this._patch=el; };
+  _heroScrimBottomRef=(el)=>{ this._scrimBottom=el; };
+  _heroPhotoRef=(el)=>{ this._photo=el; };
+  _heroTintRef=(el)=>{ this._tint=el; };
+  _capRef(i){ return (el)=>{ this._caps[i]=el; }; }
+  _headerRef=(el)=>{ this._header=el; this._applyNav(); };
+  _brandRef=(el)=>{ this._brand=el; this._applyNav(); };
+  _flyRef=(el)=>{ this._flyEl=el; };
+  _applyNav(){
+    if(!this._header) return;
+    const scr=this.state.screen||this.props.startScreen||'Home';
+    const shown=this.state.navRevealed||scr!=='Home'||this.props.videoHero===false;
+    this._header.style.transform=shown?'translateY(0)':'translateY(-100%)';
+    if(this._brand){
+      const flying=this.state.logoStage===1||this.state.logoStage===15||this.state.logoStage===2;
+      this._brand.style.opacity=flying?'0':'1';
+    }
+  }
+  _lockScroll(){
+    if(this._locked) return; this._locked=true; this._pin=true; this._lockY=window.scrollY;
+    this._blockEv=(e)=>{ e.preventDefault(); };
+    this._blockKey=(e)=>{ if(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].indexOf(e.key)!==-1) e.preventDefault(); };
+    window.addEventListener('wheel',this._blockEv,{passive:false});
+    window.addEventListener('touchmove',this._blockEv,{passive:false});
+    window.addEventListener('keydown',this._blockKey,{passive:false});
+  }
+  _unlockScroll(){
+    if(!this._locked) return; this._locked=false; this._pin=false;
+    window.removeEventListener('wheel',this._blockEv,{passive:false});
+    window.removeEventListener('touchmove',this._blockEv,{passive:false});
+    window.removeEventListener('keydown',this._blockKey,{passive:false});
+  }
+  _startLogoSeq(){
+    if(this._logoSeq||this.state.navRevealed) return; this._logoSeq=true;
+    this._lockScroll(); // no scrolling in either direction while the logo plays
+    this.setState({logoStage:1});
+    setTimeout(()=>{ this.setState({logoExt:true}); },1600);
+    setTimeout(()=>{
+      // hand the user off to the next section while the logo flies to the header
+      this._pin=false; // stop pinning so the auto-advance can scroll (input stays blocked)
+      this._heroFree=true; // release the first-visit scroll lock
+      const tr=this._track;
+      if(tr&&tr.isConnected){
+        const r=tr.getBoundingClientRect();
+        if(r.bottom>window.innerHeight*0.5){
+          try{ window.scrollTo({top:window.scrollY+r.bottom,behavior:'smooth'}); }catch(e){ window.scrollTo(0,window.scrollY+r.bottom); }
+        }
+      }
+      let dx=0,dy=-window.innerHeight/2+36;
+      if(this._brand){
+        const r=this._brand.getBoundingClientRect();
+        const H=this._header?this._header.getBoundingClientRect().height:72;
+        const hid=!this.state.navRevealed;
+        dx=(r.left+r.width/2)-window.innerWidth/2;
+        dy=(r.top+r.height/2+(hid?H:0))-window.innerHeight/2;
+      }
+      const fly={dx,dy};
+      // Pre-fly frame: same position, transition armed — then tween to the header on the next frame
+      this.setState({logoStage:15},()=>{
+        this._applyNav();
+        requestAnimationFrame(()=>requestAnimationFrame(()=>{
+          this.setState({logoStage:2,flyT:fly},()=>{
+            this._applyNav();
+            if(this._flyEl){
+              this._flyEl.addEventListener('transitionend',(e)=>{
+                if(e.propertyName==='transform') this._landLogo();
+              });
+            }
+          });
+        }));
+      });
+    },2700);
+    setTimeout(()=>{ this._landLogo(); },5200); // fallback if transitionend never fires
+  }
+  _landLogo(){
+    if(this._landed) return; this._landed=true;
+    // hold the flown logo in place; only slide the header in once the hero has
+    // actually left the viewport (we've arrived at the next section)
+    const reveal=()=>{
+      this._unlockScroll();
+      this.setState({navRevealed:true},()=>{
+        this._applyNav();
+        setTimeout(()=>{ this.setState({logoStage:3},()=>{ this._applyNav(); if(this._brand) this._brand.style.opacity='1'; }); },650);
+      });
+    };
+    const ready=()=>{ const t=this._track; return !t||!t.isConnected||t.getBoundingClientRect().bottom<=90; };
+    if(ready()){ reveal(); return; }
+    const t0=Date.now();
+    const iv=setInterval(()=>{ if(ready()||Date.now()-t0>4500){ clearInterval(iv); reveal(); } },80);
+  }
+  _updateHero=()=>{ this._heroUpdate(); };
+  // scroll-world scrub-engine seek step: lerp cur→target each frame, never queue a
+  // seek while the decoder is still resolving the last one (coalescing), and skip
+  // sub-eps deltas so we don't spam the decoder.
+  _seekStep(){
+    const v=this._video;
+    if(!v||this._target==null||v.readyState<1||!Number.isFinite(v.duration)||v.duration<=0) return;
+    if(v.seeking) return;
+    if(!v.paused) return; // native auto-playback owns the frame clock
+    if(this._cur==null) this._cur=this._target;
+    if(Math.abs(this._cur-this._target)<0.0004){ this._cur=this._target; }
+    else this._cur+=(this._target-this._cur)*0.18;
+    const t=Math.min(0.999,Math.max(0,this._cur))*(v.duration-0.05);
+    if(Math.abs(v.currentTime-t)>0.008){ try{ v.currentTime=t; }catch(e){} }
+  }
+  _haltAuto(){ this._auto=false; this._autoY=null; const v=this._video;
+    if(this._autoV&&v){ v.pause(); this._autoV=false; if(Number.isFinite(v.duration)&&v.duration>0) this._cur=v.currentTime/(v.duration-0.05); } }
+  _startHeroLoop(){
+    if(this._rafId) return;
+    const loop=()=>{
+      this._rafId=requestAnimationFrame(loop);
+      let y=window.scrollY;
+      if(this._pin&&Math.abs(y-this._lockY)>0.5){ window.scrollTo(0,this._lockY); y=this._lockY; }
+      // fling cap: while the hero scrub is pinned, limit downward scroll speed so a
+      // full-speed fling can't blast through the build (and past the logo hand-off)
+      else if(!this._heroFree&&this._lastY!=null&&this._track&&this._track.isConnected){
+        const r=this._track.getBoundingClientRect();
+        if(r.top<=0&&r.bottom>window.innerHeight){
+          const cap=Math.max(36,window.innerHeight*0.07);
+          if(y-this._lastY>cap){ y=this._lastY+cap; window.scrollTo(0,y); }
+        }
+      }
+      // auto-play: play the video natively (smooth decoded frames) and let the
+      // scroll position follow the video; px/s advance covers the photo/logo phase
+      if(this._auto&&!this._pin&&!this._logoSeq&&this._track&&this._track.isConnected&&performance.now()>(this._autoAt||0)){
+        const r=this._track.getBoundingClientRect();
+        if(r.top<=0&&r.bottom>window.innerHeight+1){
+          // a big jump means the user grabbed the scrollbar — hand over control
+          if(this._autoY!=null&&Math.abs(this._autoY-y)>40){ this._haltAuto(); }
+          else{
+            const range=r.height-window.innerHeight, top=y+r.top;
+            const v=this._video, dur=(v&&v.readyState>=1&&Number.isFinite(v.duration)&&v.duration>0)?v.duration-0.05:0;
+            let ny;
+            if(v&&dur===0){ ny=y; /* video still loading — hold the tour, don't scroll past it */ }
+            else if(dur>0&&v.currentTime<dur-0.02){
+              // how much is buffered ahead of the playhead (Infinity once the blob owns src)
+              let ahead=this._heroBlobReady?Infinity:0;
+              if(ahead===0){ try{ const b=v.buffered; for(let i=0;i<b.length;i++){ if(v.currentTime>=b.start(i)-0.1&&v.currentTime<=b.end(i)+0.01) ahead=Math.max(ahead,b.end(i)-v.currentTime); } }catch(e){} }
+              const canRun=this._heroBlobReady||v.readyState>=4||ahead>1.5||ahead>=dur-v.currentTime-0.05;
+              if(!this._autoV){
+                if(canRun){
+                  v.muted=true;
+                  const p0=Math.min(1,Math.max(0,(y-top)/range));
+                  try{ v.currentTime=this._mapScrub(Math.min(1,p0/0.75))*dur; }catch(e){}
+                  const secs=(0.75*range)/(window.innerHeight*0.3);
+                  v.playbackRate=Math.max(0.25,Math.min(4,v.duration/Math.max(1,secs)));
+                  const pp=v.play(); if(pp&&pp.catch) pp.catch(()=>{});
+                  this._autoV=true; this._vtLast=-1; this._vtAt=performance.now();
+                }
+                ny=y; // hold until the video is safely playable
+              }else if(v.paused){
+                // re-buffering mid-tour: hold, resume once enough is buffered ahead
+                if(canRun){ const pp=v.play(); if(pp&&pp.catch) pp.catch(()=>{}); this._vtAt=performance.now(); }
+                ny=y;
+              }else{
+                // starvation guard: playing but no frame progress at the buffer edge → pause to buffer
+                const now=performance.now();
+                if(v.currentTime===this._vtLast){ if(now-this._vtAt>1000&&ahead<0.3) v.pause(); }
+                else{ this._vtLast=v.currentTime; this._vtAt=now; }
+                const m=v.currentTime/dur, c=.72, k=.86; // inverse of _mapScrub
+                const pv=m<k?(m/k)*c:c+((m-k)/(1-k))*(1-c);
+                ny=top+pv*0.75*range;
+                this._cur=m; this._target=m;
+              }
+            }else{
+              if(this._autoV&&v){ v.pause(); this._autoV=false; }
+              const dt=Math.min(50,performance.now()-(this._lastTick||performance.now()));
+              ny=(this._autoY==null?y:this._autoY)+window.innerHeight*0.3*dt/1000;
+            }
+            this._autoY=ny; y=ny;
+            // bypass html{scroll-behavior:smooth} — per-frame smooth scrolls cancel each other
+            const de=document.documentElement, sb=de.style.scrollBehavior;
+            de.style.scrollBehavior='auto';
+            window.scrollTo(0,Math.round(y));
+            de.style.scrollBehavior=sb;
+          }
+        }
+      }else if(this._autoY!=null){ const a=this._auto; this._haltAuto(); this._auto=a; }else this._autoY=null;
+      if(y!==this._lastY){ this._lastY=y; this._heroUpdate(); }
+      this._lastTick=performance.now();
+      this._seekStep();
+    };
+    this._lastTick=performance.now();
+    this._rafId=requestAnimationFrame(loop);
+  }
+  _stopHeroLoop(){ if(this._rafId){ cancelAnimationFrame(this._rafId); this._rafId=null; } }
+  _heroUpdate(){
+    const track=this._track;
+    if(!track||!track.isConnected) return;
+    const rect=track.getBoundingClientRect();
+    const range=rect.height-window.innerHeight;
+    const p=range>0?Math.min(1,Math.max(0,-rect.top/range)):0;
+    // first-visit scroll lock: don't let the user overshoot past the hero until
+    // the ending image + logo hand-off have played (auto-advance releases it)
+    if(!this._heroFree&&range>0&&rect.top<-range){
+      window.scrollTo(0,window.scrollY+rect.top+range);
+    }
+    // phase windows across the track: video scrub 0..0.75, photo crossfade .75...,
+    // ending photo holds until .965, then the logo hand-off sequence
+    const pv=Math.min(1,p/0.75);
+    const mp=this._mapScrub(pv);
+    this._target=mp; // seek happens in the rAF loop (_seekStep), scrub-engine style
+    // fallback: if rAF is throttled or unavailable, seek straight from the scroll handler
+    if(this._lastTick!=null&&performance.now()-this._lastTick>200){
+      const vv=this._video;
+      if(vv&&vv.readyState>=1&&Number.isFinite(vv.duration)&&vv.duration>0&&!vv.seeking){
+        this._cur=mp;
+        try{ vv.currentTime=mp*(vv.duration-0.05); }catch(e){}
+      }
+    }
+    if(this._campus&&this._campus.setProgress) this._campus.setProgress(mp); // real-time 3D build
+    const v=this._video;
+    if(this._bar) this._bar.style.transform='scaleX('+p+')';
+    // Fade the navy scrims out while scrubbing so the growth is fully visible; restore at rest
+    const k0=Math.min(1,p/0.15);
+    if(this._scrim) this._scrim.style.opacity=1-k0;
+    if(this._scrimBottom) this._scrimBottom.style.opacity=1-0.25*k0;
+    // Cover the morphing background building across the 02→03 phase transition
+    // the artifact mask belonged to the old scrub encode; the campus-scrub cut is clean
+    if(this._patch){ this._patch.style.opacity=0; }
+    // Lift the navy grade back to normal brightness while scrubbing
+    // direct cut to the ending photo (fast fade, no blur dissolve)
+    const kPhoto=Math.min(1,Math.max(0,(p-0.75)/0.03));
+    const ke=kPhoto*kPhoto*(3-2*kPhoto);
+    // navy tint + desaturated grade at rest so the brown site poster sits with the blue scrims; lifts as you scrub
+    if(this._tint) this._tint.style.opacity=1-k0;
+    if(v) v.style.filter='brightness('+(0.9+0.18*k0)+') contrast('+(1+0.04*k0)+') saturate('+(0.62+0.46*k0)+')';
+    if(this._copy){
+      const k=Math.min(1,p/0.08), o=1-k;
+      this._copy.style.opacity=o;
+      this._copy.style.transform='translateY('+(-46*k)+'px)';
+      this._copy.style.pointerEvents=o<0.05?'none':'auto';
+    }
+    if(this._photo){
+      this._photo.style.opacity=ke;
+      this._photo.style.transform='none';
+      this._photo.style.filter='none';
+    }
+    if(p>=0.965) this._startLogoSeq();
+    const idx=mp<0.2?0:(mp<0.42?1:(mp<0.64?2:(mp<0.86?3:4)));
+    // staggered handoff: outgoing snaps out fast, incoming fades in after it — the
+    // captions share one slot, so they must never both be readable at once
+    if(this._capIdx!==idx){ this._capIdx=idx;
+      this._caps.forEach((c,i)=>{ if(c) c.style.transition=i===idx?'opacity .3s ease .14s':'opacity .12s ease'; });
+    }
+    this._caps.forEach((c,i)=>{ if(c) c.style.opacity=(p>0.02&&i===idx)?'1':'0'; });
+  }
+  componentDidMount(){
+    // deep link from viewer pages: index.html#Projects / #About / #Contact
+    const h=decodeURIComponent((location.hash||'').slice(1));
+    if(['About','Projects','Contact'].indexOf(h)!==-1){ this.go(h,h==='Contact'?'careers':undefined); try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){} }
+    else this._setSeo(this.state.screen||this.props.startScreen||'Home');
+    window.addEventListener('resize',this._updateHero);
+    // the rAF loop is the smooth path; this listener exists so the >200ms fallback
+    // in _heroUpdate can still fire when rAF is throttled or unavailable
+    window.addEventListener('scroll',this._updateHero,{passive:true});
+    // only real scroll input hands control to the user — clicks/taps don't end the tour
+    this._auto=true; this._autoAt=performance.now()+2000;
+    this._stopAuto=(e)=>{ if(e.type==='keydown'&&['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].indexOf(e.key)===-1) return; this._haltAuto(); };
+    ['wheel','touchmove','keydown'].forEach(t=>window.addEventListener(t,this._stopAuto,{passive:true}));
+    this._startHeroLoop();
+    this._heroUpdate();
+    this._revealScan();
+    this._applySrcs();
+  }
+  _rackHover=(e)=>{
+    const box=e.currentTarget;
+    if(box._rackBusy||box._rackDone) return;
+    const img=box.querySelector('img'); if(!img) return;
+    box._rackBusy=true;
+    const v=document.createElement('video');
+    v.src='uploads/generated-views/rackrow-pushpull-seedance.mp4';
+    v.muted=true; v.playsInline=true; v.preload='auto';
+    v.style.cssText='width:100%;height:100%;object-fit:cover;display:block';
+    const bail=()=>{ v.remove(); img.style.display=''; box._rackBusy=false; };
+    v.onerror=bail;
+    v.onplaying=()=>{ img.style.display='none'; };
+    v.onended=()=>{
+      const end=new Image();
+      end.onload=()=>{ img.src='uploads/generated-views/rackrow-frame-end.png'; img.setAttribute('data-src','uploads/generated-views/rackrow-frame-end.png'); box._rackDone=true; bail(); };
+      end.onerror=bail;
+      end.src='uploads/generated-views/rackrow-frame-end.png';
+    };
+    box.appendChild(v);
+    v.play().catch(bail);
+  };
+  _applySrcs=()=>{
+    if(typeof document==='undefined') return;
+    // Self-heal: if a rack hover video was removed by a re-render, unhide the still image
+    document.querySelectorAll('img[data-src]').forEach(el=>{ if(el.style.display==='none'&&!el.parentElement.querySelector('video')) el.style.display=''; });
+    document.querySelectorAll('img[data-src],video[data-src]').forEach(el=>{
+      const s=el.getAttribute('data-src');
+      if(!s||s.indexOf('{{')!==-1) return;
+      if(el.getAttribute('src')!==s){
+        el.src=s;
+        if(el.tagName==='VIDEO'){ el.muted=true; if(el.play) el.play().catch(()=>{}); }
+      }
+    });
+  }
+  componentWillUnmount(){
+    this._swapStopAuto();
+    this._unlockScroll();
+    if(this._stopAuto) ['wheel','touchmove','keydown'].forEach(t=>window.removeEventListener(t,this._stopAuto,{passive:true}));
+    window.removeEventListener('resize',this._updateHero);
+    window.removeEventListener('scroll',this._updateHero);
+    this._stopHeroLoop();
+  }
+  _setSeo(screen){
+    if(typeof document==='undefined') return;
+    const contact=screen==='Contact';
+    document.title=contact?CONTACT_TITLE:HOME_TITLE;
+    const meta=document.querySelector('meta[name="description"]');
+    if(meta) meta.setAttribute('content',contact?CONTACT_DESCRIPTION:HOME_DESCRIPTION);
+  }
+  go(n,contactTab){
+    this._logoSeq=true; this._heroFree=true;
+    const next={screen:n,navRevealed:true,logoStage:3,sent:false,err:false,errorMessage:''};
+    if(n==='Contact') next.contactTab=contactTab||'careers';
+    this.setState(next); this._setSeo(n);
+    if(typeof window!=='undefined'&&window.scrollTo){try{window.scrollTo({top:0});}catch(e){window.scrollTo(0,0);}}
+  }
+  switchContactTab(tab){
+    if(this.state.submitting) return;
+    this.setState({contactTab:tab,sent:false,err:false,errorMessage:''});
+    this._setSeo('Contact');
+  }
+  setField(k){ return (e)=> this.setState(s=>({form:{...s.form,[k]:e.target.value}})); }
+  setEnquiryField(k){ return (e)=> this.setState(s=>({enquiry:{...s.enquiry,[k]:e.target.value}})); }
+  _setCv=(e)=>{
+    const file=e.target.files&&e.target.files[0];
+    this._cvFile=file||null;
+    this.setState(s=>({form:{...s.form,cv:file?file.name:''}}));
+  };
+
+  /* ---- CardSwap deck (ported from React Bits): stacked 3D slots, front card
+     drops below and returns to the back; auto-cycle + arrows + swipe ---- */
+  _swapEls=[];
+  _swapWrapRef=(el)=>{ this._swapWrap=el; if(el) this._swapInitSoon(); };
+  _swapTitleRef=(el)=>{ this._swapTitleEl=el; };
+  // photo <-> model comparison: on the front card the divider follows the pointer,
+  // then eases back to the resting split on leave (desktop only)
+  _swapWireDivider(el,i){
+    if(el._lmDiv) return; el._lmDiv=true;
+    el.addEventListener('pointermove',(e)=>{
+      if(!this._swapOrder||this._swapOrder[0]!==i||this._swapBusy) return;
+      if(matchMedia('(max-width:760px)').matches) return;
+      const r=el.getBoundingClientRect();
+      const pct=Math.min(82,Math.max(18,(e.clientX-r.left)/r.width*100));
+      const p=el.firstElementChild; if(!p) return;
+      p.style.transition='none'; p.style.flex='0 0 '+pct+'%';
+    });
+    el.addEventListener('pointerleave',()=>{
+      const p=el.firstElementChild; if(!p) return;
+      p.style.transition='flex-basis .45s ease'; p.style.flex='0 0 53.5%';
+      setTimeout(()=>{ p.style.transition=''; },500);
+    });
+  }
+  _swapFadeTitle(){ const g=window.gsap; if(g&&this._swapTitleEl&&!this._reduce) g.fromTo(this._swapTitleEl,{opacity:0,y:10},{opacity:1,y:0,duration:.5,ease:'power2.out'}); }
+  _swapCardRefs(){ // stable ref fns so re-renders don't churn the refs
+    if(!this._swapRefFns) this._swapRefFns=SWAP.map((_,i)=>(el)=>{ this._swapEls[i]=el; if(el) this._swapInitSoon(); });
+    return this._swapRefFns;
+  }
+  _swapInitSoon(){ if(this._swapRaf) return; this._swapRaf=requestAnimationFrame(()=>{ this._swapRaf=null; this._swapInit(); }); }
+  // cards hang from a top anchor and the tail fans DOWNWARD into the section's
+  // empty space — the deck physically cannot reach the heading at any viewport.
+  // Only three back cards fan out; deeper cards park at the third slot.
+  _swapSlot(i,total){ const k=Math.min(i,3),dx=26,dy=18; return {x:k*dx,y:k*dy,z:-i*40,zIndex:total-i}; }
+  // depth-of-field: back cards dim and desaturate slightly so the front card pops
+  _swapFilter(i){ const k=Math.min(i,3); return 'brightness('+(1-0.09*k).toFixed(2)+') saturate('+(1-0.06*k).toFixed(2)+')'; }
+  _swapPlace(el,slot,i){ window.gsap.set(el,{x:slot.x,y:slot.y,z:slot.z,xPercent:-50,yPercent:0,skewY:0,transformOrigin:'center top',zIndex:slot.zIndex,filter:this._swapFilter(i||0),force3D:true}); }
+  _swapInit(){
+    const g=window.gsap,wrap=this._swapWrap,els=this._swapEls;
+    if(!g||!wrap||!wrap.isConnected) return;
+    if(els.filter(e=>e&&e.isConnected).length!==SWAP.length) return;
+    if(this._swapReady&&els.every(e=>e._lmPlaced)) return;
+    this._swapReady=true;this._swapBusy=false;
+    this._swapOrder=Array.from({length:SWAP.length},(_,i)=>i);
+    els.forEach((el,i)=>{ el._lmPlaced=true; this._swapPlace(el,this._swapSlot(i,els.length),i); this._swapWireDivider(el,i); });
+    if(this.state.swapFront!==0) this.setState({swapFront:0});
+    this._swapStartAuto();
+    if(!wrap._lmWired){
+      wrap._lmWired=true;
+      wrap.addEventListener('mouseenter',()=>this._swapStopAuto());
+      wrap.addEventListener('mouseleave',()=>this._swapStartAuto());
+      wrap.addEventListener('pointerdown',(e)=>{ this._swapPx=e.clientX; this._swapMoved=false; });
+      wrap.addEventListener('pointerup',(e)=>{
+        const dx=e.clientX-(this._swapPx??e.clientX);
+        if(Math.abs(dx)>40){ this._swapMoved=true; if(dx<0)this._swapNext({type:'swipe'}); else this._swapPrev({type:'swipe'}); }
+      });
+    }
+  }
+  _swapAlive(){
+    const els=this._swapEls;
+    if(!this._swapOrder||!els.every(e=>e&&e.isConnected)){ this._swapStopAuto(); this._swapReady=false; return false; }
+    return true;
+  }
+  _swapStartAuto(){ if(this._reduce) return; this._swapStopAuto(); this._swapIv=setInterval(()=>this._swapNext(),5000); }
+  _swapStopAuto(){ if(this._swapIv){ clearInterval(this._swapIv); this._swapIv=null; } }
+  // manual input never gets dropped: kill any running timeline, settle the deck
+  // into its resting slots, then run the requested swap
+  _swapSettle(){
+    const g=window.gsap;
+    if(this._swapTl){ this._swapTl.kill(); this._swapTl=null; }
+    this._swapOrder.forEach((idx,i)=>{ const el=this._swapEls[idx]; if(el&&el.isConnected) this._swapPlace(el,this._swapSlot(i,this._swapEls.length),i); });
+    this._swapBusy=false;
+  }
+  _swapGate(manual){
+    if(!window.gsap||!this._swapAlive()||this._swapOrder.length<2) return false;
+    if(this._swapBusy){ if(!manual) return false; this._swapSettle(); }
+    if(manual) this._swapStartAuto(); // push the auto timer back after user input
+    return true;
+  }
+  _swapNext=(e)=>{
+    if(!this._swapGate(!!(e&&e.type))) return;
+    const g=window.gsap, els=this._swapEls; this._swapBusy=true;
+    const [front,...rest]=this._swapOrder;
+    const ef=els[front];
+    const dur=this._reduce?0.01:1.15, ease='elastic.out(0.6,0.9)';
+    const tl=this._swapTl=g.timeline({onComplete:()=>{ this._swapBusy=false; this._swapTl=null; }});
+    tl.to(ef,{y:'+=460',duration:dur,ease});
+    tl.addLabel('promote',`-=${dur*0.72}`);
+    rest.forEach((idx,i)=>{ const slot=this._swapSlot(i,els.length);
+      tl.set(els[idx],{zIndex:slot.zIndex},'promote');
+      tl.to(els[idx],{x:slot.x,y:slot.y,z:slot.z,filter:this._swapFilter(i),duration:dur,ease},`promote+=${i*0.12}`); });
+    const back=this._swapSlot(els.length-1,els.length);
+    tl.addLabel('return',`promote+=${dur*0.1}`);
+    tl.call(()=>{ g.set(ef,{zIndex:back.zIndex}); },undefined,'return');
+    tl.to(ef,{x:back.x,y:back.y,z:back.z,filter:this._swapFilter(els.length-1),duration:dur,ease},'return');
+    this._swapOrder=[...rest,front];
+    this.setState({swapFront:this._swapOrder[0]});
+    this._swapFadeTitle();
+  };
+  _swapPrev=(e)=>{
+    if(!this._swapGate(!!(e&&e.type))) return;
+    const g=window.gsap, els=this._swapEls; this._swapBusy=true;
+    const order=this._swapOrder, last=order[order.length-1], others=order.slice(0,-1);
+    const el=els[last], f=this._swapSlot(0,els.length);
+    const dur=this._reduce?0.01:1.15, ease='elastic.out(0.6,0.9)';
+    const tl=this._swapTl=g.timeline({onComplete:()=>{ this._swapBusy=false; this._swapTl=null; }});
+    tl.set(el,{zIndex:f.zIndex+1,x:f.x,y:f.y+460,z:f.z});
+    tl.to(el,{y:f.y,filter:this._swapFilter(0),duration:dur,ease},0);
+    others.forEach((idx,i)=>{ const s=this._swapSlot(i+1,els.length);
+      tl.set(els[idx],{zIndex:s.zIndex},0);
+      tl.to(els[idx],{x:s.x,y:s.y,z:s.z,filter:this._swapFilter(i+1),duration:dur,ease},i*0.06); });
+    this._swapOrder=[last,...others];
+    this.setState({swapFront:this._swapOrder[0]});
+    this._swapFadeTitle();
+  };
+  submitEnquiry(e){ return this._submitContact(e,'enquiry'); }
+  submitCareers(e){ return this._submitContact(e,'careers'); }
+  async _submitContact(e,formType){
+    e.preventDefault();
+    if(this.state.submitting) return;
+    const formElement=e.currentTarget;
+    const f=formType==='enquiry'?this.state.enquiry:this.state.form;
+    const invalid=formType==='enquiry'
+      ?(!f.name||!f.email||!f.subject||!f.message)
+      :(!f.name||!f.email||!f.contact||f.jobTitle==='~ Please select one. ~');
+    if(invalid){
+      this.setState({err:true,sent:false,errorMessage:'Please complete all mandatory fields.'});
+      return;
+    }
+    const body=new FormData();
+    body.append('formType',formType);
+    const fields=formType==='enquiry'
+      ?['name','email','contact','subject','message','website']
+      :['salutation','name','contact','email','jobTitle','website'];
+    fields.forEach(k=>body.append(k,f[k]||''));
+    if(formType==='careers'&&this._cvFile) body.append('cv',this._cvFile,this._cvFile.name);
+    this.setState({err:false,sent:false,submitting:true,errorMessage:''});
+    try{
+      const response=await fetch('/api/contact',{method:'POST',body});
+      const data=await response.json().catch(()=>({ok:false,error:'Invalid response from the server.'}));
+      if(!response.ok||!data.ok) throw new Error(data.error||(formType==='enquiry'?'Unable to send your enquiry.':'Unable to send your application.'));
+      if(formType==='careers') this._cvFile=null;
+      if(formElement&&formElement.reset) formElement.reset();
+      const reset={sent:true,err:false,submitting:false,errorMessage:''};
+      if(formType==='enquiry') reset.enquiry={name:'',email:'',contact:'',subject:'',message:'',website:''};
+      else reset.form={salutation:'~ Please select one. ~',name:'',contact:'',email:'',jobTitle:'~ Please select one. ~',cv:'',website:''};
+      this.setState(reset);
+    }catch(error){
+      this.setState({err:true,sent:false,submitting:false,errorMessage:error&&error.message?error.message:'Network error. Please try again.'});
+    }
+  }
+
+  renderVals(){
+    this._startHeroLoop(); // self-heal: restarts the scrub loop after hot reloads
+    if(typeof window!=='undefined') requestAnimationFrame(()=>{ this._revealScan(); this._applySrcs(); });
+    const scr = this.state.screen || this.props.startScreen || 'Home';
+    const isEnquiryTab=this.state.contactTab==='enquiry';
+    const isCareersTab=!isEnquiryTab;
+    const tabBase={appearance:'none',border:'0',borderRadius:'999px',padding:'10px 20px',fontFamily:'var(--font-display)',fontSize:'13px',fontWeight:700,letterSpacing:'.05em',textTransform:'uppercase',cursor:'pointer',transition:'background .2s,color .2s,box-shadow .2s'};
+    const tabActive={...tabBase,background:'var(--color-brand)',color:'#fff',boxShadow:'var(--shadow-xs)'};
+    const tabIdle={...tabBase,background:'transparent',color:'var(--text-body)'};
+    this._applyNav();
+    if(typeof document!=='undefined') document.documentElement.style.scrollSnapType = (scr==='Home'||scr==='About') ? 'y mandatory' : '';
+    const _ls=this.state.logoStage, _f=this.state.flyT||{dx:0,dy:0};
+    const _logoBase={fontFamily:'var(--font-display)',fontWeight:800,fontSize:'64px',letterSpacing:'.02em',willChange:'transform',color:'var(--color-brand)',display:'flex',alignItems:'center',whiteSpace:'pre',gap:'16px'};
+    const _flyTr='transform 1.1s cubic-bezier(.65,.05,.25,1)';
+    const logoFlyStyle=_ls===2
+      ?{..._logoBase,transform:'translate('+_f.dx+'px,'+_f.dy+'px) scale(0.406)',transition:_flyTr}
+      :{..._logoBase,transform:'translate(0px,0px) scale(1)',transition:_ls===15?_flyTr:'none'};
+    const _ext=!!this.state.logoExt;
+    const logoMarkStyle={height:'64px',width:'61px',display:'block',overflow:'visible'};
+    const logoSheetStyle=_ls===2
+      ?{position:'absolute',inset:0,background:'#fff',opacity:0,transition:'opacity .8s ease .15s'}
+      :{position:'absolute',inset:0,background:'#fff',opacity:1,animation:_ls===1?'lmSheetIn .5s ease both':'none'};
+    const logoRestA={display:'inline-block',overflow:'hidden',whiteSpace:'pre',maxWidth:_ext?'620px':'0px',opacity:_ext?1:0,transition:'max-width .8s cubic-bezier(.65,.05,.25,1),opacity .45s ease .1s'};
+    const navItems = NAV.map(n=>({
+      label:n, onClick:()=>this.go(n,n==='Contact'?'careers':undefined),
+      style:{cursor:'pointer',padding:'8px 14px',fontSize:'14px',fontWeight:600,fontFamily:'var(--font-display)',
+        textTransform:'uppercase',letterSpacing:'.03em',textDecoration:'none',
+        color: scr===n?'var(--color-brand)':'var(--text-body)',
+        borderBottom: scr===n?'2px solid var(--color-accent)':'2px solid transparent'}
+    }));
+    const services = SERVICES.map(s=>({...s,iconEl:this.icon(s.icon,24)}));
+    const values = VALUES.map(v=>({...v,iconEl:this.icon(v.icon,26)}));
+    const openViewer=()=>{ window.location.href='bim-viewer.dc.html'; };
+    const openHall=()=>{ window.location.href='data-hall-viewer.dc.html'; };
+    const openMsb=()=>{ window.location.href='msb-viewer.dc.html'; };
+    const openAhu=()=>{ window.location.href='ahu-room-viewer.dc.html'; };
+    const openRoof=()=>{ window.location.href='rooftop-plant-viewer.dc.html'; };
+    const openCooling=()=>{ window.location.href='cooling-room-viewer.dc.html'; };
+    const openEcc=()=>{ window.location.href='ecc-room-viewer.dc.html'; };
+    const openCrah=()=>{ window.location.href='crah-room-viewer.dc.html'; };
+    const openElv=()=>{ window.location.href='elv-room-viewer.dc.html'; };
+    const openGen=()=>{ window.location.href='generator-room-viewer.dc.html'; };
+    const openMakeup=()=>{ window.location.href='makeup-water-viewer.dc.html'; };
+    const openPreaction=()=>{ window.location.href='pre-action-valve-room-viewer.dc.html'; };
+    const openBa=()=>{ window.location.href='ba-control-room-viewer.dc.html'; };
+    const VIEWERS={'Chiller Plant Room':openViewer,'Data Hall':openHall,'Main Switchboard (MSB)':openMsb,'Air Handling Unit Room':openAhu,'Rooftop Diesel Generators':openRoof,'Level 3 Chiller Room':openCooling,'ECC Monitoring Room':openEcc,'CRAH Room':openCrah,'ELV Room':openElv,'Generator Plant':openGen,'AC Makeup-Water Pump Room':openMakeup,'Pre-Action Sprinkler Valve Room':openPreaction,'BA Control Room':openBa};
+    const baseCard={background:'var(--surface-card)',border:'1px solid var(--border-subtle)',borderRadius:'var(--radius-lg)',overflow:'hidden',boxShadow:'var(--shadow-xs)',display:'flex',flexDirection:'column',transition:'box-shadow .25s,transform .25s,border-color .25s'};
+    const projects = PROJECTS.map(p=>{
+      const open=VIEWERS[p.title];
+      return {...p,img:p.abs?p.img:IMG+p.img,onHover:p.rack?this._rackHover:undefined,
+        onOpen:open,
+        cardStyle:open?{...baseCard,cursor:'pointer'}:baseCard};
+    });
+    const featured = projects.slice(0,6).map(p=>({...p,onOpen:p.onOpen||(()=>this.go('Projects'))}));
+    const swapRefs=this._swapCardRefs();
+    const swapFront=SWAP[this.state.swapFront]||SWAP[0];
+    const swapCards=SWAP.map((s,i)=>({...s,img:IMG+s.img,cardRef:swapRefs[i],
+      onOpen:()=>{ if(!this._swapMoved) window.location.href=s.href; }}));
+    const chipBase={fontFamily:'var(--font-mono)',fontSize:'11px',fontWeight:600,letterSpacing:'.08em',textTransform:'uppercase',padding:'8px 16px',borderRadius:'999px',border:'1px solid var(--border-default)',background:'var(--surface-card)',color:'var(--text-body)',cursor:'pointer',appearance:'none',transition:'all .15s'};
+    const filters=FILTERS.map(f=>({label:f,onClick:()=>this.setState({filter:f}),
+      style:this.state.filter===f?{...chipBase,background:'var(--color-brand)',borderColor:'var(--color-brand)',color:'#fff'}:chipBase}));
+    const filteredProjects=projects.map(p=>({...p,viewer3d:!!p.onOpen}))
+      .filter(p=>this.state.filter==='All'||p.tags.indexOf(this.state.filter)!==-1);
+    return {
+      navItems, services, values, featured, filters, filteredProjects,
+      swapCards, swapWrapRef:this._swapWrapRef,
+      swapCat:swapFront.cat, swapTitle:swapFront.title, swapMeta:swapFront.meta,
+      swapCount:('0'+(this.state.swapFront+1)).slice(-2)+' / '+('0'+SWAP.length).slice(-2),
+      swapTitleRef:this._swapTitleRef,
+      swapOpenFront:()=>{ window.location.href=swapFront.href; },
+      swapNext:this._swapNext, swapPrev:this._swapPrev,
+      stats: STATS,
+      certs: CERTS.map(c=>({...c,alt:c.code+' — '+c.title+' certificate'})),
+      strongPoints: [
+        '20+ years of M&E engineering experience',
+        '100+ professionals across every MEP discipline',
+        '50+ data-center projects constructed',
+        'A personnel organization ranked among the industry\'s best'
+      ],
+      checkIcon: this.icon('Check',16),
+      aboutGallery: [
+        {vid:'uploads/chiller-jitter-loop.mp4',cap:'Chilled-water plant room'},
+        {vid:'uploads/hf_20260725_022752_001f8e3c-c22b-48c3-86da-6acf846f63b5.mp4',cap:'UPS & switchgear corridor'},
+        {vid:'uploads/hf_20260725_020706_310da804-c5e8-422a-8e01-c4d1b8bebcde.mp4',cap:'Pipe prefabrication yard'}
+      ],
+      galleryVideoRef: this._galleryVideoRef,
+      salutations: ['~ Please select one. ~','Mr.','Ms.','Mdm.','Dr.'],
+      jobTitles: ['~ Please select one. ~','QS Engineer','Civil Engineer','Mechanical Engineer','Safety Engineer','Electric Engineer','Fire Engineer','Project Engineer','Internship Engineer','QAQC Engineer','ELV Engineer'],
+      isHome: scr==='Home', isAbout: scr==='About', isProjects: scr==='Projects', isContact: scr==='Contact',
+      isStats: this.props.showStats!==false,
+      heroSrc: IMG + (this.props.heroImage || 'datacenter-aerial.jpg'),
+      isVideoHero: this.props.videoHero!==false,
+      isStaticHero: this.props.videoHero===false,
+      isVideoScrub: this.props.videoHero!==false && (this.props.heroMode||'Video scrub')==='Video scrub',
+      is3dHero: this.props.videoHero!==false && (this.props.heroMode||'Video scrub')==='3D build',
+      campusRef: this._campusRef,
+      heroPhases: HERO_PHASES.map((p,i)=>({...p,capRef:this._capRef(i)})),
+      headerRef: this._headerRef, brandRef: this._brandRef,
+      needTopPad: scr!=='Home'&&scr!=='About',
+      showLogoOverlay: _ls===1||_ls===15||_ls===2,
+      logoFlyStyle, logoRestA, logoMarkStyle, logoSheetStyle, flyRef: this._flyRef,
+      heroTrackRef: this._heroTrackRef, heroVideoRef: this._heroVideoRef,
+      heroCopyRef: this._heroCopyRef, heroBarRef: this._heroBarRef,
+      heroScrimRef: this._heroScrimRef, heroScrimBottomRef: this._heroScrimBottomRef, heroPatchRef: this._heroPatchRef,
+      heroPhotoRef: this._heroPhotoRef, heroTintRef: this._heroTintRef,
+      principlesVideoRef: this._principlesVideoRef,
+      chevronIcon: this.icon('ChevronDown',15),
+      goHome:()=>this.go('Home'), goProjects:()=>this.go('Projects'),
+      goContact:()=>this.go('Contact','careers'), goEnquiry:()=>this.go('Contact','enquiry'),
+      arrowIcon: this.icon('Arrow',16),
+      mapIcon: this.icon('MapPin',18), phoneIcon: this.icon('Phone',18), mailIcon: this.icon('Mail',18),
+      isEnquiryTab, isCareersTab,
+      showEnquiry:()=>this.switchContactTab('enquiry'), showCareers:()=>this.switchContactTab('careers'),
+      enquiryTabStyle:isEnquiryTab?tabActive:tabIdle, careersTabStyle:isCareersTab?tabActive:tabIdle,
+      contactEyebrow:isEnquiryTab?'Get In Touch':'Join Our Team',
+      contactHeading:isEnquiryTab?'Submit Your Enquiry':'Build the Data-Center Backbone With Us',
+      contactDescription:isEnquiryTab
+        ?"We welcome project enquiries and feedback. Submit the form below or email info@longmotive.com — we'll reply as soon as possible."
+        :"We're hiring engineers across every MEP discipline. Pick your role, attach your CV and tell us how to reach you — or email us directly at info@longmotive.com.",
+      successTitle:isEnquiryTab?'Enquiry received':'Application received',
+      successMessage:isEnquiryTab?'— thank you, we\'ll get back to you as soon as possible.':'— thank you, our team will be in touch as soon as possible.',
+      enquiry:this.state.enquiry, form: this.state.form, sent: this.state.sent, err: this.state.err,
+      submitting: this.state.submitting, submitLabel: this.state.submitting?'Submitting...':'Submit', errorMessage: this.state.errorMessage,
+      submitEnquiry: this.submitEnquiry.bind(this), submitCareers: this.submitCareers.bind(this),
+      setEnquiryName:this.setEnquiryField('name'), setEnquiryEmail:this.setEnquiryField('email'),
+      setEnquiryContact:this.setEnquiryField('contact'), setEnquirySubject:this.setEnquiryField('subject'),
+      setEnquiryMessage:this.setEnquiryField('message'), setEnquiryWebsite:this.setEnquiryField('website'),
+      setSalutation: this.setField('salutation'), setName: this.setField('name'),
+      setContact: this.setField('contact'), setEmail: this.setField('email'),
+      setJobTitle: this.setField('jobTitle'), setWebsite: this.setField('website'),
+      setCv: this._setCv,
+      cvName: this.state.form.cv || 'No file chosen'
+    };
+  }
+}
+</script>
+</body>
+</html>

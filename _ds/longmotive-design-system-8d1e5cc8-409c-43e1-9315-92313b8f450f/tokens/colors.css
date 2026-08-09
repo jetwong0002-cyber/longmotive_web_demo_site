@@ -1,0 +1,73 @@
+:root{
+  /* ============ BRAND PALETTE ============ */
+  /* Primary — Longmotive blue (from the LM wordmark) */
+  --lm-blue-50:#eef4fb;
+  --lm-blue-100:#d6e4f5;
+  --lm-blue-200:#aecbeb;
+  --lm-blue-300:#7ba9dd;
+  --lm-blue-400:#3f7fc7;
+  --lm-blue-500:#1a63b0;
+  --lm-blue-600:#0f52a0;   /* brand primary */
+  --lm-blue-700:#0c4082;
+  --lm-blue-800:#0a3364;
+  --lm-blue-900:#072448;   /* deep navy */
+
+  /* Accent — Longmotive cyan (from the LM mark) */
+  --lm-cyan-300:#66d0f6;
+  --lm-cyan-400:#33c0f3;
+  --lm-cyan-500:#00b0f0;   /* brand accent */
+  --lm-cyan-600:#0090c8;
+  --lm-cyan-700:#0072a0;
+
+  /* Neutrals — cool industrial slate */
+  --lm-ink:#0d1b2a;
+  --lm-slate-900:#0d1b2a;
+  --lm-slate-800:#1b2a3a;
+  --lm-slate-700:#33465a;
+  --lm-slate-600:#526278;
+  --lm-slate-500:#6f7f94;
+  --lm-slate-400:#97a4b5;
+  --lm-slate-300:#c2cbd6;
+  --lm-slate-200:#dde3ea;
+  --lm-slate-100:#eef1f5;
+  --lm-slate-50:#f6f8fa;
+  --lm-white:#ffffff;
+
+  /* Semantic (drawn from site + field imagery) */
+  --lm-success:#1a9e5c;
+  --lm-success-bg:#e6f5ec;
+  --lm-warning:#f5a623;    /* hi-vis / caution amber */
+  --lm-warning-bg:#fdf1dc;
+  --lm-danger:#d32f2f;     /* safety red */
+  --lm-danger-bg:#fbeaea;
+  --lm-info:#00b0f0;
+  --lm-info-bg:#e2f6fe;
+
+  /* ============ SEMANTIC ALIASES ============ */
+  --color-brand:var(--lm-blue-600);
+  --color-brand-strong:var(--lm-blue-700);
+  --color-brand-deep:var(--lm-blue-900);
+  --color-accent:var(--lm-cyan-500);
+
+  --text-strong:var(--lm-slate-900);
+  --text-body:var(--lm-slate-700);
+  --text-muted:var(--lm-slate-500);
+  --text-inverse:var(--lm-white);
+  --text-brand:var(--lm-blue-600);
+  --text-link:var(--lm-blue-600);
+  --text-link-hover:var(--lm-blue-800);
+
+  --surface-page:var(--lm-white);
+  --surface-subtle:var(--lm-slate-50);
+  --surface-muted:var(--lm-slate-100);
+  --surface-card:var(--lm-white);
+  --surface-inverse:var(--lm-blue-900);
+  --surface-brand:var(--lm-blue-600);
+
+  --border-subtle:var(--lm-slate-200);
+  --border-default:var(--lm-slate-300);
+  --border-strong:var(--lm-slate-400);
+  --border-brand:var(--lm-blue-600);
+
+  --focus-ring:var(--lm-cyan-500);
+}
