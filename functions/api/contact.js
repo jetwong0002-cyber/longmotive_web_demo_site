@@ -1,18 +1,3 @@
-/**
- * POST /api/contact
- * Cloudflare Pages Function for business enquiries and careers applications.
- *
- * Required Cloudflare Pages environment variables:
- *   RESEND_API_KEY
- *   CONTACT_TO
- *   CONTACT_FROM
- *
- * Optional R2 bucket binding (Settings -> Functions -> R2 bucket bindings):
- *   CV_BUCKET  -> bucket "longmotive-cv"
- *   When bound, career CVs are archived to R2. If the binding is missing or
- *   storage fails, the email is still sent (archiving never blocks submission).
- */
-
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = {
   'application/pdf': '.pdf',
