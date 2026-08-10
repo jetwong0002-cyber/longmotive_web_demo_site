@@ -30,6 +30,30 @@
 <link rel="preconnect" href="https://unpkg.com" crossorigin>
 <link rel="preload" as="style" href="_ds/longmotive-design-system-8d1e5cc8-409c-43e1-9315-92313b8f450f/styles.css">
 <link rel="preload" as="image" href="uploads/campus-v2-merged16-poster-eae9bed7.jpg" fetchpriority="high">
+<script>
+// Kick off the hero video download immediately (before the app boots) at high priority,
+// so it doesn't queue behind below-the-fold images. The component picks up this promise.
+(function(){
+  try{
+    var conn=navigator.connection;
+    if(conn&&(conn.saveData||/(^|-)2g$/.test(conn.effectiveType||''))) return;
+    var src=matchMedia('(max-width: 760px)').matches
+      ? 'uploads/merged16-scrub-mobile.mp4'
+      : 'uploads/merged16-scrub-desktop.mp4';
+    var load=function(tries){
+      return fetch(src,{priority:'high'})
+        .then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.blob(); })
+        .then(function(b){ return URL.createObjectURL(b); })
+        .catch(function(e){
+          if(tries>0) return new Promise(function(res){ setTimeout(res,1200); }).then(function(){ return load(tries-1); });
+          throw e;
+        });
+    };
+    window.__heroBlobUrl=load(1);
+    window.__heroBlobUrl.catch(function(){}); // avoid unhandled-rejection noise
+  }catch(e){}
+})();
+</script>
 <!-- Deferred, and in this order: support.js boots the page as soon as parsing
      finishes, and its reveal choreography looks for window.gsap at that moment,
      so GSAP has to be the earlier deferred script. -->
@@ -684,11 +708,12 @@ class Component extends DCLogic {
         ? 'uploads/merged16-scrub-mobile.mp4'
         : 'uploads/merged16-scrub-desktop.mp4';
       if(!Component._heroBlobUrl){
-        const load=(tries)=>fetch(heroSrc)
+        // the head script normally started this download already; fall back if it didn't run
+        const load=(tries)=>fetch(heroSrc,{priority:'high'})
           .then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.blob(); })
           .then(b=>URL.createObjectURL(b))
           .catch(e=>{ if(tries>0) return new Promise(res=>setTimeout(res,1200)).then(()=>load(tries-1)); Component._heroBlobUrl=null; throw e; });
-        Component._heroBlobUrl = load(1);
+        Component._heroBlobUrl = (typeof window!=='undefined'&&window.__heroBlobUrl) || load(1);
       }
       Component._heroBlobUrl.then(u=>{ if(this._video===el){ el.src=u; el.load(); this._heroBlobReady=true; } })
         .catch(()=>{ /* stay on the poster; do not re-download the mp4 directly */ });
@@ -1075,13 +1100,26 @@ class Component extends DCLogic {
     if(typeof document==='undefined') return;
     // Self-heal: if a rack hover video was removed by a re-render, unhide the still image
     document.querySelectorAll('img[data-src]').forEach(el=>{ if(el.style.display==='none'&&!el.parentElement.querySelector('video')) el.style.display=''; });
-    document.querySelectorAll('img[data-src],video[data-src]').forEach(el=>{
+    // Lazy: below-the-fold media only starts downloading when it scrolls near the
+    // viewport, so it no longer competes with the hero video on first load.
+    const apply=(el)=>{
       const s=el.getAttribute('data-src');
       if(!s||s.indexOf('{{')!==-1) return;
       if(el.getAttribute('src')!==s){
         el.src=s;
         if(el.tagName==='VIDEO'){ el.muted=true; if(el.play) el.play().catch(()=>{}); }
       }
+    };
+    if(!Component._srcObs&&typeof IntersectionObserver!=='undefined'){
+      Component._srcObs=new IntersectionObserver(es=>{
+        es.forEach(en=>{ if(en.isIntersecting){ Component._srcObs.unobserve(en.target); apply(en.target); } });
+      },{rootMargin:'900px'});
+    }
+    document.querySelectorAll('img[data-src],video[data-src]').forEach(el=>{
+      const s=el.getAttribute('data-src');
+      if(!s||s.indexOf('{{')!==-1) return;
+      if(el.getAttribute('src')===s) return;
+      if(Component._srcObs) Component._srcObs.observe(el); else apply(el);
     });
   }
   componentWillUnmount(){
