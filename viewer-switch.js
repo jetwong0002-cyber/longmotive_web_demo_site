@@ -18,17 +18,21 @@
    page died. React does not manage the inside of a custom element, so the shadow
    root is the only safe place to build. Page CSS variables still inherit in.
 
-   Posters are PHOTOGRAPHS of the real rooms (assets/img/viewers/*.jpg, 256x160,
-   ~11KB each), built by tools/posters/build.py. They were renders captured from
-   each page's own canvas, which had the nice property of showing exactly what
-   you get when you click; it was not worth what it cost, because several of the
-   models do not read at 256x160 and one viewer cannot be framed at all
-   (ahu-viewer.js:138 locks its camera). The tile now shows the real room and the
-   viewer behind it is a model of that room.
+   Posters are PHOTOGRAPHS of the real rooms, reusing the project card images in
+   assets/img/projects/ through the POSTER map below. They were renders captured
+   from each page's own canvas, which had the nice property of showing exactly
+   what you get when you click; it was not worth what it cost, because several of
+   the models do not read at thumbnail size and one viewer cannot be framed at
+   all (ahu-viewer.js:138 locks its camera). The tile now shows the real room and
+   the viewer behind it is a model of that room.
 
-   ADDING A VIEWER MEANS TWO EDITS: a row here and a row in build.py's PICK. A
-   viewer with no poster still gets a tile — an empty grey one. build.py warns
-   when the two lists disagree.
+   The map points at the full-size project photos rather than 256x160 crops of
+   them, so there is one copy of each photo in the repo and nothing to rebuild
+   when one is replaced. They cost nothing until the panel is opened: it is
+   [hidden] until then, and a display:none subtree fetches no backgrounds.
+
+   ADDING A VIEWER MEANS TWO EDITS: a row in VIEWERS and an entry in POSTER. A
+   viewer missing from POSTER still gets a tile — an empty grey one.
 
    THE PAGE'S <header> MUST BE POSITIONED, at a z-index above the viewer card.
    It carries backdrop-filter:blur(10px), which makes it a stacking context, so
@@ -60,6 +64,30 @@
     ['pre-action',       'Pre-action valves',    'pre-action-valve-room-viewer.dc.html',   'Fire'],
     ['data-hall',        'Data hall',            'data-hall-viewer.dc.html',               'Data hall']
   ];
+  // viewer key -> the room's photo in assets/img/projects/
+  var POSTER = {
+    'chiller-plant':          'chiller-plant-room.jpg',
+    'chiller-room':           'cooling-room.jpg',
+    'makeup-water':           'makeup-water-pump.jpg',
+    'fp-cooling':             'fluorine-pump-cooling-tower.jpg',
+    'rooftop-fluorine-pump':  'fluorine-pump-system.jpg',
+    'open-cooling':           'open-cooling-tower.jpg',
+    'chilled-tank':           'chilled-water-tank.jpg',
+    'chiller-piping':         'chiller-piping.jpg',
+    'ahu-room':               'ahu-room.jpg',
+    'crah-room':              'crah-room.jpg',
+    'rooftop-ac':             'roof-ac-unit.jpg',
+    'rooftop-generator':      'roof-diesel-generator.jpg',
+    'msb':                    'msb.jpg',
+    'generator-plant':        'generator.jpg',
+    'ecc-room':               'ecc-room.jpg',
+    'elv-room':               'elv-room.jpg',
+    'ba-control-room':        'ba-control-room.jpg',
+    'telecom-room':           'telecom-access-room.jpg',
+    'pre-action':             'pre-action-valve-room.jpg',
+    'data-hall':              'data-hall.jpg'
+  };
+
   // discipline colours, taken from the HUD's own PALETTE so the two agree
   var GROUP = {
     'Cooling': '#00b0f0', 'Air': '#0f52a0', 'Electrical': '#f2a63b',
@@ -127,7 +155,8 @@
       return '<a class="lm-vstile' + (on ? ' on' : '') + '" href="' + encodeURI(v[2]) + '"' +
         ' style="--g:' + GROUP[v[3]] + '"' + (on ? ' aria-current="page"' : '') +
         ' title="' + esc(v[1]) + ' · ' + esc(v[3]) + '">' +
-        '<span class="lm-vsshot" style="background-image:url(assets/img/viewers/' + v[0] + '.jpg)"></span>' +
+        '<span class="lm-vsshot"' + (POSTER[v[0]]
+          ? ' style="background-image:url(assets/img/projects/' + encodeURI(POSTER[v[0]]) + ')"' : '') + '></span>' +
         '<span class="lm-vsname">' + esc(v[1]) + '</span></a>';
     }).join('');
 
