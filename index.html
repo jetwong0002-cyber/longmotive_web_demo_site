@@ -103,14 +103,17 @@
        and the phase caption. So the caption, the meter and the copy all hang off
        the band instead, and what is left over collects at the bottom where it
        reads as the section's floor rather than a hole through the middle. */
-    .lm-hero-stage{background:var(--lm-blue-900)}
-    .lm-hero-media{height:56.25vw!important;bottom:auto!important}
-    .lm-hero-meter{top:calc(56.25vw + 14px)!important;bottom:auto!important}
+    .lm-hero-stage{--band-top:7vh;--band-h:56.25vw;background:var(--lm-blue-900)}
+    .lm-hero-media{top:var(--band-top)!important;height:var(--band-h)!important;bottom:auto!important}
+    .lm-hero-meter{top:calc(var(--band-top) + var(--band-h) + 14px)!important;bottom:auto!important}
     /* The captions stack on their wrapper's bottom edge, so collapsing its
-       height would hang them upward across the band — flip them to the top. */
-    .lm-hero-caps{top:calc(56.25vw + 60px)!important;bottom:auto!important;height:auto!important}
-    .lm-hero-caps > div{top:0!important;bottom:auto!important}
-    .lm-hero-copy{justify-content:flex-start!important;padding-top:calc(56.25vw + 60px)!important;padding-bottom:24px!important}
+       height would hang them upward across the band — flip them to the top.
+       The wrapper spans the rest of the stage and each card centres inside it,
+       so the short caption sits in the middle of the space under the meter
+       rather than clinging to one end of it. */
+    .lm-hero-caps{top:calc(var(--band-top) + var(--band-h) + 60px)!important;bottom:24px!important;height:auto!important}
+    .lm-hero-caps > div{top:50%!important;bottom:auto!important;transform:translateY(-50%)!important}
+    .lm-hero-copy{justify-content:flex-start!important;padding-top:calc(var(--band-top) + var(--band-h) + 60px)!important;padding-bottom:24px!important}
     /* Desktop sizes leave the copy 599px tall — taller than the 601px below the
        band, so it climbed back over the footage it was just moved out of. */
     .lm-hero-copy img{height:44px!important}
@@ -121,8 +124,9 @@
      at that height the copy ran 21px past the stage, which clips — the scroll
      cue went first. Tighten the block rather than let it overflow. */
   @media(max-width:760px) and (max-height:700px){
-    .lm-hero-copy{padding-top:calc(56.25vw + 52px)!important;padding-bottom:12px!important}
-    .lm-hero-caps{top:calc(56.25vw + 52px)!important}
+    .lm-hero-stage{--band-top:0px}
+    .lm-hero-copy{padding-top:calc(var(--band-h) + 52px)!important;padding-bottom:12px!important}
+    .lm-hero-caps{top:calc(var(--band-h) + 52px)!important;bottom:12px!important}
     .lm-hero-copy img{height:36px!important}
     .lm-hero-copy h1{font-size:clamp(26px,7.4vw,32px)!important;margin-top:10px!important}
     .lm-hero-copy p{font-size:15px!important;margin:12px 0 18px!important}
