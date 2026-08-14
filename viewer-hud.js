@@ -1,7 +1,7 @@
 /* LMHUD — shared Longmotive BIM-viewer HUD, standardised on the AHU room viewer.
    Owns the whole chrome: topbar buttons, collapsible filter rail (system chips
    + per-component visibility and "only"), props panel, hover tip, explode
-   slider, colour-by-system, walls toggle, loading status and narrow-screen layout.
+   fixed camera presets, colour-by-system, walls toggle, loading status and narrow-screen layout.
    A viewer supplies its sections and a few callbacks; the HUD owns all DOM. */
 (function(){
 const PALETTE=[0x00b0f0,0x0f52a0,0x3fb984,0xf2a63b,0xd7524a,0x8a6fd4,0x2ec4c6,0xc9d24a,0xe07ab8,0x6f8fb0];
@@ -36,7 +36,7 @@ const CSS=`
   .wrap.ready .hudtoggle:hover{opacity:1;border-color:#00b0f0;color:#fff}
   .hudtoggle:focus-visible{outline:2px solid #00b0f0;outline-offset:2px;opacity:1}
   .wrap.hudoff .topbar,.wrap.hudoff .rail,.wrap.hudoff .railtab,
-  .wrap.hudoff .props,.wrap.hudoff .explode,
+  .wrap.hudoff .props,
   .wrap.hudoff .hint{opacity:0 !important;pointer-events:none !important}
   /* .tip deliberately survives a hudoff: it is a small cursor label, not
      chrome, and without it the viewer gives no sign the parts are live */
@@ -150,25 +150,6 @@ const CSS=`
   .props dd.mono{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.05em;color:#7fd4ff}
   .props .sw{width:9px;height:9px;border-radius:1px;flex:none}
 
-  .explode{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;z-index:5;
-    display:flex;align-items:center;gap:12px;padding:9px 15px;border-radius:4px;
-    background:rgba(7,26,46,.9);backdrop-filter:blur(12px);border:1px solid rgba(126,170,214,.2);
-    opacity:0;transition:opacity .25s;pointer-events:none;max-width:calc(100% - 24px)}
-  .wrap.ready .explode{opacity:var(--hud-props);pointer-events:auto}
-  .wrap.ready .explode:hover,.wrap.ready .explode:focus-within{opacity:1}
-  .explode label{font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.13em;
-    text-transform:uppercase;color:#5f86ae;white-space:nowrap}
-  .slider{-webkit-appearance:none;appearance:none;width:min(240px,38vw);height:3px;border-radius:2px;
-    background:linear-gradient(90deg,#00b0f0,#2a4767);outline:none;cursor:pointer}
-  .slider::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
-    background:#fff;border:3px solid #00b0f0;cursor:grab}
-  .slider::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid #00b0f0}
-  .slider:focus-visible{outline:2px solid #00b0f0;outline-offset:4px}
-  .expval{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#7fd4ff;min-width:38px;text-align:right}
-  .expreset{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;
-    color:#5f86ae;padding:3px 6px;border-radius:2px}
-  .expreset:hover{color:#fff;background:rgba(255,255,255,.07)}
-
   .tip{position:absolute;left:50%;transform:translateX(-50%);bottom:62px;z-index:4;
     padding:5px 10px;border-radius:2px;background:rgba(6,20,36,.9);border:1px solid rgba(0,176,240,.35);
     font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.06em;color:#7fd4ff;
@@ -204,8 +185,6 @@ const CSS=`
   .wrap.narrow .props{top:auto;bottom:64px;right:12px;left:12px;width:auto;max-width:none}
   .wrap.narrow .hint{display:none}
   .wrap.narrow .meta{display:none}
-  .wrap.narrow .explode{left:12px;right:12px;transform:none;bottom:12px;justify-content:space-between}
-  .wrap.narrow .slider{flex:1;width:auto}
   .wrap.narrow .tip{display:none}
   @media (prefers-reduced-motion: reduce){*{transition:none !important;animation:none !important}}
 `;
@@ -241,12 +220,6 @@ function markup(cfg){
     </dl>
   </aside>
   <div class="tip"></div>
-  ${cfg.explode?`<div class="explode">
-    <label for="ex">Explode</label>
-    <input id="ex" class="slider" type="range" min="0" max="100" value="0" step="1" aria-label="Explode assembly">
-    <span class="expval">0%</span>
-    <button class="expreset">Reset</button>
-  </div>`:''}
   <div class="hint">${cfg.hint||'Drag orbit &#183; Scroll zoom<br>W walls &#183; C colour &#183; R reset'}</div>
   <div class="status on spin">${cfg.poster?`<img src="${cfg.poster}" alt="">`:''}
     <div class="s-title">${cfg.loadingLabel||'Loading model'}</div>
@@ -370,11 +343,6 @@ function attach(host,sh,cfg,api){
   hud.setExtra=(id,on,label)=>{const b=$('.x-'+id);if(!b)return;b.classList.toggle('on',!!on);hud.extraOn[id]=!!on;if(label)b.textContent=label;};
   (cfg.extras||[]).forEach(x=>{const b=$('.x-'+x.id);if(b)b.addEventListener('click',()=>api.onExtra&&api.onExtra(x.id));});
   const cb=$('.colorby');if(cb)cb.addEventListener('click',()=>{hud.colour=!hud.colour;api.onColour(hud.colour);hud.sync();});
-  const ex=$('.slider');
-  if(ex){
-    ex.addEventListener('input',()=>{$('.expval').textContent=ex.value+'%';api.onExplode(+ex.value/100);});
-    $('.expreset').addEventListener('click',()=>{ex.value=0;$('.expval').textContent='0%';api.onExplode(0);});
-  }
   hud.el.railtab.addEventListener('click',()=>{
     const hid=wrap.classList.toggle('railhid');
     hud.el.railtab.innerHTML=hid?'&#10095;':'&#10094;';

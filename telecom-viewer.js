@@ -300,6 +300,7 @@ class LMTelecomViewer extends HTMLElement{
       camera.updateProjectionMatrix();dirty=true;
     };
     new ResizeObserver(resize).observe(this);resize();
+    this.debugScene={scene,camera,renderer,root:scene,render:()=>renderer.render(scene,camera)};
     this._dispose=()=>{
       scene.traverse(o=>{
         if(o.geometry)o.geometry.dispose();

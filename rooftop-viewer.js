@@ -689,6 +689,7 @@ class LMRooftopViewer extends HTMLElement{
     });
     const resize=()=>{const w=this.clientWidth||960,h=this.clientHeight||600;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();};
     new ResizeObserver(resize).observe(this);resize();
+    this.debugScene={scene,camera,renderer,root:scene,render:()=>renderer.render(scene,camera)};
     this._dispose=()=>{
       scene.traverse(o=>{if(o.geometry)o.geometry.dispose();
         const mm=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];
