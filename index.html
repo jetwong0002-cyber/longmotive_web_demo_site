@@ -816,6 +816,10 @@ const HERO_VIDEO=()=> (typeof matchMedia!=='undefined'&&matchMedia('(max-width: 
 const HOME_AUTO_SCROLL_VH_PER_SEC=.3;
 const HOME_HERO_SEEN_KEY='longmotive.hero-intro-seen.v1';
 const HOME_HERO_END_PROGRESS=.75;
+// Where a returning visitor is dropped back into the track. Separate from the
+// threshold above, which decides whether the hero counts as watched at all and
+// also gates the desktop section stepper — moving that would change both.
+const HOME_HERO_RETURN_PROGRESS=.94;
 const SECTION_STEP_DURATION_MS=650;
 const SECTION_STEP_COOLDOWN_MS=780;
 
@@ -1009,7 +1013,7 @@ class Component extends DCLogic {
     const rect=track.getBoundingClientRect();
     const range=Math.max(0,rect.height-window.innerHeight);
     const trackTop=window.scrollY+rect.top;
-    const top=trackTop+range*HOME_HERO_END_PROGRESS;
+    const top=trackTop+range*HOME_HERO_RETURN_PROGRESS;
     const v=this._video;
     this._cur=1; this._target=1;
     if(v&&v.readyState>=1&&Number.isFinite(v.duration)&&v.duration>0){
