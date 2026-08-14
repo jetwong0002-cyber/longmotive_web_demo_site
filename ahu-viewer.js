@@ -57,9 +57,6 @@ class LMAhuViewer extends HTMLElement {
     this.$('.filtoggle').addEventListener('click', () => this.$('.rail').classList.toggle('open'));
     this.$('.railclose').addEventListener('click', () => this.$('.rail').classList.remove('open'));
     this.$('.propclose').addEventListener('click', () => this.select(null));
-    const sl = this.$('.slider');
-    sl.addEventListener('input', () => this.setExplode(+sl.value));
-    this.$('.expreset').addEventListener('click', () => { sl.value = 0; this.setExplode(0); });
     this.$('.file').addEventListener('change', (e) => {
       const f = e.target.files && e.target.files[0];
       if (f) this.loadFrom(URL.createObjectURL(f), f.name);
@@ -136,7 +133,10 @@ class LMAhuViewer extends HTMLElement {
     ctrl.enableDamping = true; ctrl.dampingFactor = 0.075;
     ctrl.zoomSpeed = 2.4;
     if ('zoomToCursor' in ctrl) ctrl.zoomToCursor = true;
-    ctrl.maxPolarAngle = Math.PI * 0.495; ctrl.panSpeed = 0.8;
+    // locked to the signature iso standpoint: no panning, small orbit window, zoom in only
+    ctrl.enablePan = false;
+    ctrl.minAzimuthAngle = Math.PI / 4 - 0.2; ctrl.maxAzimuthAngle = Math.PI / 4 + 0.2;
+    ctrl.minPolarAngle = 1.00; ctrl.maxPolarAngle = 1.16;
     ctrl.addEventListener('change', () => { this._dirty = true; });
     ctrl.addEventListener('start', () => canvas.classList.add('drag'));
     ctrl.addEventListener('end', () => canvas.classList.remove('drag'));
@@ -184,6 +184,14 @@ class LMAhuViewer extends HTMLElement {
     if (this._model) { this._scene.remove(this._model); }
     const model = this._model = gltf.scene;
     this._scene.add(model);
+    // concrete apron under and around the plantroom so the locked iso frame never shows the gradient
+    if (!this._apron) {
+      const ab = new T.Box3().setFromObject(model);
+      const ac = ab.getCenter(new T.Vector3());
+      const ap = new T.Mesh(new T.PlaneGeometry(600, 600), new T.MeshStandardMaterial({ color: 0x8f959b, roughness: 0.95, metalness: 0 }));
+      ap.rotation.x = -Math.PI / 2; ap.position.set(ac.x, ab.min.y - 0.01, ac.z); ap.receiveShadow = true;
+      this._scene.add(ap); this._apron = ap;
+    }
 
     // index every node's glTF extras
     const parts = this._parts = [];
@@ -231,7 +239,6 @@ class LMAhuViewer extends HTMLElement {
       });
       this._mixer.setTime(0); this._mixer.update(0);
     }
-    this.$('.explode').style.display = this._mixer ? '' : 'none';
 
     // frame it — the room shell is closed, so the soffit starts hidden
     ['Soffit'].forEach((c) => { if (catCount.has(c)) this._catOff.add(c); });
@@ -403,17 +410,6 @@ class LMAhuViewer extends HTMLElement {
     this._scene.add(h); this._box = h; this._dirty = true;
   }
 
-  setExplode(v) {
-    this._explode = v;
-    this.$('.expval').textContent = v + '%';
-    if (this._mixer && this._clipDur) {
-      this._mixer.setTime((v / 100) * this._clipDur);
-      this._mixer.update(0);
-    }
-    this.updateBox();
-    this._dirty = true;
-  }
-
   visibleBox(pretend) {
     const T = this.T, box = new T.Box3(), tmp = new T.Box3();
     this._parts.forEach((p) => {
@@ -456,15 +452,11 @@ class LMAhuViewer extends HTMLElement {
     this._camera.near = Math.max(R / 400, 0.02); this._camera.far = R * 22;
     this._camera.updateProjectionMatrix();
     this._controls.target.copy(c);
-    this._controls.minDistance = R * 0.06; this._controls.maxDistance = R * 6;
-    if (this._view === 'plan') {
-      const a = this._camera.aspect || 1;
-      const d = Math.max((s.z / 2) / tan, (s.x / 2) / (tan * a)) * 1.12;
-      this._camera.position.set(c.x, c.y + d, c.z + d * 0.0015);
-    } else {
-      const dist = R / Math.sin((this._camera.fov * Math.PI / 180) / 2) * 0.66;
-      this._camera.position.set(c.x + dist * 0.72, c.y + dist * 0.42, c.z + dist * 0.72);
-    }
+    const dist = R / Math.sin((this._camera.fov * Math.PI / 180) / 2) * 0.66;
+    // deeper look-down than the old 0.42 so the horizon stays above the frame; zoom-out capped here
+    this._camera.position.set(c.x + dist * 0.72, c.y + dist * 0.52, c.z + dist * 0.72);
+    this._controls.minDistance = R * 0.06;
+    this._controls.maxDistance = dist * Math.sqrt(0.72 * 0.72 + 0.52 * 0.52 + 0.72 * 0.72) * 1.002;
     this._controls.update();
     this._dirty = true;
   }
@@ -475,14 +467,8 @@ class LMAhuViewer extends HTMLElement {
     else if (k === 'escape') this.select(null);
     else if (k === 'c') this.setColorBy(!this._colorBy);
     else if (k === 'a') this.showAll();
-    else if (k === 'p') this.setView('plan');
     else if (k === 'i') this.setView('iso');
     else if (k === 'w') this.toggleCat('Wall');
-    else if (k === '[' || k === ']') {
-      const sl = this.$('.slider');
-      sl.value = Math.max(0, Math.min(100, +sl.value + (k === ']' ? 10 : -10)));
-      this.setExplode(+sl.value); e.preventDefault();
-    }
   }
 
   onResize() {
@@ -685,7 +671,7 @@ const TEMPLATE = `<style>
   <div class="topbar">
     <button class="btn filtoggle">Filters</button>
     <button class="btn reset" title="Reset view (R)">Reset view</button>
-    <button class="btn vplan" title="Plan view (P)">Plan</button>
+    <button class="btn vplan" title="Plan view (P)" style="display:none">Plan</button>
     <button class="btn viso on" title="3D view (I)">3D</button>
     <button class="btn walls" title="Show or hide the perimeter walls (W)">Hide walls</button>
     <button class="btn colorby" title="Colour by system (C)">Colour by system</button>
@@ -713,13 +699,7 @@ const TEMPLATE = `<style>
     </dl>
   </aside>
   <div class="tip"></div>
-  <div class="explode">
-    <label for="ex">Explode</label>
-    <input id="ex" class="slider" type="range" min="0" max="100" value="0" step="1" aria-label="Explode assembly">
-    <span class="expval">0%</span>
-    <button class="expreset">Reset</button>
-  </div>
-  <div class="hint">Drag orbit &#183; Right-drag pan &#183; Scroll zoom<br>W walls &#183; P plan &#183; I 3D &#183; R reset</div>
+  <div class="hint">Drag orbit &#183; Scroll zoom<br>W walls &#183; R reset</div>
   <div class="status"></div>
   <input class="file" type="file" accept=".glb,.gltf,model/gltf-binary">
 </div>`;

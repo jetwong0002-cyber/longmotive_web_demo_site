@@ -41,7 +41,7 @@ const MAP=[
   [/^BA_Duct_/,'DU']
 ];
 const HUDCFG={views:[], // locked to the corridor view — Reset re-frames it, no other views offered
-  walls:true,colour:true,explode:true,poster:POSTER,loadingLabel:'Loading BA control room',
+  walls:true,colour:true,explode:false,poster:POSTER,loadingLabel:'Loading BA control room',
   hint:'Drag orbit &#183; Scroll zoom<br>R reset &#183; W walls &#183; C colour &#183; Esc deselect'};
 const ARIA='Interactive 3D model of the BA control room corridor. Drag or use arrow keys to look around, scroll to zoom in. Click a cabinet to inspect it. Press R to reset the view, Escape to deselect.';
 const secOf=(n)=>{for(const[m,id]of MAP)if(m.test(n))return id;return null;};
@@ -186,6 +186,12 @@ class LMBaViewer extends HTMLElement{
         VIEWS.corridor.r=span*.88;
       }
       R_MAX=VIEWS.corridor.r; // zoom-out stops at the corridor framing — users can only go closer
+      // Interior volume the lens is confined to while the room still has its
+      // shell on. Inset off the real bounds so the camera stops just short of
+      // the wall face, and kept above waist height so it never dips under the
+      // floor slab.
+      ROOM=bb.clone().expandByScalar(-.45);
+      ROOM.min.y=bb.min.y+1.0;ROOM.max.y=bb.max.y-.35;
       sun.target.position.copy(c);
       sun.shadow.camera.left=-span*.8;sun.shadow.camera.right=span*.8;
       sun.shadow.camera.top=span*.8;sun.shadow.camera.bottom=-span*.5;
@@ -230,7 +236,47 @@ class LMBaViewer extends HTMLElement{
     let tGoal=target.clone(),rGoal=radius,thGoal=theta,phGoal=phi,glide=false;
     let R_MIN=3,R_MAX=34;
     const PH_MIN=.88,PH_MAX=1.53; // near-horizontal allowed — the corridor reads best at eye height (Plan button still works)
-    const TH_MIN=1.52,TH_MAX=3.25; // orbit window: down-the-corridor view ↔ frontal view — never behind the walls
+    /* The room is LONG in x (11.3 m) and SHALLOW in z (4.5 m), so the usable
+       orbit is narrow: swing towards z and the lens runs out of room in under
+       2 m and ends up pressed against the wall staring at it. Solved against the
+       real bounds (target ~(0.75,-2.1), interior x to 10.70, z -3.90..-0.30):
+       usable depth is min(9.95/sin th, 1.80/|cos th|), so 1.52..1.95 holds
+       4.9-10.0 m at every angle. Wider is still inside the room but not worth
+       having — at 2.10 the lens is pinned to the back wall.
+       The OLD window was 1.52..3.25, 99 deg, and put the lens 7 m OUTSIDE the
+       far wall at its top end. Only that end was wrong; the bottom is unchanged.
+       Wider window once the shell is hidden: `overview` and `plan` are meant to
+       be read from outside, and their own theta (2.36) sits beyond the corridor
+       window, so clamping them to it would jerk the camera on the first drag. */
+    // 1.52 is the original lower bound and stays: below it the lens swings past
+    // the open side of the model and half the frame is empty background.
+    const TH_IN=[1.52,1.95],TH_OUT=[1.20,3.40];
+    const thR=()=>(shell.length&&shell[0].visible)?TH_IN:TH_OUT;
+    const clampTh=(v)=>{const r=thR();return Math.min(r[1],Math.max(r[0],v));};
+
+    /* The theta window alone did NOT keep the lens inside — orbiting carried it
+       straight through a wall and looked back in from outside, because the
+       radius is free and _goSection moves the target as well. So the room is
+       enforced geometrically instead: shorten the orbit radius to whatever
+       distance the ray from the target can run before it leaves ROOM. Confining
+       rather than fencing theta harder keeps the whole corridor sweep intact.
+
+       Only while the shell is up. `overview` and `plan` hide it on purpose and
+       are meant to be read from outside — there is no wall to be behind. */
+    let ROOM=null;
+    const confine=(pos)=>{
+      if(!ROOM||!shell.length||!shell[0].visible)return pos;
+      const d=pos.clone().sub(target),len=d.length();
+      if(len<1e-4)return pos;
+      d.divideScalar(len);
+      let t=len;
+      for(const ax of ['x','y','z']){
+        if(Math.abs(d[ax])<1e-6)continue;
+        const hit=((d[ax]>0?ROOM.max[ax]:ROOM.min[ax])-target[ax])/d[ax];
+        if(hit>0)t=Math.min(t,hit);       // hit<=0 means the target is already
+      }                                    // outside on this axis: nothing to clamp
+      return pos.copy(target).addScaledVector(d,Math.max(.6,t));
+    };
     this._goView=(v)=>{
       const W=VIEWS[v]||VIEWS.corridor;
       shell.forEach(o=>{o.visible=v==='corridor';});
@@ -246,8 +292,8 @@ class LMBaViewer extends HTMLElement{
     };
     this._lookKey=(k)=>{
       const st=.12;
-      if(k==='ArrowLeft'){theta=Math.min(TH_MAX,theta+st);glide=false;dirty=true;return true;}
-      if(k==='ArrowRight'){theta=Math.max(TH_MIN,theta-st);glide=false;dirty=true;return true;}
+      if(k==='ArrowLeft'){theta=clampTh(theta+st);glide=false;dirty=true;return true;}
+      if(k==='ArrowRight'){theta=clampTh(theta-st);glide=false;dirty=true;return true;}
       if(k==='ArrowUp'){phi=Math.max(PH_MIN,phi-st);glide=false;dirty=true;return true;}
       if(k==='ArrowDown'){phi=Math.min(PH_MAX,phi+st);glide=false;dirty=true;return true;}
       if(k==='+'||k==='='){radius=Math.max(R_MIN,radius*.9);glide=false;dirty=true;return true;}
@@ -260,7 +306,7 @@ class LMBaViewer extends HTMLElement{
     cv.addEventListener('pointerleave',()=>{this._hoverDirty=false;this._applyHover(null);});
     cv.addEventListener('pointermove',e=>{
       if(dragging){
-        theta=Math.min(TH_MAX,Math.max(TH_MIN,theta-(e.clientX-px)*.0052));
+        theta=clampTh(theta-(e.clientX-px)*.0052);
         phi=Math.min(PH_MAX,Math.max(PH_MIN,phi-(e.clientY-py)*.0042));
         px=e.clientX;py=e.clientY;dirty=true;
       }else{
@@ -333,6 +379,7 @@ class LMBaViewer extends HTMLElement{
           target.x+rr*Math.sin(phi)*Math.sin(theta),
           target.y+rr*Math.cos(phi)+.6*(1-e),
           target.z+rr*Math.sin(phi)*Math.cos(theta));
+        confine(camera.position);
         camera.lookAt(target);
         renderer.render(scene,camera);
       }

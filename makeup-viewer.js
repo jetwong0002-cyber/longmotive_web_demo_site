@@ -25,7 +25,7 @@ const MAP=[
   [/^MW_CeilingGear/,'OH']
 ];
 const HUDCFG={views:[], // locked to the reference-photo standpoint — Reset re-frames it, no other views offered
-  walls:true,colour:true,explode:true,poster:POSTER,loadingLabel:'Loading pump room',
+  walls:true,colour:true,explode:false,poster:POSTER,loadingLabel:'Loading pump room',
   hint:'Drag orbit &#183; Scroll zoom<br>R reset &#183; W walls &#183; C colour &#183; Esc deselect'};
 const ARIA='Interactive 3D model of the makeup-water pump room. Drag or use arrow keys to look around, scroll to zoom in. Click equipment to inspect it. Press R to reset the view, Escape to deselect.';
 const secOf=(n)=>{for(const[m,id]of MAP)if(m.test(n))return id;return null;};
@@ -115,7 +115,7 @@ class LMMakeupViewer extends HTMLElement{
       root.traverse(o=>{
         if(!o.isMesh)return;
         o.castShadow=true;o.receiveShadow=true;
-        if(o.name==='MW_Ceil'){o.visible=false;return;} // roof slab off — light strips stay
+        // MW_Ceil stays VISIBLE here — the locked photo view is eye-level and the wall tops are in frame
         if(isWallNode(o))walls.push(o);
         if(o.material&&o.material.envMapIntensity!==undefined){o.material.envMapIntensity=.5;}
         const id=secOfNode(o);
@@ -149,12 +149,29 @@ class LMMakeupViewer extends HTMLElement{
       const c=bb.getCenter(new THREE.Vector3()),sz=bb.getSize(new THREE.Vector3());
       C.copy(c);
       const span=Math.max(sz.x,sz.z);
+      // fill caps: ceiling cap + oversize floor close the seams above the wall tops and beyond the
+      // slab edge so the navy gradient never shows inside the locked orbit window
+      {
+        const fx=new THREE.Mesh(new THREE.PlaneGeometry(300,300),new THREE.MeshStandardMaterial({color:0xcfd4d8,roughness:.85,metalness:.02}));
+        fx.name='MW_FillFloor';fx.rotation.x=-Math.PI/2;fx.position.set(c.x,bb.min.y-.01,c.z);fx.receiveShadow=true;scene.add(fx);
+        const cx=new THREE.Mesh(new THREE.PlaneGeometry(sz.x+16,sz.z+16),new THREE.MeshStandardMaterial({color:0x3a3e42,roughness:.95,metalness:0}));
+        cx.name='MW_FillCeil';cx.rotation.x=Math.PI/2;cx.position.set(c.x,bb.max.y+.02,c.z);cx.receiveShadow=true;scene.add(cx);
+        const rw=new THREE.Mesh(new THREE.PlaneGeometry(sz.z+32,sz.y+3),new THREE.MeshStandardMaterial({color:0xa8adb1,roughness:.92,metalness:.02}));
+        rw.name='MW_FillWallR';rw.rotation.y=-Math.PI/2;rw.position.set(bb.max.x+.6,bb.min.y+sz.y/2,c.z);rw.receiveShadow=true;walls.push(rw);scene.add(rw);
+      }
       R_MIN=span*.18;
       // locked standpoint = the site photo: eye level, near-frontal to the back wall,
       // vessel centre frame with the cabinets around it
       VIEWS.overview.t.copy(c);VIEWS.overview.t.y=1.15;VIEWS.overview.r=span*.85;
       VIEWS.plan.t.copy(c);VIEWS.plan.r=span*1.3;
       R_MAX=VIEWS.overview.r; // zoom-out stops at the photo framing — users can only go closer
+      // Wall planes the lens must stay on the inside of. This room is NOT a
+      // closed box — it is walled on three sides (WallB at z=0, WallL at x=0,
+      // the fill wall at bb.max.x+0.6) and deliberately OPEN on -z, which is
+      // where the locked standpoint stands. So there is no -z limit: confining
+      // to the room's bounds would throw away the intended view.
+      // Margins: 0.35 clear of the wall face, plus the 0.12 wall thickness.
+      LIM={xMin:bb.min.x+.47,xMax:bb.max.x+.25,zMax:bb.max.z-.47};
       sun.target.position.copy(c);
       sun.shadow.camera.left=-span*.8;sun.shadow.camera.right=span*.8;
       sun.shadow.camera.top=span*.8;sun.shadow.camera.bottom=-span*.5;
@@ -198,7 +215,35 @@ class LMMakeupViewer extends HTMLElement{
     let tGoal=target.clone(),rGoal=radius,thGoal=theta,phGoal=phi,glide=false;
     let R_MIN=3,R_MAX=34;
     const PH_MIN=.88,PH_MAX=1.5;   // never tilt above the room — roof stays out of view
-    const TH_MIN=2.05,TH_MAX=3.25; // orbit window facing the open corner, never behind WallB/WallL
+    /* Orbit window facing the open -z side. 2.05 was NOT safe: at the locked
+       radius (h ~ 4.83 from a target at x 2.74) it put the lens at x 7.0, past
+       the right fill wall at 6.2, and the room was read from behind it.
+       Solve it instead: staying inside needs h*sin(th) <= 5.85 - 2.74 = 3.11,
+       so sin(th) <= 0.644 and th >= 2.49. The far end 3.25 was always fine —
+       it swings towards -x and -z, both open. */
+    const TH_MIN=2.50,TH_MAX=3.25;
+
+    /* The clamp alone only covers dragging. `_goSection` moves the target and
+       zoom changes the radius, so the wall planes are also enforced
+       geometrically: shorten the orbit radius to wherever the ray from the
+       target meets a wall. Skipped in `plan`, which looks down from outside on
+       purpose. */
+    let LIM=null;
+    const confine=(pos)=>{
+      if(!LIM||this._view==='plan')return pos;
+      const d=pos.clone().sub(target),len=d.length();
+      if(len<1e-4)return pos;
+      d.divideScalar(len);
+      let t=len;
+      const cap=(dv,cur,lim)=>{
+        if(Math.abs(dv)<1e-6)return;
+        const h=(lim-cur)/dv;
+        if(h>0)t=Math.min(t,h);          // h<=0: target already past it, nothing to clamp
+      };
+      cap(d.x,target.x,d.x>0?LIM.xMax:LIM.xMin);
+      if(d.z>0)cap(d.z,target.z,LIM.zMax);   // -z is the open side, never capped
+      return pos.copy(target).addScaledVector(d,Math.max(.8,t));
+    };
     this._goView=(v)=>{
       const W=VIEWS[v]||VIEWS.overview;
       tGoal=W.t.clone();rGoal=W.r;thGoal=W.th;phGoal=W.ph;glide=true;
@@ -208,7 +253,7 @@ class LMMakeupViewer extends HTMLElement{
       const s=sections[id];if(!s)return;
       tGoal=s.centre.clone();
       rGoal=Math.min(R_MAX,Math.max(R_MIN,s.size*1.6));
-      thGoal=theta;phGoal=Math.min(1.32,Math.max(.7,phi));glide=true;
+      thGoal=theta;phGoal=Math.min(PH_MAX,Math.max(PH_MIN,phi));glide=true; // keep phi inside the clamp window — never swing off the locked tilt
       if(this._reduce){target.copy(tGoal);radius=rGoal;phi=phGoal;glide=false;dirty=true;}
     };
     this._lookKey=(k)=>{
@@ -300,6 +345,7 @@ class LMMakeupViewer extends HTMLElement{
           target.x+rr*Math.sin(phi)*Math.sin(theta),
           target.y+rr*Math.cos(phi)+.6*(1-e),
           target.z+rr*Math.sin(phi)*Math.cos(theta));
+        confine(camera.position);
         camera.lookAt(target);
         renderer.render(scene,camera);
       }

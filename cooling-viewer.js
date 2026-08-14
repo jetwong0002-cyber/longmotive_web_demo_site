@@ -30,10 +30,21 @@ const MAP=[
   [/^CR_(Header_CW|CW_HeaderEnds|Lbl_HR|Lbl_HY)/,'HC'],
   [/^CR_(Col\d|BeamT\d|Arm\d)/,'RK']
 ];
-const HUDCFG={views:[{id:'overview',label:'Overview',key:'i'},{id:'plan',label:'Plan',key:'p'}],
-  walls:false,colour:true,explode:true,poster:POSTER,loadingLabel:'Loading chiller room',
-  hint:'Drag orbit &#183; Scroll zoom<br>R reset &#183; C colour &#183; Esc deselect'};
-const ARIA='Interactive 3D model. Drag or use arrow keys to orbit, scroll to zoom. Click equipment to inspect it. Press R to reset the view, P for plan, I for the overview, Escape to deselect.';
+const HUDCFG={views:[], // locked to the poster standpoint — Reset re-frames it, no other views offered
+  walls:true,colour:true,explode:false,poster:POSTER,loadingLabel:'Loading chiller room',
+  hint:'Drag orbit &#183; Scroll zoom<br>R reset &#183; W walls &#183; C colour &#183; Esc deselect'};
+const ARIA='Interactive 3D model of the chiller room, shown inside the modelled plant hall. Drag or use arrow keys to orbit, scroll to zoom in. Click equipment to inspect it. Press R to reset the view, W to hide the room shell, Escape to deselect.';
+// Real site photo of the plant room, standing in for the walls this GLB does not ship.
+// `auto 100%` (height-fit, centred) is what makes the composite hold at ANY container shape: the
+// camera's fov is VERTICAL, so a height-fitted photo and the 3D projection share one vertical scale
+// and both crop horizontally about the centre — a point at a given angle lands on the same pixel in
+// both. Do NOT switch this to `cover`, and do not scale the camera radius with aspect.
+/* The room is REAL GEOMETRY now (uploads/3d/plantroom-shell.glb), not a photo plate. That choice is
+   what makes this viewer simple: with a modelled shell there is no camera to calibrate, no plate to
+   keep aligned, and orbit/zoom/shadows/reflections are all just consistent. The photo-composite
+   approach that preceded it needed a numerically solved camera and had to forbid orbit entirely,
+   because any camera move slid the plant off the photographed floor. */
+const SHELL='uploads/3d/plantroom-shell.glb';
 const secOf=(n)=>{for(const[m,id]of MAP)if(m.test(n))return id;return null;};
 const secOfNode=(o)=>{for(let n=o;n;n=n.parent){const id=secOf(n.name||'');if(id)return id;}return null;};
 const isWallNode=(o)=>{for(let n=o;n;n=n.parent){if(/Wall|Skirt/.test(n.name||''))return true;}return false;};
@@ -83,9 +94,7 @@ class LMCoolingViewer extends HTMLElement{
   }
   _onKey=(e)=>{
     const k=e.key;
-    if(k==='1'){this._setView('overview');}
-    else if(k==='2'){this._setView('plan');}
-    else if(k==='Escape'||k==='0'){if(this._select)this._select(null);}
+    if(k==='Escape'||k==='0'){if(this._select)this._select(null);}
     else if(this._lookKey&&this._lookKey(k)){}
     else if(this._hud&&this._hud.key(k)){}
     else return;
@@ -99,19 +108,22 @@ class LMCoolingViewer extends HTMLElement{
     const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
     renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
     renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-    renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;
+    renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2; // lifted to sit in the bright photographed room
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     const scene=new THREE.Scene();
-    scene.background=null;renderer.setClearColor(0x000000,0); // CSS navy gradient shows through
-    scene.fog=new THREE.Fog(0x0a1c31,30,70);
+    scene.background=null;renderer.setClearColor(0x000000,0);
+    scene.fog=null;
     const pm=new THREE.PMREMGenerator(renderer);
     scene.environment=pm.fromScene(new RoomEnvironment(),.04).texture;pm.dispose();
-    const camera=new THREE.PerspectiveCamera(42,1,.05,120);
-    const sun=new THREE.DirectionalLight(0xffffff,1.4);
-    sun.position.set(-6,12,8);sun.castShadow=true;
-    sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0004;
+    const camera=new THREE.PerspectiveCamera(42,1,.05,300); // 42 = the fov the poster fit was solved at
+    // Lit like the real hall: a broad cool wash off the batten rows, plus one soft key for shape.
+    // No hard sun — this is an interior, and a strong directional read as outdoor light.
+    scene.add(new THREE.HemisphereLight(0xdfe8f2,0x6d6a68,1.05));
+    scene.add(new THREE.AmbientLight(0xffffff,.30));
+    const sun=new THREE.DirectionalLight(0xf2f6ff,.70);
+    sun.castShadow=true;
+    sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0005;
     scene.add(sun,sun.target);
-    scene.add(new THREE.AmbientLight(0xdfe6ec,.25));
 
     /* ---------------- model ---------------- */
     const sections=this._sections;
@@ -143,17 +155,35 @@ class LMCoolingViewer extends HTMLElement{
         sections[id].size=bb.getSize(new THREE.Vector3()).length();
       });
       scene.add(root);
-      // frame the WHOLE room from its real bounds — never trust hardcoded dims
       const bb=new THREE.Box3().setFromObject(root);
       const c=bb.getCenter(new THREE.Vector3()),sz=bb.getSize(new THREE.Vector3());
       C.copy(c);
       const span=Math.max(sz.x,sz.z,sz.y*1.4);
-      R_MIN=span*.18;R_MAX=span*1.9;
-      VIEWS.overview.t.copy(c);VIEWS.overview.r=span*1.35;
-      VIEWS.plan.t.copy(c);VIEWS.plan.r=span*1.3;
-      sun.target.position.copy(c);
-      sun.shadow.camera.left=-span*.8;sun.shadow.camera.right=span*.8;
-      sun.shadow.camera.top=span*.8;sun.shadow.camera.bottom=-span*.5;
+      /* The room shell. Loaded second and never added to `pick`, so it is scenery only — it cannot be
+         hovered, selected or counted as plant. Its walls go into `walls[]` so Hide-walls strips the
+         shell and leaves the plant standing in the void, which is the useful inspection state. */
+      new GLTFLoader().load(SHELL,(sg)=>{
+        const shell=sg.scene;shell.name='CR_Shell';
+        shell.traverse(o=>{
+          if(!o.isMesh)return;
+          o.receiveShadow=true;
+          o.castShadow=!/RM_(Floor|Ceiling|Wall|Skirt)/.test(o.name);
+          // The shell is built from closed boxes, so every surface facing INTO the room is a back
+          // face and gets culled — the room looked inside-out until this. DoubleSide is the fix.
+          const mm=Array.isArray(o.material)?o.material:[o.material];
+          mm.forEach(m=>{if(m){m.side=THREE.DoubleSide;if(m.envMapIntensity!==undefined)m.envMapIntensity=.45;}});
+          if(/RM_(Wall|Skirt|Col)/.test(o.name))walls.push(o);
+        });
+        scene.add(shell);
+        dirty=true;
+      },undefined,(e)=>console.warn('Plant room shell failed to load:',e));
+      // key light off the batten rows, aimed at the plant
+      sun.position.set(bb.min.x-6,bb.min.y+11,bb.max.z+8);
+      sun.target.position.set(c.x,bb.min.y,c.z);
+      const e=Math.max(span,18);
+      sun.shadow.camera.left=-e;sun.shadow.camera.right=e;
+      sun.shadow.camera.top=e;sun.shadow.camera.bottom=-e;
+      sun.shadow.camera.near=.5;sun.shadow.camera.far=80;
       sun.shadow.camera.updateProjectionMatrix();
       this._applyVis=(fn)=>{
         IDS.forEach(id=>{const sc=sections[id];if(sc)sc.meshes.forEach(o=>{o.visible=fn(id);});});
@@ -183,17 +213,27 @@ class LMCoolingViewer extends HTMLElement{
       if(e.total&&this._hud)this._hud.progress(e.loaded/e.total*100);
     },(err)=>this._fallback(err));
 
-    /* ---------------- camera rig: free orbit around the room ---------------- */
-    const C=new THREE.Vector3(0,1.5,0);
-    const VIEWS={
-      overview:{t:C.clone(),r:16,th:-.72,ph:1.12},
-      plan:{t:C.clone(),r:19,th:-.72,ph:.28}
-    };
+    /* ---------------- camera rig ----------------
+       Ordinary orbit again — the shell is real geometry, so the camera is free to move. Keeps the
+       house locked-view contract: one signature view, zoom IN only (R_MAX = that view's radius),
+       Reset/Esc return to it, and orbit clamped so you stay inside the room. */
+    /* LOCKED to the reference poster (uploads/3d/cooling-room-hero.png). These numbers were solved
+       against it, not eyeballed — 0.857 silhouette IoU, direction found on a bbox-normalised shape
+       score first, then framing on true pixel overlap. Re-solve if the model changes; do not nudge.
+       They put the lens at (-4.47, 3.24, 4.49): inside the hall, 3.3 m off the floor, well under the
+       6.5 m soffit. */
+    const C=new THREE.Vector3(4.206,-0.056,-4.876);
+    const VIEWS={overview:{t:C.clone(),r:13.185,th:-0.747,ph:1.318}};
     let V=VIEWS.overview;
     let target=V.t.clone(),radius=V.r,theta=V.th,phi=V.ph;
     let tGoal=target.clone(),rGoal=radius,thGoal=theta,phGoal=phi,glide=false;
-    let R_MIN=3,R_MAX=34;
-    const PH_MIN=.22,PH_MAX=1.5;
+    let R_MIN=3,R_MAX=V.r;   // ZOOM IN ONLY — the poster framing is the widest the view ever gets
+    /* Orbit window derived from the shell's own walls (x -9..21, z -17..9) and the orbit circle
+       (horizontal radius r*sin(ph) = 12.77 about the target). A free 360 would swing the lens to
+       z -17.6, straight through the north wall. These stops keep >=0.5 m of clearance all round;
+       zooming in only ever moves the lens further inside, so it cannot breach a wall. */
+    const PH_MIN=1.10,PH_MAX=1.50; // 1.10 -> lens at 5.9m, under the 6.5m soffit; 1.50 -> just above the floor
+    const TH_MIN=-1.40,TH_MAX=-0.10;
     this._goView=(v)=>{
       const W=VIEWS[v]||VIEWS.overview;
       tGoal=W.t.clone();rGoal=W.r;thGoal=W.th;phGoal=W.ph;glide=true;
@@ -202,14 +242,14 @@ class LMCoolingViewer extends HTMLElement{
     this._goSection=(id)=>{
       const s=sections[id];if(!s)return;
       tGoal=s.centre.clone();
-      rGoal=Math.min(R_MAX,Math.max(R_MIN,s.size*1.6));
-      thGoal=theta;phGoal=Math.min(1.32,Math.max(.7,phi));glide=true;
+      rGoal=Math.min(R_MAX,Math.max(R_MIN,s.size*1.7));
+      thGoal=theta;phGoal=Math.min(PH_MAX,Math.max(PH_MIN,phi));glide=true;
       if(this._reduce){target.copy(tGoal);radius=rGoal;phi=phGoal;glide=false;dirty=true;}
     };
     this._lookKey=(k)=>{
       const st=.12;
-      if(k==='ArrowLeft'){theta+=st;glide=false;dirty=true;return true;}
-      if(k==='ArrowRight'){theta-=st;glide=false;dirty=true;return true;}
+      if(k==='ArrowLeft'){theta=Math.min(TH_MAX,theta+st);glide=false;dirty=true;return true;}
+      if(k==='ArrowRight'){theta=Math.max(TH_MIN,theta-st);glide=false;dirty=true;return true;}
       if(k==='ArrowUp'){phi=Math.max(PH_MIN,phi-st);glide=false;dirty=true;return true;}
       if(k==='ArrowDown'){phi=Math.min(PH_MAX,phi+st);glide=false;dirty=true;return true;}
       if(k==='+'||k==='='){radius=Math.max(R_MIN,radius*.9);glide=false;dirty=true;return true;}
@@ -222,7 +262,7 @@ class LMCoolingViewer extends HTMLElement{
     cv.addEventListener('pointerleave',()=>{this._hoverDirty=false;this._applyHover(null);});
     cv.addEventListener('pointermove',e=>{
       if(dragging){
-        theta-=(e.clientX-px)*.0052;
+        theta=Math.min(TH_MAX,Math.max(TH_MIN,theta-(e.clientX-px)*.0052));
         phi=Math.min(PH_MAX,Math.max(PH_MIN,phi-(e.clientY-py)*.0042));
         px=e.clientX;py=e.clientY;dirty=true;
       }else{
@@ -246,7 +286,7 @@ class LMCoolingViewer extends HTMLElement{
       if(this._hover&&this._hover!==this._sel)tint(this._hover,0);
       this._hover=id;
       if(id&&id!==this._sel)tint(id,.18);
-      cv.style.cursor=id?'pointer':(dragging?'grabbing':'grab');
+      cv.style.cursor=id?'pointer':'default'; // no orbit here, so never advertise a grab cursor
       if(!this._sel)this._panel(id);
       this._sync();
     };
@@ -262,7 +302,11 @@ class LMCoolingViewer extends HTMLElement{
       this._select(this._hover&&this._sel!==this._hover?this._hover:null);
     });
 
-    const resize=()=>{const w=this.clientWidth||900,h=this.clientHeight||560;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();dirty=true;};
+    const resize=()=>{
+      const w=this.clientWidth||900,h=this.clientHeight||560;
+      renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
+      dirty=true;
+    };
     new ResizeObserver(resize).observe(this);resize();
     this._dispose=()=>{
       scene.traverse(o=>{
@@ -277,7 +321,7 @@ class LMCoolingViewer extends HTMLElement{
     const tick=()=>{
       this._raf=requestAnimationFrame(tick);
       if(this._onScreen===false||document.hidden){this._raf&&cancelAnimationFrame(this._raf);this._raf=null;return;}
-      const k=this._reduce?1:Math.min(1,(performance.now()-t0)/1800),e=1-Math.pow(1-k,3);
+      const k=this._reduce?1:Math.min(1,(performance.now()-t0)/1600),e=1-Math.pow(1-k,3);
       if(k<1)dirty=true;
       if(glide){
         target.lerp(tGoal,.07);radius+=(rGoal-radius)*.07;theta+=(thGoal-theta)*.07;phi+=(phGoal-phi)*.07;dirty=true;
@@ -290,10 +334,10 @@ class LMCoolingViewer extends HTMLElement{
       }
       if(dirty){
         dirty=false;
-        const rr=radius+(1-e)*4;
+        const rr=radius+(1-e)*3;
         camera.position.set(
           target.x+rr*Math.sin(phi)*Math.sin(theta),
-          target.y+rr*Math.cos(phi)+.6*(1-e),
+          target.y+rr*Math.cos(phi),
           target.z+rr*Math.sin(phi)*Math.cos(theta));
         camera.lookAt(target);
         renderer.render(scene,camera);

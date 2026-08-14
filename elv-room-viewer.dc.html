@@ -32,6 +32,7 @@
 <script src="_ds/longmotive-design-system-8d1e5cc8-409c-43e1-9315-92313b8f450f/_ds_bundle.js"></script>
 <script src="viewer-hud.js"></script>
 <script src="elv-viewer.js"></script>
+<script src="viewer-switch.js"></script>
 <style>
   html,body{margin:0;padding:0;background:var(--surface-page)}
   *{box-sizing:border-box}
@@ -42,7 +43,7 @@
 </style>
 </helmet>
 <div style="min-height:100vh;display:flex;flex-direction:column;background:var(--surface-page);color:var(--text-body);font-family:var(--font-sans);animation:lmPageFade 1.4s ease both">
-  <header style="background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border-subtle)">
+  <header style="position:relative;z-index:40;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border-subtle)">
     <div style="max-width:var(--container-max);margin:0 auto;padding:0 var(--gutter);height:60px;display:flex;align-items:center;justify-content:space-between;gap:24px">
       <a href="index.html" style="display:inline-flex;align-items:center;gap:6.5px;font-family:var(--font-display);font-weight:800;font-size:22px;letter-spacing:.02em;color:var(--color-brand)"><img src="assets/lm-mark.png" alt="" style="height:22px;width:auto;display:block"><span>LONG<span style="color:var(--color-accent)">MOTIVE</span></span></a>
       <div style="display:flex;align-items:center;gap:18px">
@@ -50,24 +51,7 @@
         <a href="index.html#Projects" style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)">Projects</a>
       </div>
     </div>
-    <div style="border-top:1px solid var(--border-subtle);background:rgba(255,255,255,.7)">
-      <div style="max-width:var(--container-max);margin:0 auto;padding:7px var(--gutter);display:flex;align-items:center;gap:7px;flex-wrap:wrap">
-        <span style="font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-right:5px">3D viewers</span>
-        <a href="bim-viewer.dc.html" style="font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;color:var(--text-body)">Chiller plant</a>
-        <a href="data-hall-viewer.dc.html" style="font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;color:var(--text-body)">Data hall</a>
-        <a href="msb-viewer.dc.html" style="font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;color:var(--text-body)">MSB</a>
-        <a href="ahu-room-viewer.dc.html" style="font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;color:var(--text-body)">AHU room</a>
-        <a href="rooftop-plant-viewer.dc.html" style="font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;color:var(--text-body)">Rooftop plant</a>
-        <a href="cooling-room-viewer.dc.html" style="font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;color:var(--text-body)">Chiller room</a>
-        <a href="ecc-room-viewer.dc.html" style="font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;color:var(--text-body)">ECC room</a>
-        <a href="crah-room-viewer.dc.html" style="font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;color:var(--text-body)">CRAH room</a>
-        <a href="elv-room-viewer.dc.html" style="font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;color:var(--text-body);background:var(--color-brand);color:#fff">ELV room</a>
-        <a href="generator-room-viewer.dc.html" style="font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;color:var(--text-body)">Generator plant</a>
-        <a href="makeup-water-viewer.dc.html" style="font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;color:var(--text-body)">Makeup water</a>
-        <a href="pre-action-valve-room-viewer.dc.html" style="font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;color:var(--text-body)">Pre-action valves</a>
-        <a href="ba-control-room-viewer.dc.html" style="font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;color:var(--text-body)">BA control room</a>
-      </div>
-    </div>
+    <lm-viewer-switch data-current="elv-room"></lm-viewer-switch>
   </header>
 
   <section style="flex:1;padding:0 var(--gutter)">
