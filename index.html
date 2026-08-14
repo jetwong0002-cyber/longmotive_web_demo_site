@@ -103,7 +103,7 @@
        and the phase caption. So the caption, the meter and the copy all hang off
        the band instead, and what is left over collects at the bottom where it
        reads as the section's floor rather than a hole through the middle. */
-    .lm-hero-stage{--band-top:7vh;--band-h:56.25vw;background:var(--lm-blue-900)}
+    .lm-hero-stage{--band-top:12.5vh;--band-h:56.25vw;background:var(--lm-blue-900)}
     .lm-hero-media{top:var(--band-top)!important;height:var(--band-h)!important;bottom:auto!important}
     .lm-hero-meter{top:calc(var(--band-top) + var(--band-h) + 14px)!important;bottom:auto!important}
     /* The captions stack on their wrapper's bottom edge, so collapsing its
@@ -116,7 +116,6 @@
     .lm-hero-copy{justify-content:flex-start!important;padding-top:calc(var(--band-top) + var(--band-h) + 60px)!important;padding-bottom:24px!important}
     /* Desktop sizes leave the copy 599px tall — taller than the 601px below the
        band, so it climbed back over the footage it was just moved out of. */
-    .lm-hero-copy img{height:44px!important}
     .lm-hero-copy h1{font-size:clamp(30px,8.6vw,38px)!important;margin-top:14px!important}
     .lm-hero-copy p{font-size:16px!important;margin:16px 0 24px!important}
   }
@@ -125,11 +124,22 @@
      cue went first. Tighten the block rather than let it overflow. */
   @media(max-width:760px) and (max-height:700px){
     .lm-hero-stage{--band-top:0px}
-    .lm-hero-copy{padding-top:calc(var(--band-h) + 52px)!important;padding-bottom:12px!important}
-    .lm-hero-caps{top:calc(var(--band-h) + 52px)!important;bottom:12px!important}
-    .lm-hero-copy img{height:36px!important}
+    .lm-hero-copy{padding-top:calc(var(--band-top) + var(--band-h) + 52px)!important;padding-bottom:12px!important}
+    .lm-hero-caps{top:calc(var(--band-top) + var(--band-h) + 52px)!important;bottom:12px!important}
     .lm-hero-copy h1{font-size:clamp(26px,7.4vw,32px)!important;margin-top:10px!important}
     .lm-hero-copy p{font-size:15px!important;margin:12px 0 18px!important}
+  }
+  /* Only once there is slack to spare. Under 620px the band, meter and copy
+     already fill the stage, and any offset pushes the scroll cue off the
+     bottom edge of an overflow:hidden stage. */
+  @media(max-width:760px) and (min-height:620px) and (max-height:700px){
+    .lm-hero-stage{--band-top:5vh}
+  }
+  /* Under 600px even the trimmed block runs past an overflow:hidden stage and
+     clips its own scroll cue. Pull the gap under the band in. */
+  @media(max-width:760px) and (max-height:600px){
+    .lm-hero-copy{padding-top:calc(var(--band-top) + var(--band-h) + 30px)!important}
+    .lm-hero-caps{top:calc(var(--band-top) + var(--band-h) + 30px)!important}
   }
   @media(max-width:640px){.lm-nav{display:none!important}}
   @media(max-width:600px){.lm-g3,.lm-g4{grid-template-columns:1fr!important}}
@@ -264,7 +274,6 @@
           <div ref="{{ heroScrimBottomRef }}" style="position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(180deg,rgba(7,36,72,0),rgba(7,36,72,.82));pointer-events:none"></div>
           <div class="lm-hero-copy" style="position:relative;max-width:var(--container-max);margin:0 auto;height:100%;display:flex;flex-direction:column;justify-content:center;padding:0 var(--gutter) clamp(96px,18vh,150px)">
             <div ref="{{ heroCopyRef }}" style="will-change:opacity,transform">
-              <div style="display:inline-block;position:relative;margin-bottom:clamp(12px,2.5vh,24px)"><div style="position:absolute;inset:-40% -55%;background:radial-gradient(ellipse at center,rgba(255,255,255,.2),rgba(255,255,255,.08) 45%,rgba(255,255,255,0) 72%);pointer-events:none"></div><img src="assets/lm-mark.png" alt="Longmotive" style="position:relative;height:clamp(40px,8vh,64px);width:auto;display:block;filter:drop-shadow(0 6px 22px rgba(7,36,72,.35))"></div>
               <div style="display:inline-flex;align-items:center;gap:10px;font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--lm-cyan-400)"><span style="width:30px;height:2px;background:currentColor"></span>Mechanical &amp; Electrical Engineering</div>
               <h1 style="color:#fff;font-size:var(--fs-display-lg);line-height:1.02;margin:20px 0 0;max-width:16ch">We build the <span style="background:linear-gradient(90deg,var(--lm-cyan-400),var(--lm-cyan-500));-webkit-background-clip:text;background-clip:text;color:transparent">data-center</span> backbone.</h1>
               <p style="color:#fff;font-weight:600;font-size:19px;line-height:1.65;max-width:56ch;margin:22px 0 34px;text-shadow:0 1px 3px rgba(7,36,72,.55),0 5px 26px rgba(7,36,72,.5)">CIDB G7 contractor &#183; 20+ years &#183; 500+ workforce &#8212; delivering MEP construction across Malaysia, Indonesia and China.</p>
@@ -300,7 +309,6 @@
         <sc-if value="{{ heroSrc }}" hint-placeholder-val="{{ false }}"><img data-src="{{ heroSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"/></sc-if>
         <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,36,72,.9) 0%,rgba(7,36,72,.64) 32%,rgba(7,36,72,.2) 54%,rgba(7,36,72,0) 70%)"></div>
         <div style="position:relative;max-width:var(--container-max);margin:0 auto;padding:116px var(--gutter) 108px">
-          <div style="display:inline-block;position:relative;margin-bottom:clamp(12px,2.5vh,24px)"><div style="position:absolute;inset:-40% -55%;background:radial-gradient(ellipse at center,rgba(255,255,255,.2),rgba(255,255,255,.08) 45%,rgba(255,255,255,0) 72%);pointer-events:none"></div><img src="assets/lm-mark.png" alt="Longmotive" style="position:relative;height:clamp(40px,8vh,64px);width:auto;display:block;filter:drop-shadow(0 6px 22px rgba(7,36,72,.35))"></div>
           <div style="display:inline-flex;align-items:center;gap:10px;font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--lm-cyan-400)"><span style="width:30px;height:2px;background:currentColor"></span>Mechanical &amp; Electrical Engineering</div>
           <h1 style="color:#fff;font-size:var(--fs-display-lg);line-height:1.02;margin:20px 0 0;max-width:16ch">We build the <span style="background:linear-gradient(90deg,var(--lm-cyan-400),var(--lm-cyan-500));-webkit-background-clip:text;background-clip:text;color:transparent">data-center</span> backbone.</h1>
           <p style="color:#fff;font-weight:600;font-size:19px;line-height:1.65;max-width:56ch;margin:22px 0 34px;text-shadow:0 1px 3px rgba(7,36,72,.55),0 5px 26px rgba(7,36,72,.5)">CIDB G7 contractor &#183; 20+ years &#183; 500+ workforce &#8212; delivering MEP construction across Malaysia, Indonesia and China.</p>
