@@ -96,15 +96,36 @@
        the middle 26% of each frame — the campus rose off both edges of the
        screen. Give the media its own 16:9 band (56.25vw is 9/16 of the width,
        so cover crops nothing) and stack the copy underneath it instead of over
-       it. The stage paints brand navy because the band no longer fills it. */
+       it. The stage paints brand navy because the band no longer fills it.
+
+       Everything else in the stage is anchored to its bottom edge, which the
+       band no longer reaches: that left 353px of bare navy between the footage
+       and the phase caption. So the caption, the meter and the copy all hang off
+       the band instead, and what is left over collects at the bottom where it
+       reads as the section's floor rather than a hole through the middle. */
     .lm-hero-stage{background:var(--lm-blue-900)}
     .lm-hero-media{height:56.25vw!important;bottom:auto!important}
-    .lm-hero-copy{justify-content:flex-end!important;padding-bottom:clamp(56px,10vh,96px)!important}
+    .lm-hero-meter{top:calc(56.25vw + 14px)!important;bottom:auto!important}
+    /* The captions stack on their wrapper's bottom edge, so collapsing its
+       height would hang them upward across the band — flip them to the top. */
+    .lm-hero-caps{top:calc(56.25vw + 60px)!important;bottom:auto!important;height:auto!important}
+    .lm-hero-caps > div{top:0!important;bottom:auto!important}
+    .lm-hero-copy{justify-content:flex-start!important;padding-top:calc(56.25vw + 60px)!important;padding-bottom:24px!important}
     /* Desktop sizes leave the copy 599px tall — taller than the 601px below the
        band, so it climbed back over the footage it was just moved out of. */
     .lm-hero-copy img{height:44px!important}
     .lm-hero-copy h1{font-size:clamp(30px,8.6vw,38px)!important;margin-top:14px!important}
     .lm-hero-copy p{font-size:16px!important;margin:16px 0 24px!important}
+  }
+  /* Browser chrome takes a phone's 812px down to roughly 660px of viewport, and
+     at that height the copy ran 21px past the stage, which clips — the scroll
+     cue went first. Tighten the block rather than let it overflow. */
+  @media(max-width:760px) and (max-height:700px){
+    .lm-hero-copy{padding-top:calc(56.25vw + 52px)!important;padding-bottom:12px!important}
+    .lm-hero-caps{top:calc(56.25vw + 52px)!important}
+    .lm-hero-copy img{height:36px!important}
+    .lm-hero-copy h1{font-size:clamp(26px,7.4vw,32px)!important;margin-top:10px!important}
+    .lm-hero-copy p{font-size:15px!important;margin:12px 0 18px!important}
   }
   @media(max-width:640px){.lm-nav{display:none!important}}
   @media(max-width:600px){.lm-g3,.lm-g4{grid-template-columns:1fr!important}}
@@ -251,7 +272,7 @@
               </div>
             </div>
           </div>
-          <div style="position:absolute;left:var(--gutter);right:var(--gutter);bottom:78px;height:170px;max-width:540px;pointer-events:none">
+          <div class="lm-hero-caps" style="position:absolute;left:var(--gutter);right:var(--gutter);bottom:78px;height:170px;max-width:540px;pointer-events:none">
             <sc-for list="{{ heroPhases }}" as="ph" hint-placeholder-count="3">
               <div ref="{{ ph.capRef }}" style="position:absolute;bottom:0;left:0;right:0;opacity:0;transition:opacity .35s;background:linear-gradient(90deg,rgba(7,36,72,.82),rgba(7,36,72,.55));backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-left:3px solid var(--lm-cyan-500);border-radius:var(--radius-sm);padding:16px 22px;box-shadow:0 8px 28px rgba(7,36,72,.35)">
                 <div class="lm-capnum" style="font-family:var(--font-display);font-weight:800;font-size:58px;line-height:1;color:var(--lm-cyan-400)">{{ ph.number }}</div>
@@ -260,7 +281,7 @@
               </div>
             </sc-for>
           </div>
-          <div style="position:absolute;left:var(--gutter);right:var(--gutter);bottom:36px;display:flex;flex-direction:column;gap:9px">
+          <div class="lm-hero-meter" style="position:absolute;left:var(--gutter);right:var(--gutter);bottom:36px;display:flex;flex-direction:column;gap:9px">
             <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(214,228,245,.55)"><span>Campus Growth</span><span>Nusajaya Tech Park · Johor</span></div>
             <div style="height:3px;border-radius:999px;background:rgba(214,228,245,.16);overflow:hidden">
               <div ref="{{ heroBarRef }}" style="height:100%;border-radius:999px;background:linear-gradient(90deg,var(--lm-blue-600),var(--lm-cyan-500));transform:scaleX(0);transform-origin:left center"></div>
