@@ -439,6 +439,7 @@ class LMBimViewer extends HTMLElement{
     const resize=()=>{const w=this.clientWidth||800,h=this.clientHeight||520;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();};
     new ResizeObserver(resize).observe(this);resize();
     const t0=performance.now();
+    this.debugScene={scene,camera,renderer,root:scene,render:()=>renderer.render(scene,camera)};
     this._dispose=()=>{
       scene.traverse(o=>{
         if(o.geometry)o.geometry.dispose();
