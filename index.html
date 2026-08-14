@@ -763,9 +763,9 @@ const FILTERS=['All','HVAC & Cooling','Electrical','ELV & Controls','Fire Protec
 const HOME_CURATED=['Rooftop Diesel Generators','Rooftop AC Outdoor Units','ECC Monitoring Room','Chiller Piping','Outdoor Chilled-Water Storage Tank','Rooftop Fluorine-Pump System'];
 const IMG='assets/img/';
 const HOME_AUTO_SCROLL_VH_PER_SEC=.18;
-const HOME_MAX_WHEEL_VH=.08;
 const HOME_HERO_SEEN_KEY='longmotive.hero-intro-seen.v1';
 const HOME_HERO_END_PROGRESS=.75;
+const SECTION_STEP_COOLDOWN_MS=420;
 
 class Component extends DCLogic {
   state = { screen:null, filter:'All', projectsExpanded:false, contactTab:'careers', sent:false, err:false, submitting:false, errorMessage:'', openCert:null, logoStage:0, navRevealed:false, flyT:null, swapFront:0,
@@ -928,11 +928,6 @@ class Component extends DCLogic {
     window.removeEventListener('touchmove',this._blockEv,{passive:false});
     window.removeEventListener('keydown',this._blockKey,{passive:false});
   }
-  _resumeHomeSnap=()=>{
-    this._snapResume=null;
-    const scr=this.state.screen||this.props.startScreen||'Home';
-    if(typeof document!=='undefined') document.documentElement.style.scrollSnapType=(scr==='Home'||scr==='About')?'y proximity':'';
-  };
   _heroSeen(){
     try{ return window.sessionStorage.getItem(HOME_HERO_SEEN_KEY)==='1'; }catch(e){ return false; }
   }
@@ -963,27 +958,46 @@ class Component extends DCLogic {
     this._lastY=top;
     this._heroUpdate();
   };
-  // Keep high-delta mouse wheels from crossing several homepage sections in one
-  // gesture. Fine-grained touchpad input stays native; the opening hero retains
-  // its own progress-aware cap until the logo hand-off finishes.
-  _slowHomeWheel=(e)=>{
+  // Desktop section stepper: one wheel/trackpad gesture selects exactly one
+  // adjacent page section. The active hero scrub and mobile layouts remain native.
+  _stepSectionWheel=(e)=>{
     const scr=this.state.screen||this.props.startScreen||'Home';
-    if(scr!=='Home'||this._locked||!this._heroFree||e.ctrlKey||Math.abs(e.deltaX)>Math.abs(e.deltaY)) return;
+    if((scr!=='Home'&&scr!=='About')||this._locked||e.ctrlKey||Math.abs(e.deltaX)>Math.abs(e.deltaY)) return;
+    if(typeof matchMedia!=='undefined'&&matchMedia('(max-width:760px)').matches) return;
     const unit=e.deltaMode===1?16:(e.deltaMode===2?window.innerHeight:1);
     const delta=e.deltaY*unit;
-    const cap=Math.max(44,window.innerHeight*HOME_MAX_WHEEL_VH);
-    if(Math.abs(delta)<=cap) return;
-    e.preventDefault();
+    if(Math.abs(delta)<1) return;
+    if(scr==='Home'&&this._track&&this._track.isConnected){
+      const r=this._track.getBoundingClientRect(),range=r.height-window.innerHeight;
+      const p=range>0?Math.min(1,Math.max(0,-r.top/range)):0;
+      if(p<HOME_HERO_END_PROGRESS&&r.bottom>window.innerHeight) return;
+    }
     const now=performance.now();
-    if(now-(this._lastSlowWheel||0)<72) return;
-    this._lastSlowWheel=now;
-    const reduce=typeof matchMedia!=='undefined'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const top=window.scrollY+Math.sign(delta)*cap;
-    const de=document.documentElement;
-    de.style.scrollSnapType='none';
-    if(this._snapResume) clearTimeout(this._snapResume);
-    this._snapResume=setTimeout(this._resumeHomeSnap,260);
-    try{ window.scrollTo({top,behavior:reduce?'auto':'smooth'}); }catch(err){ window.scrollTo(0,top); }
+    if(now<(this._sectionStepUntil||0)){ e.preventDefault(); return; }
+    const main=document.querySelector('main');
+    if(!main) return;
+    const sections=Array.from(main.querySelectorAll('section')).filter(s=>
+      s.offsetHeight>0&&!(s.parentElement&&s.parentElement.closest('section'))
+    ).map(s=>{const r=s.getBoundingClientRect();return {el:s,top:window.scrollY+r.top,height:r.height};})
+      .sort((a,b)=>a.top-b.top);
+    if(!sections.length) return;
+    const y=window.scrollY,epsilon=2;
+    let current=null;
+    sections.forEach(s=>{if(s.top<=y+epsilon)current=s;});
+    if(current&&current.height>window.innerHeight+epsilon){
+      const innerBottom=current.top+current.height-window.innerHeight;
+      if((delta>0&&y<innerBottom-epsilon)||(delta<0&&y>current.top+epsilon)) return;
+    }
+    const target=delta>0
+      ?sections.find(s=>s.top>y+epsilon)
+      :sections.slice().reverse().find(s=>s.top<y-epsilon);
+    if(!target) return;
+    e.preventDefault();
+    this._sectionStepUntil=now+SECTION_STEP_COOLDOWN_MS;
+    const de=document.documentElement,scrollBehavior=de.style.scrollBehavior,snapType=de.style.scrollSnapType;
+    de.style.scrollBehavior='auto'; de.style.scrollSnapType='none';
+    try{ window.scrollTo(0,Math.round(target.top)); }
+    finally{ de.style.scrollBehavior=scrollBehavior; de.style.scrollSnapType=snapType; }
   };
   _startLogoSeq(){
     if(this._logoSeq||this.state.navRevealed) return; this._logoSeq=true;
@@ -1215,7 +1229,7 @@ class Component extends DCLogic {
     // the rAF loop is the smooth path; this listener exists so the >200ms fallback
     // in _heroUpdate can still fire when rAF is throttled or unavailable
     window.addEventListener('scroll',this._updateHero,{passive:true});
-    window.addEventListener('wheel',this._slowHomeWheel,{passive:false});
+    window.addEventListener('wheel',this._stepSectionWheel,{passive:false});
     // only real scroll input hands control to the user — clicks/taps don't end the tour
     this._auto=!returnToSeenHero; this._autoAt=returnToSeenHero?Infinity:performance.now()+2000;
     this._stopAuto=(e)=>{ if(e.type==='keydown'&&['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].indexOf(e.key)===-1) return; this._haltAuto(); };
@@ -1265,8 +1279,7 @@ class Component extends DCLogic {
     if(this._stopAuto) ['wheel','touchmove','keydown'].forEach(t=>window.removeEventListener(t,this._stopAuto,{passive:true}));
     window.removeEventListener('resize',this._updateHero);
     window.removeEventListener('scroll',this._updateHero);
-    window.removeEventListener('wheel',this._slowHomeWheel,{passive:false});
-    if(this._snapResume){ clearTimeout(this._snapResume); this._snapResume=null; }
+    window.removeEventListener('wheel',this._stepSectionWheel,{passive:false});
     this._stopHeroLoop();
   }
   go(n,contactTab){
