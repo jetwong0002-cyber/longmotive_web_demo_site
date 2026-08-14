@@ -19,7 +19,7 @@ const ORDER=['plant','ahu','chw','cdw','fire','elec'];
 const IDS=ORDER;
 const FAMILY={plant:'Plant equipment',ahu:'Air handling',chw:'Pipework',cdw:'Pipework',fire:'Fire protection',elec:'Electrical'};
 const SEC={};ORDER.forEach(k=>{SEC[k]={name:DISC[k].name,type:FAMILY[k],devices:DISC[k].spec.join(' \u00b7 '),note:DISC[k].blurb};});
-const HUDCFG={views:[],walls:false,colour:true,explode:true,loadingLabel:'Building the plant room',
+const HUDCFG={views:[],walls:false,colour:true,explode:false,loadingLabel:'Building the plant room',
   extras:[{id:'flow',label:'Flow',key:'f',title:'Animate flow direction'}],
   hint:'Drag orbit &#183; Scroll zoom<br>R reset &#183; C colours &#183; F flow &#183; Esc show all'};
 const ARIA='Interactive 3D chiller plant room. Drag or use arrow keys to orbit, scroll to zoom. Click a system to isolate it. Press R to reset, C for BIM colours, F for flow animation, Escape to show all.';
@@ -193,12 +193,14 @@ class LMBimViewer extends HTMLElement{
     const floor=new THREE.Mesh(new THREE.PlaneGeometry(W,L),new THREE.MeshStandardMaterial({color:0xa8adb1,roughness:.2,metalness:.08}));
     floor.rotation.x=-Math.PI/2;floor.position.z=ZC;floor.receiveShadow=true;world.add(floor);
     const wallM=new THREE.MeshStandardMaterial({color:0xf1f4f7,roughness:.95});
-    const sideL=new THREE.Mesh(new THREE.PlaneGeometry(L,5.2),wallM);sideL.rotation.y=Math.PI/2;sideL.position.set(-W/2,2.6,ZC);sideL.receiveShadow=true;world.add(sideL);
-    const sideR=new THREE.Mesh(new THREE.PlaneGeometry(L,5.2),wallM);sideR.rotation.y=-Math.PI/2;sideR.position.set(W/2,2.6,ZC);sideR.receiveShadow=true;world.add(sideR);
-    const endW=new THREE.Mesh(new THREE.PlaneGeometry(W,5.2),wallM);endW.position.set(0,2.6,-15);endW.receiveShadow=true;world.add(endW);
-    const backW=new THREE.Mesh(new THREE.PlaneGeometry(W,5.2),wallM);backW.rotation.y=Math.PI;backW.position.set(0,2.6,13);world.add(backW);
+    // walls/ceiling raised to 6.3m so the signature camera (y≈5.44) sits INSIDE the room —
+    // at the old 5.2m roof the default view floated above it and the frame showed gradient
+    const sideL=new THREE.Mesh(new THREE.PlaneGeometry(L,6.3),wallM);sideL.rotation.y=Math.PI/2;sideL.position.set(-W/2,3.15,ZC);sideL.receiveShadow=true;world.add(sideL);
+    const sideR=new THREE.Mesh(new THREE.PlaneGeometry(L,6.3),wallM);sideR.rotation.y=-Math.PI/2;sideR.position.set(W/2,3.15,ZC);sideR.receiveShadow=true;world.add(sideR);
+    const endW=new THREE.Mesh(new THREE.PlaneGeometry(W,6.3),wallM);endW.position.set(0,3.15,-15);endW.receiveShadow=true;world.add(endW);
+    const backW=new THREE.Mesh(new THREE.PlaneGeometry(W,6.3),wallM);backW.rotation.y=Math.PI;backW.position.set(0,3.15,13);world.add(backW);
     const ceil=new THREE.Mesh(new THREE.PlaneGeometry(W,L),new THREE.MeshStandardMaterial({color:0x1a1d21,roughness:.9}));
-    ceil.rotation.x=Math.PI/2;ceil.position.set(0,5.2,ZC);world.add(ceil);
+    ceil.rotation.x=Math.PI/2;ceil.position.set(0,6.25,ZC);world.add(ceil);
     // dark grey skirting at the wall base (reference photo)
     const skM=new THREE.MeshStandardMaterial({color:0x565c61,roughness:.7});
     [[-W/2+.03,ZC,0,.06,L],[W/2-.03,ZC,0,.06,L]].forEach(([x,z])=>{const k=new THREE.Mesh(new THREE.BoxGeometry(.06,.2,L),skM);k.position.set(x,.1,z);world.add(k);});
@@ -362,6 +364,8 @@ class LMBimViewer extends HTMLElement{
     };
     this._applyMode();
     // ---- camera: centered corridor perspective, gentle sway until first touch ----
+    // locked corridor standpoint: phi >= 1.365 keeps the camera BELOW the 5.2m ceiling plane —
+    // the old 1.32 default floated above it and the frame showed gradient past the roof
     const target=new THREE.Vector3(0,2.1,-4.5);
     let theta=0,phi=1.32,radius=13.5;
     const homeT=target.clone(),homeR=radius;
@@ -369,12 +373,12 @@ class LMBimViewer extends HTMLElement{
     let auto=(this.getAttribute('auto-rotate')||'on')!=='off'&&!this._reduce,dragging=false,px=0,py=0;
     this._orbitKey=(k)=>{
       const step=.09;
-      if(k==='ArrowLeft'){theta-=step;auto=false;return true;}
-      if(k==='ArrowRight'){theta+=step;auto=false;return true;}
-      if(k==='ArrowUp'){phi=Math.max(.35,phi-step*.7);auto=false;return true;}
+      if(k==='ArrowLeft'){theta=Math.max(-.4,theta-step);auto=false;return true;}
+      if(k==='ArrowRight'){theta=Math.min(.4,theta+step);auto=false;return true;}
+      if(k==='ArrowUp'){phi=Math.max(1.28,phi-step*.7);auto=false;return true;}
       if(k==='ArrowDown'){phi=Math.min(1.46,phi+step*.7);auto=false;return true;}
       if(k==='+'||k==='='){radius=Math.max(5,radius*.9);auto=false;focus=false;return true;}
-      if(k==='-'||k==='_'){radius=Math.min(24,radius*1.1);auto=false;focus=false;return true;}
+      if(k==='-'||k==='_'){radius=Math.min(13.5,radius*1.1);auto=false;focus=false;return true;} // zoom-out stops at the locked framing
       return false;
     };
     const applyCam=()=>{
@@ -385,10 +389,10 @@ class LMBimViewer extends HTMLElement{
     cv.addEventListener('pointerdown',e=>{dragging=true;auto=false;focus=false;px=e.clientX;py=e.clientY;cv.classList.add('drag');cv.setPointerCapture(e.pointerId);});
     cv.addEventListener('pointerup',()=>{dragging=false;cv.classList.remove('drag');});
     cv.addEventListener('pointermove',e=>{
-      if(dragging){theta-=(e.clientX-px)*.0052;phi=Math.min(1.46,Math.max(.35,phi-(e.clientY-py)*.0042));px=e.clientX;py=e.clientY;}
+      if(dragging){theta=Math.min(.4,Math.max(-.4,theta-(e.clientX-px)*.0052));phi=Math.min(1.46,Math.max(1.28,phi-(e.clientY-py)*.0042));px=e.clientX;py=e.clientY;}
       else{const r=cv.getBoundingClientRect();this._mx=((e.clientX-r.left)/r.width)*2-1;this._my=-((e.clientY-r.top)/r.height)*2+1;this._hoverDirty=true;}
     });
-    cv.addEventListener('wheel',e=>{e.preventDefault();auto=false;focus=false;radius=Math.min(24,Math.max(5,radius*(1+e.deltaY*.0011)));},{passive:false});
+    cv.addEventListener('wheel',e=>{e.preventDefault();auto=false;focus=false;radius=Math.min(13.5,Math.max(5,radius*(1+e.deltaY*.0011)));},{passive:false});
     // ---- raycast hover / click-isolate ----
     const ray=new THREE.Raycaster();const mv=new THREE.Vector2();
     let hover=null;
@@ -408,7 +412,7 @@ class LMBimViewer extends HTMLElement{
         const bb=new THREE.Box3();groups[d].forEach(m=>bb.expandByObject(m));
         const c=bb.getCenter(new THREE.Vector3()),sz=bb.getSize(new THREE.Vector3());
         c.y=Math.max(1.2,c.y);tGoal=c;
-        rGoal=Math.min(18,Math.max(5.5,Math.max(sz.x,sz.y,sz.z)*.85));
+        rGoal=Math.min(13.5,Math.max(5.5,Math.max(sz.x,sz.y,sz.z)*.85));
       }else{tGoal=homeT.clone();rGoal=homeR;}
       focus=true;
     };

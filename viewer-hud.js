@@ -1,6 +1,6 @@
 /* LMHUD — shared Longmotive BIM-viewer HUD, standardised on the AHU room viewer.
-   Owns the whole chrome: topbar buttons, collapsible filter rail (system chips,
-   item tags, per-category visibility + "only"), props panel, hover tip, explode
+   Owns the whole chrome: topbar buttons, collapsible filter rail (system chips
+   + per-component visibility and "only"), props panel, hover tip, explode
    slider, colour-by-system, walls toggle, loading status and narrow-screen layout.
    A viewer supplies its sections and a few callbacks; the HUD owns all DOM. */
 (function(){
@@ -18,6 +18,29 @@ const CSS=`
 
   .topbar{position:absolute;top:12px;left:12px;right:12px;z-index:4;display:flex;gap:8px;align-items:center;flex-wrap:wrap;pointer-events:none}
   .topbar>*{pointer-events:auto}
+
+  /* The HUD is shown by default, but it sits OVER the model, so it holds back:
+     translucent at rest, solid the moment it is hovered or focused, and further
+     out of the way while the model is being dragged. .hudtoggle still hides the
+     lot on demand (H), and it never hides itself or that would be a trap. */
+  .wrap{--hud-rail:.50;--hud-props:.78;--hud-btn:.72;--hud-hint:.50}
+  .wrap.dragging{--hud-rail:.16;--hud-props:.28;--hud-btn:.26;--hud-hint:.20}
+  .hudtoggle{position:absolute;top:12px;right:12px;z-index:8;height:30px;padding:0 12px;
+    border-radius:3px;border:1px solid rgba(126,170,214,.28);background:rgba(9,26,45,.72);
+    backdrop-filter:blur(8px);font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;
+    letter-spacing:.1em;text-transform:uppercase;color:#bcd8f0;opacity:0;
+    transition:opacity .2s,border-color .15s,color .15s,background .15s}
+  /* .ready gates it in both states, or pressing H mid-load pops the toggle up
+     over the loading panel while everything else is still hidden */
+  .wrap.ready .hudtoggle{opacity:var(--hud-btn)}
+  .wrap.ready .hudtoggle:hover{opacity:1;border-color:#00b0f0;color:#fff}
+  .hudtoggle:focus-visible{outline:2px solid #00b0f0;outline-offset:2px;opacity:1}
+  .wrap.hudoff .topbar,.wrap.hudoff .rail,.wrap.hudoff .railtab,
+  .wrap.hudoff .props,.wrap.hudoff .explode,
+  .wrap.hudoff .hint{opacity:0 !important;pointer-events:none !important}
+  /* .tip deliberately survives a hudoff: it is a small cursor label, not
+     chrome, and without it the viewer gives no sign the parts are live */
+  .wrap:not(.hudoff) .topbar{right:64px}
   .spacer{flex:1}
   .meta{display:flex;gap:10px;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:10px;
     letter-spacing:.1em;text-transform:uppercase;color:#6f93bb;padding:0 2px}
@@ -28,6 +51,8 @@ const CSS=`
     border:1px solid rgba(126,170,214,.28);background:rgba(9,26,45,.82);backdrop-filter:blur(8px);
     font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:.1em;
     text-transform:uppercase;color:#bcd8f0;transition:border-color .15s,background .15s,color .15s}
+  .topbar .btn,.topbar .meta{opacity:var(--hud-btn);transition:opacity .2s}
+  .topbar:hover .btn,.topbar:hover .meta,.topbar .btn:focus-visible{opacity:1}
   .btn:hover{border-color:#00b0f0;color:#fff}
   .btn:active{transform:translateY(1px)}
   .btn.on{background:#0f52a0;border-color:#0f52a0;color:#fff}
@@ -38,22 +63,25 @@ const CSS=`
     background:rgba(7,26,46,.9);backdrop-filter:blur(12px);border:1px solid rgba(126,170,214,.2);
     border-top:3px solid #00b0f0;border-radius:4px;overflow:hidden;opacity:0;transform:translateX(-8px);
     transition:opacity .25s,transform .25s;pointer-events:none}
-  .wrap.ready .rail{opacity:1;transform:none;pointer-events:auto}
+  .wrap.ready .rail{opacity:var(--hud-rail);transform:none;pointer-events:auto}
+  .wrap.ready .rail:hover,.wrap.ready .rail:focus-within{opacity:1}
+  /* railhid must come AFTER the hover rule: same specificity, so source order
+     decides, and a hidden rail must never come back on hover */
   .wrap.ready.railhid .rail{opacity:0;transform:translateX(-14px);pointer-events:none}
   .railtab{position:absolute;top:96px;left:270px;z-index:6;width:19px;height:46px;display:flex;
     align-items:center;justify-content:center;padding:0;
     border:1px solid rgba(126,170,214,.2);border-left:none;border-radius:0 3px 3px 0;
     background:rgba(7,26,46,.9);backdrop-filter:blur(12px);color:#7fd4ff;font-size:11px;line-height:1;
     opacity:0;transition:left .25s,opacity .2s,border-color .15s,color .15s}
-  .wrap.ready .railtab{opacity:1}
-  .railtab:hover{border-color:#00b0f0;color:#fff}
+  .wrap.ready .railtab{opacity:var(--hud-btn)}
+  .railtab:hover{opacity:1;border-color:#00b0f0;color:#fff}
   .railtab:focus-visible{outline:2px solid #00b0f0;outline-offset:2px}
   .wrap.railhid .railtab{left:12px;border-left:1px solid rgba(126,170,214,.2);border-radius:3px}
   .rail h4{margin:0;padding:13px 14px 8px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:600;
     letter-spacing:.14em;text-transform:uppercase;color:#5f86ae;display:flex;align-items:center;gap:8px}
   .rail h4:before{content:'';width:14px;height:2px;background:#00b0f0;flex:none}
   .railclose{display:none}
-  .systems,.unitrow{display:flex;flex-wrap:wrap;gap:5px;padding:0 12px 12px}
+  .systems{display:flex;flex-wrap:wrap;gap:5px;padding:0 12px 12px}
   .chip{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:2px;
     border:1px solid rgba(126,170,214,.22);background:rgba(255,255,255,.03);
     font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.07em;color:#7f9cbb;
@@ -64,7 +92,6 @@ const CSS=`
   .chip:focus-visible{outline:2px solid #00b0f0;outline-offset:2px}
   .chip.sm{padding:4px 8px}
   .chip .sw{width:9px;height:9px;border-radius:1px;flex:none;opacity:.85}
-  .unitsec{border-top:1px solid rgba(126,170,214,.13)}
 
   .catsec{border-top:1px solid rgba(126,170,214,.13);flex:1;min-height:0;display:flex;flex-direction:column}
   .cats{flex:1;min-height:0;overflow:auto;padding:0 6px 8px;scrollbar-width:thin;scrollbar-color:#2a4767 transparent}
@@ -86,6 +113,20 @@ const CSS=`
     padding:2px 5px;border-radius:2px;opacity:0;transition:opacity .12s;color:#5f86ae}
   .row:hover .only,.row .only:focus-visible{opacity:1}
   .row .only:hover{background:#0f52a0;color:#fff}
+  /* group header — the system filter, folded into the component list so a system is
+     never named twice (once as a chip, once as the rows beneath it) */
+  .gh{display:flex;align-items:center;gap:7px;width:100%;padding:11px 6px 4px;border:none;background:none;
+    font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.14em;
+    text-transform:uppercase;color:#5f86ae;cursor:pointer;text-align:left;transition:color .12s}
+  .gh:hover{color:#bcd8f0}
+  .gh.on{color:#7fd4ff}
+  .gh:focus-visible{outline:2px solid #00b0f0;outline-offset:2px}
+  .gh .sw{width:9px;height:9px;border-radius:1px;flex:none;opacity:.9}
+  .gh .gn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .gh em{font-style:normal;opacity:.55}
+  .row.solo{padding-top:7px}
+  .row .sw{width:9px;height:9px;border-radius:1px;flex:none;opacity:.9}
+  .row.child .nm{padding-left:2px}
   .railfoot{padding:9px 12px;border-top:1px solid rgba(126,170,214,.13);display:flex;gap:8px;align-items:center}
   .visible{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#5f86ae;flex:1}
 
@@ -93,7 +134,10 @@ const CSS=`
     background:rgba(7,26,46,.92);backdrop-filter:blur(12px);border:1px solid rgba(126,170,214,.2);
     border-left:3px solid #00b0f0;border-radius:4px;padding:14px 16px 15px;
     opacity:0;transform:translateY(-6px);transition:opacity .2s,transform .2s;pointer-events:none}
-  .props.on{opacity:1;transform:none;pointer-events:auto}
+  /* higher rest opacity than the rail: this panel only exists because the user
+     just clicked something, so it has to stay readable without being chased */
+  .props.on{opacity:var(--hud-props);transform:none;pointer-events:auto}
+  .props.on:hover,.props.on:focus-within{opacity:1}
   .props .ph{display:flex;align-items:flex-start;gap:10px;margin-bottom:11px}
   .props h3{margin:0;flex:1;font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:19px;
     line-height:1.12;letter-spacing:.02em;text-transform:uppercase;color:#fff;word-break:break-word}
@@ -110,7 +154,8 @@ const CSS=`
     display:flex;align-items:center;gap:12px;padding:9px 15px;border-radius:4px;
     background:rgba(7,26,46,.9);backdrop-filter:blur(12px);border:1px solid rgba(126,170,214,.2);
     opacity:0;transition:opacity .25s;pointer-events:none;max-width:calc(100% - 24px)}
-  .wrap.ready .explode{opacity:1;pointer-events:auto}
+  .wrap.ready .explode{opacity:var(--hud-props);pointer-events:auto}
+  .wrap.ready .explode:hover,.wrap.ready .explode:focus-within{opacity:1}
   .explode label{font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.13em;
     text-transform:uppercase;color:#5f86ae;white-space:nowrap}
   .slider{-webkit-appearance:none;appearance:none;width:min(240px,38vw);height:3px;border-radius:2px;
@@ -133,7 +178,8 @@ const CSS=`
 
   .hint{position:absolute;right:14px;bottom:14px;z-index:3;text-align:right;
     font-family:'IBM Plex Mono',monospace;font-size:9px;line-height:1.8;letter-spacing:.1em;
-    text-transform:uppercase;color:#3f628a;pointer-events:none}
+    text-transform:uppercase;color:#3f628a;pointer-events:none;
+    opacity:var(--hud-hint);transition:opacity .2s}
 
   .status{position:absolute;inset:0;z-index:8;display:none;flex-direction:column;align-items:center;
     justify-content:center;gap:9px;text-align:center;padding:32px;background:rgba(6,20,36,.86)}
@@ -170,6 +216,7 @@ function markup(cfg){
   return `<style>${CSS}</style>
 <div class="wrap">
   <canvas></canvas>
+  <button class="hudtoggle" aria-pressed="true" title="Hide the viewer controls (H)">HUD</button>
   <div class="topbar">
     <button class="btn filtoggle">Filters</button>
     <button class="btn reset" title="Reset view (R)">Reset view</button>
@@ -182,10 +229,7 @@ function markup(cfg){
   </div>
   <aside class="rail">
     <button class="railclose" aria-label="Close filters">&#10005;</button>
-    <h4>System</h4>
-    <div class="systems"></div>
-    <div class="unitsec"><h4>Item tag</h4><div class="unitrow"></div></div>
-    <div class="catsec"><h4>Equipment</h4><div class="cats"></div></div>
+    <div class="catsec"><h4>Components</h4><div class="cats"></div></div>
     <div class="railfoot"><span class="visible"></span><button class="btn showall">Show all</button></div>
   </aside>
   <button class="railtab" aria-label="Hide filter panel" aria-expanded="true" title="Hide filter panel">&#10094;</button>
@@ -193,9 +237,7 @@ function markup(cfg){
     <div class="ph"><h3 class="p-el"></h3><button class="propclose" aria-label="Close">&#10005;</button></div>
     <dl>
       <dt>Type</dt><dd class="p-cat"></dd>
-      <dt>Tag</dt><dd class="p-sys mono"></dd>
-      <dt>Contains</dt><dd class="p-dev mono"></dd>
-      <dt class="p-noterow">Notes</dt><dd class="p-note"></dd>
+      <dt>Description</dt><dd class="p-dev"></dd>
     </dl>
   </aside>
   <div class="tip"></div>
@@ -218,34 +260,29 @@ function markup(cfg){
 function attach(host,sh,cfg,api){
   const $=(s)=>sh.querySelector(s);
   const wrap=$('.wrap'),hud={el:{wrap,status:$('.status'),pct:$('.s-pct'),tip:$('.tip'),props:$('.props'),
-    count:$('.count'),visible:$('.visible'),cats:$('.cats'),systems:$('.systems'),unitrow:$('.unitrow'),
+    count:$('.count'),visible:$('.visible'),cats:$('.cats'),
     rail:$('.rail'),railtab:$('.railtab')}};
   const order=api.order,SEC=api.SEC;
   const sysOf=(id)=>SEC[id].type;
   const systems=[...new Set(order.map(sysOf))];
   hud.colourOf=(id)=>PALETTE[systems.indexOf(sysOf(id))%PALETTE.length];
-  hud.hidden={};hud.sys=null;hud.tag=null;hud.sel=null;hud.hover=null;hud.colour=false;hud.wallsOff=false;
+  // No item-tag filter: the chips were one per section id, i.e. the raw internal
+  // codes, which duplicated the Equipment rows below under a less readable name.
+  hud.hidden={};hud.sys=null;hud.sel=null;hud.hover=null;hud.colour=false;hud.wallsOff=false;
 
-  /* rail: system chips */
-  systems.forEach(s=>{
-    const b=document.createElement('button');b.type='button';b.className='chip';
-    const n=order.filter(id=>sysOf(id)===s).length;
-    b.innerHTML=`<span class="sw" style="background:#${PALETTE[systems.indexOf(s)%PALETTE.length].toString(16).padStart(6,'0')}"></span>${s}<em>${n}</em>`;
-    b.addEventListener('click',()=>{hud.sys=hud.sys===s?null:s;applyFilter();});
-    hud.el.systems.appendChild(b);b._sys=s;
-  });
-  /* rail: item tags */
-  order.forEach(id=>{
-    const b=document.createElement('button');b.type='button';b.className='chip sm';b.textContent=id;
-    b.addEventListener('click',()=>{hud.tag=hud.tag===id?null:id;applyFilter();});
-    hud.el.unitrow.appendChild(b);b._tag=id;
-  });
-  /* rail: equipment rows */
-  const rows={};
-  order.forEach(id=>{
-    const r=document.createElement('div');r.className='row';
-    r.innerHTML=`<button class="tog" aria-label="Toggle ${SEC[id].name}"><i></i></button>
-      <button class="nm">${SEC[id].name}</button><span class="only">only</span><span class="n"></span>`;
+  /* ONE grouped list, not a chip row plus a flat list. The old rail named every system twice —
+     once as a filter chip, once again across the rows under it ("Chilled-water pump set 3" and
+     then CHW PUMP 1/2/3) — which is what made it feel like a wall of near-identical buttons.
+     Now the system IS the group header and doubles as its filter. A system holding a single
+     component gets no header at all: the row carries the swatch and stands alone, because a
+     heading followed by one near-identical row is the same repetition in another shape. */
+  const rows={},heads={};
+  const swatch=(s)=>`<span class="sw" style="background:#${PALETTE[systems.indexOf(s)%PALETTE.length].toString(16).padStart(6,'0')}"></span>`;
+  const mkRow=(id,solo,sys)=>{
+    const r=document.createElement('div');r.className='row'+(solo?' solo':' child');
+    r.innerHTML=`<button class="tog" aria-label="Toggle ${SEC[id].name}"><i></i></button>`
+      +(solo?swatch(sys):'')
+      +`<button class="nm">${SEC[id].name}</button><span class="only">only</span><span class="n"></span>`;
     r.querySelector('.tog').addEventListener('click',()=>{hud.hidden[id]=!hud.hidden[id];applyFilter();});
     r.querySelector('.nm').addEventListener('click',()=>api.onSelect(hud.sel===id?null:id));
     r.querySelector('.nm').addEventListener('mouseenter',()=>api.onHover(id));
@@ -255,14 +292,25 @@ function attach(host,sh,cfg,api){
       order.forEach(o=>hud.hidden[o]=alone?false:o!==id);applyFilter();
     });
     hud.el.cats.appendChild(r);rows[id]=r;
+  };
+  systems.forEach(s=>{
+    const ids=order.filter(id=>sysOf(id)===s);
+    if(ids.length>1){
+      const h=document.createElement('button');h.type='button';h.className='gh';h._sys=s;
+      h.innerHTML=`${swatch(s)}<span class="gn">${s}</span><em>${ids.length}</em>`;
+      h.title='Show only '+s;
+      h.addEventListener('click',()=>{hud.sys=hud.sys===s?null:s;applyFilter();});
+      hud.el.cats.appendChild(h);heads[s]=h;
+      ids.forEach(id=>mkRow(id,false,s));
+    }else{
+      mkRow(ids[0],true,s);
+    }
   });
-  if(!order.length)hud.el.unitrow.parentElement.style.display='none';
-
   function applyFilter(){
     order.forEach(id=>{
-      const byS=!hud.sys||sysOf(id)===hud.sys, byT=!hud.tag||hud.tag===id;
+      const byS=!hud.sys||sysOf(id)===hud.sys;
       hud.visibleOf=null;
-      rows[id]._vis=!hud.hidden[id]&&byS&&byT;
+      rows[id]._vis=!hud.hidden[id]&&byS;
     });
     api.onVisibility(id=>rows[id]._vis);
     hud.sync();
@@ -280,8 +328,7 @@ function attach(host,sh,cfg,api){
       r.querySelector('.n').textContent=n||'';
       tot+=n;if(on)vis+=n;
     });
-    hud.el.systems.querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',hud.sys===b._sys));
-    hud.el.unitrow.querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',hud.tag===b._tag));
+    Object.keys(heads).forEach(s=>heads[s].classList.toggle('on',hud.sys===s));
     hud.el.count.textContent=vis+' / '+tot+' parts';
     hud.el.visible.textContent=order.filter(id=>rows[id]._vis!==false).length+' of '+order.length+' shown';
     (cfg.views||[]).forEach(v=>{const b=$('.v-'+v.id);if(b)b.classList.toggle('on',hud.view===v.id);});
@@ -295,12 +342,11 @@ function attach(host,sh,cfg,api){
     if(!id||!SEC[id]){p.classList.remove('on');return;}
     $('.p-el').textContent=SEC[id].name;
     $('.p-cat').innerHTML=`<span class="sw" style="background:#${hud.colourOf(id).toString(16).padStart(6,'0')}"></span>${SEC[id].type}`;
-    $('.p-sys').textContent=id;
-    $('.p-dev').textContent=SEC[id].devices||'';
-    const note=SEC[id].note||'';
-    $('.p-note').textContent=note;
-    $('.p-noterow').style.display=note?'':'none';
-    $('.p-note').style.display=note?'':'none';
+    // ONE description, not a Tag / Contains / Notes stack. The tag was the raw
+    // section code, already the panel's own identity, and a section covers every
+    // identical item, so its description is written once and serves all of them.
+    const dev=SEC[id].devices||'',note=SEC[id].note||'';
+    $('.p-dev').textContent=dev&&note?dev+' · '+note:(note||dev);
     p.classList.add('on');
   };
   hud.setTip=(txt)=>{const t=hud.el.tip;t.textContent=txt||'';t.classList.toggle('on',!!txt);};
@@ -317,7 +363,7 @@ function attach(host,sh,cfg,api){
   /* topbar + rail wiring */
   (cfg.views||[]).forEach(v=>{const b=$('.v-'+v.id);if(b)b.addEventListener('click',()=>api.onView(v.id));});
   $('.reset').addEventListener('click',()=>api.onReset());
-  $('.showall').addEventListener('click',()=>{order.forEach(id=>hud.hidden[id]=false);hud.sys=null;hud.tag=null;applyFilter();});
+  $('.showall').addEventListener('click',()=>{order.forEach(id=>hud.hidden[id]=false);hud.sys=null;applyFilter();});
   $('.propclose').addEventListener('click',()=>api.onSelect(null));
   const wb=$('.walls');if(wb)wb.addEventListener('click',()=>{hud.wallsOff=!hud.wallsOff;api.onWalls(hud.wallsOff);hud.sync();});
   hud.extraOn={};
@@ -334,12 +380,26 @@ function attach(host,sh,cfg,api){
     hud.el.railtab.innerHTML=hid?'&#10095;':'&#10094;';
     hud.el.railtab.setAttribute('aria-expanded',String(!hid));
   });
+  const hudBtn=$('.hudtoggle');hud.el.hudtoggle=hudBtn;
+  hud.setHud=(on)=>{
+    wrap.classList.toggle('hudoff',!on);
+    hudBtn.setAttribute('aria-pressed',String(!!on));
+    hudBtn.title=(on?'Hide':'Show')+' the viewer controls (H)';
+    if(!on)hud.el.rail.classList.remove('open');   // narrow-screen rail overlay
+  };
+  hudBtn.addEventListener('click',()=>hud.setHud(wrap.classList.contains('hudoff')));
+  // While the model is being dragged the chrome drops right back — the viewers
+  // capture the pointer on the canvas, so pointerup lands there too.
+  {const cvEl=$('canvas'),drag=(on)=>wrap.classList.toggle('dragging',on);
+   cvEl.addEventListener('pointerdown',()=>drag(true));
+   ['pointerup','pointercancel','pointerleave'].forEach(e=>cvEl.addEventListener(e,()=>drag(false)));}
   $('.filtoggle').addEventListener('click',()=>hud.el.rail.classList.toggle('open'));
   $('.railclose').addEventListener('click',()=>hud.el.rail.classList.remove('open'));
   new ResizeObserver(()=>wrap.classList.toggle('narrow',host.clientWidth<720)).observe(host);
 
   hud.key=(k)=>{
     const kl=k.toLowerCase();
+    if(kl==='h'){hudBtn.click();return true;}
     const v=(cfg.views||[]).find(v=>v.key===kl);
     if(v){api.onView(v.id);return true;}
     if(kl==='r'){api.onReset();return true;}

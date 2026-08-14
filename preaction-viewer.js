@@ -31,7 +31,7 @@ const MAP=[
   [/^PA_Cond_/,'TR']
 ];
 const HUDCFG={views:[], // locked to the signature open-corner view — Reset re-frames it, no other views offered
-  walls:true,colour:true,explode:true,poster:POSTER,loadingLabel:'Loading valve room',
+  walls:true,colour:true,explode:false,poster:POSTER,loadingLabel:'Loading valve room',
   hint:'Drag orbit &#183; Scroll zoom<br>R reset &#183; W walls &#183; C colour &#183; Esc deselect'};
 const ARIA='Interactive 3D model of the pre-action valve room. Drag or use arrow keys to look around, scroll to zoom in. Click equipment to inspect it. Press R to reset the view, Escape to deselect.';
 const secOf=(n)=>{for(const[m,id]of MAP)if(m.test(n))return id;return null;};
@@ -160,6 +160,12 @@ class LMPreactionViewer extends HTMLElement{
       const c=bb.getCenter(new THREE.Vector3()),sz=bb.getSize(new THREE.Vector3());
       C.copy(c);
       const span=Math.max(sz.x,sz.z);
+      // ceiling cap: the room has no roof mesh and the locked view can catch a sliver of gradient
+      // above the wall junction — castShadow stays off so the graded lighting is untouched
+      {
+        const cx=new THREE.Mesh(new THREE.PlaneGeometry(sz.x+16,sz.z+16),new THREE.MeshStandardMaterial({color:0xd9d7d2,roughness:.95,metalness:0}));
+        cx.name='PA_FillCeil';cx.rotation.x=Math.PI/2;cx.position.set(c.x,bb.max.y+.02,c.z);scene.add(cx);
+      }
       R_MIN=span*.18;R_MAX=span*1.9;
       // signature view = the reference-photo standpoint: compressor foreground,
       // valve cluster behind-right, panels left

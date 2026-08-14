@@ -19,7 +19,7 @@ const SEC={
 };
 const IDS=Object.keys(SEC);
 const HUDCFG={views:[{id:'front',label:'Front',key:'f'},{id:'overview',label:'Overview',key:'i'}],
-  walls:false,colour:true,explode:true,poster:POSTER,loadingLabel:'Loading switchboard',
+  walls:false,colour:true,explode:false,poster:POSTER,loadingLabel:'Loading switchboard',
   hint:'Drag to slide &#183; Scroll zoom<br>R reset &#183; C colour &#183; Esc deselect'};
 const ARIA='Interactive 3D model of an eight-section low-voltage main switchboard. Drag or use arrow keys to slide along the board, scroll to zoom. Click a section to inspect it. Press R to reset, F for the device face, I for the overview, Escape to deselect.';
 

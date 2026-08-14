@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/longmotive-design-system-8d1e5cc8-409c-43e1-9315-92313b8f450f/styles.css">
+<script src="_ds/longmotive-design-system-8d1e5cc8-409c-43e1-9315-92313b8f450f/_ds_bundle.js"></script>
+<script src="viewer-hud.js"></script>
+<script src="chilledtank-model.js?v=20260812h"></script>
+<script src="chilledtank-viewer.js?v=20260812h"></script>
+<script src="viewer-switch.js"></script>
+<style>
+  html,body{margin:0;padding:0;background:var(--surface-page)}
+  *{box-sizing:border-box}
+  a{color:var(--text-link);text-decoration:none}
+  a:hover{color:var(--text-link-hover)}
+  @keyframes lmPageFade{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-direction:column;background:var(--surface-page);color:var(--text-body);font-family:var(--font-sans);animation:lmPageFade 1.4s ease both">
+  <header style="position:relative;z-index:40;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border-subtle)">
+    <div style="max-width:var(--container-max);margin:0 auto;padding:0 var(--gutter);height:60px;display:flex;align-items:center;justify-content:space-between;gap:24px">
+      <a href="index.html" style="display:inline-flex;align-items:center;gap:6.5px;font-family:var(--font-display);font-weight:800;font-size:22px;letter-spacing:.02em;color:var(--color-brand)"><img src="assets/lm-mark.png" alt="" style="height:22px;width:auto;display:block"><span>LONG<span style="color:var(--color-accent)">MOTIVE</span></span></a>
+      <div style="display:flex;align-items:center;gap:18px">
+        <a href="index.html" style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)">&#8592; Home</a>
+        <a href="index.html#Projects" style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)">Projects</a>
+      </div>
+    </div>
+    <lm-viewer-switch data-current="chilled-tank"></lm-viewer-switch>
+  </header>
+  <section style="flex:1;padding:0 var(--gutter)">
+    <div style="max-width:var(--container-max);margin:20px auto 0;position:relative;z-index:2">
+      <div style="border:1px solid var(--border-subtle);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-lg);background:#d9dee1;height:calc(100vh - 196px);min-height:440px">
+        <lm-chilledtank-viewer style="width:100%;height:100%"></lm-chilledtank-viewer>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900}}"></script>
+</body>
+</html>

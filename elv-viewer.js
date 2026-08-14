@@ -30,10 +30,10 @@ const MAP=[
   [/^ELV_Extinguisher/,'FE'],
   [/^ELV_CeilingSteel/,'OC']
 ];
-const HUDCFG={views:[{id:'overview',label:'Overview',key:'i'},{id:'plan',label:'Plan',key:'p'}],
-  walls:true,colour:true,explode:true,poster:POSTER,loadingLabel:'Loading ELV room',
+const HUDCFG={views:[], // locked to the poster standpoint — Reset re-frames it, no other views offered
+  walls:true,colour:true,explode:false,poster:POSTER,loadingLabel:'Loading ELV room',
   hint:'Drag orbit &#183; Scroll zoom<br>R reset &#183; W walls &#183; C colour &#183; Esc deselect'};
-const ARIA='Interactive 3D model. Drag or use arrow keys to orbit, scroll to zoom. Click equipment to inspect it. Press R to reset the view, P for plan, I for the overview, Escape to deselect.';
+const ARIA='Interactive 3D model of the ELV room. Drag or use arrow keys to look around, scroll to zoom in. Click equipment to inspect it. Press R to reset the view, Escape to deselect.';
 const secOf=(n)=>{for(const[m,id]of MAP)if(m.test(n))return id;return null;};
 const secOfNode=(o)=>{for(let n=o;n;n=n.parent){const id=secOf(n.name||'');if(id)return id;}return null;};
 const isWallNode=(o)=>{for(let n=o;n;n=n.parent){if(/Wall|Skirt/.test(n.name||''))return true;}return false;};
@@ -83,9 +83,7 @@ class LMElvViewer extends HTMLElement{
   }
   _onKey=(e)=>{
     const k=e.key;
-    if(k==='1'){this._setView('overview');}
-    else if(k==='2'){this._setView('plan');}
-    else if(k==='Escape'||k==='0'){if(this._select)this._select(null);}
+    if(k==='Escape'||k==='0'){if(this._select)this._select(null);}
     else if(this._lookKey&&this._lookKey(k)){}
     else if(this._hud&&this._hud.key(k)){}
     else return;
@@ -123,7 +121,7 @@ class LMElvViewer extends HTMLElement{
       root.traverse(o=>{
         if(!o.isMesh)return;
         o.castShadow=true;o.receiveShadow=true;
-        if(o.name==='ELV_Ceil'){o.visible=false;return;} // roof slab off — light strips stay
+        // ELV_Ceil stays VISIBLE here — the locked poster view shows the beamed ceiling
         if(isWallNode(o))walls.push(o);
         if(o.material&&o.material.envMapIntensity!==undefined){o.material.envMapIntensity=.5;}
         const id=secOfNode(o);
@@ -160,14 +158,23 @@ class LMElvViewer extends HTMLElement{
           scene.add(p);
         }
       }
-      // frame the WHOLE room from its real bounds — never trust hardcoded dims
       const bb=new THREE.Box3().setFromObject(root);
       const c=bb.getCenter(new THREE.Vector3()),sz=bb.getSize(new THREE.Vector3());
       C.copy(c);
       const span=Math.max(sz.x,sz.z);
-      R_MIN=span*.18;R_MAX=span*1.9;
-      VIEWS.overview.t.copy(c);VIEWS.overview.r=span*1.55;
-      VIEWS.plan.t.copy(c);VIEWS.plan.r=span*1.3;
+      // fill caps: the room's own walls cover the locked frame; the floor plane + ceiling cap close the
+      // thin seams that appear at the orbit-window extremes so the navy gradient never peeks through
+      {
+        const fx=new THREE.Mesh(new THREE.PlaneGeometry(300,300),new THREE.MeshStandardMaterial({color:0xcfd4d8,roughness:.85,metalness:.02}));
+        fx.name='ELV_FillFloor';fx.rotation.x=-Math.PI/2;fx.position.set(c.x,bb.min.y-.01,c.z);fx.receiveShadow=true;scene.add(fx);
+        const cx=new THREE.Mesh(new THREE.PlaneGeometry(sz.x+16,sz.z+16),new THREE.MeshStandardMaterial({color:0x0a0c0e,roughness:.95,metalness:0}));
+        cx.name='ELV_FillCeil';cx.rotation.x=Math.PI/2;cx.position.set(c.x,bb.max.y+.02,c.z);cx.receiveShadow=true;scene.add(cx);
+      }
+      R_MIN=span*.18;
+      // locked standpoint = the poster render (uploads/3d/elv-room-hero.png): elevated open-corner view,
+      // cabinets centre, conduit drops right; solved via _room-lock.html harness
+      VIEWS.overview.t.set(2.2,1.3,-1.8);VIEWS.overview.r=6;
+      R_MAX=VIEWS.overview.r; // zoom-out stops at the poster framing — users can only go closer
       sun.target.position.copy(c);
       sun.shadow.camera.left=-span*.8;sun.shadow.camera.right=span*.8;
       sun.shadow.camera.top=span*.8;sun.shadow.camera.bottom=-span*.5;
@@ -200,18 +207,17 @@ class LMElvViewer extends HTMLElement{
       if(e.total&&this._hud)this._hud.progress(e.loaded/e.total*100);
     },(err)=>this._fallback(err));
 
-    /* ---------------- camera rig: free orbit around the room ---------------- */
+    /* ---------------- camera rig: locked to the poster standpoint ---------------- */
     const C=new THREE.Vector3(0,1.5,0);
     const VIEWS={
-      overview:{t:C.clone(),r:16,th:2.36,ph:1.08},
-      plan:{t:C.clone(),r:19,th:2.36,ph:.28}
+      overview:{t:new THREE.Vector3(2.2,1.3,-1.8),r:6,th:2.5,ph:1.35}
     };
     let V=VIEWS.overview;
     let target=V.t.clone(),radius=V.r,theta=V.th,phi=V.ph;
     let tGoal=target.clone(),rGoal=radius,thGoal=theta,phGoal=phi,glide=false;
-    let R_MIN=3,R_MAX=34;
-    const PH_MIN=.88,PH_MAX=1.5; // no tilting above the room — the roof/upper wall stays out of view (Plan button still works)
-    const TH_MIN=2.05,TH_MAX=3.25; // orbit window: open-corner view ↔ frontal view — never behind the walls
+    let R_MIN=3,R_MAX=6;
+    const PH_MIN=1.25,PH_MAX=1.45; // hold the poster's gentle look-down — never above the room
+    const TH_MIN=2.42,TH_MAX=2.60; // small look-around window into the open corner
     this._goView=(v)=>{
       const W=VIEWS[v]||VIEWS.overview;
       tGoal=W.t.clone();rGoal=W.r;thGoal=W.th;phGoal=W.ph;glide=true;
@@ -221,7 +227,7 @@ class LMElvViewer extends HTMLElement{
       const s=sections[id];if(!s)return;
       tGoal=s.centre.clone();
       rGoal=Math.min(R_MAX,Math.max(R_MIN,s.size*1.6));
-      thGoal=theta;phGoal=Math.min(1.32,Math.max(.7,phi));glide=true;
+      thGoal=theta;phGoal=Math.min(PH_MAX,Math.max(PH_MIN,phi));glide=true; // keep phi inside the locked window — never swing off the poster tilt
       if(this._reduce){target.copy(tGoal);radius=rGoal;phi=phGoal;glide=false;dirty=true;}
     };
     this._lookKey=(k)=>{

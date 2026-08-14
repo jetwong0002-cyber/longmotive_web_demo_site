@@ -46,7 +46,7 @@ const IDS=ORDER;
 const SEC={};ORDER.forEach(k=>{SEC[k]={name:COMP[k].name,type:COMP[k].lm?'Longmotive scope':'Client equipment',
   devices:COMP[k].spec.join(' \u00b7 '),note:COMP[k].blurb};});
 const HUDCFG={views:[{id:'aisle',label:'Aisle',key:'a'},{id:'rack',label:'Rack',key:'k'}],
-  walls:false,colour:false,explode:true,loadingLabel:'Building the cabinet',
+  walls:false,colour:false,explode:false,loadingLabel:'Building the cabinet',
   extras:[{id:'door',label:'Door open',key:'d',title:'Open or close the front door'}],
   hint:'Drag to look &#183; Scroll zoom<br>R reset &#183; A aisle &#183; K rack &#183; D door'};
 const ARIA='Interactive 3D data-hall cabinet seen from the cold aisle. Drag or use arrow keys to look, scroll to zoom. Click a component to inspect it. Press R to reset, A for the aisle view, K for the rack view, D to open or close the door.';
