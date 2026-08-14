@@ -837,6 +837,10 @@ class Component extends DCLogic {
     if(this._video===el) return;
     this._video=el;
     if(el){
+      // The template's playsinline="{{ true }}" never reaches the element — the
+      // runtime drops it. iOS refuses to autoplay a video that isn't marked
+      // inline, so play() below was rejected and the tour waited forever.
+      el.playsInline=true; el.setAttribute('playsinline','');
       el.addEventListener('loadedmetadata',this._updateHero);
       // Load as blob: a streamed response can report seekable [0,0], pinning currentTime to 0.
       // File is used byte-for-byte — never re-encoded; the template src stays as a direct fallback.
@@ -865,6 +869,7 @@ class Component extends DCLogic {
   _principlesVideoRef=(el)=>{
     if(this._bgVideoObs){ this._bgVideoObs.disconnect(); this._bgVideoObs=null; }
     if(el){
+      el.playsInline=true; el.setAttribute('playsinline','');
       el.muted=true; const p=el.play(); if(p&&p.catch) p.catch(()=>{});
       // Browsers pause offscreen muted videos — resume when it nears the viewport
       this._bgVideoObs=new IntersectionObserver((es)=>{
@@ -937,6 +942,7 @@ class Component extends DCLogic {
   };
   _galleryVideoRef=(el)=>{
     if(!el||el._lmWired) return; el._lmWired=true;
+    el.playsInline=true; el.setAttribute('playsinline','');
     const tryPlay=()=>{ el.muted=true; el.defaultMuted=true; el.volume=0; const p=el.play(); if(p&&p.catch) p.catch(()=>{}); };
     el.addEventListener('volumechange',()=>{ if(!el.muted||el.volume>0){ el.muted=true; el.volume=0; } });
     el.addEventListener('loadeddata',tryPlay);
@@ -1169,7 +1175,7 @@ class Component extends DCLogic {
             const v=this._video, dur=(v&&v.readyState>=1&&Number.isFinite(v.duration)&&v.duration>0)?v.duration-0.05:0;
             let ny;
             if(v&&dur===0){ ny=y; /* video still loading — hold the tour, don't scroll past it */ }
-            else if(dur>0&&v.currentTime<dur-0.02){
+            else if(dur>0&&!this._autoNoPlay&&v.currentTime<dur-0.02){
               // how much is buffered ahead of the playhead (Infinity once the blob owns src)
               let ahead=this._heroBlobReady?Infinity:0;
               if(ahead===0){ try{ const b=v.buffered; for(let i=0;i<b.length;i++){ if(v.currentTime>=b.start(i)-0.1&&v.currentTime<=b.end(i)+0.01) ahead=Math.max(ahead,b.end(i)-v.currentTime); } }catch(e){} }
@@ -1188,6 +1194,13 @@ class Component extends DCLogic {
               }else if(v.paused){
                 // re-buffering mid-tour: hold, resume once enough is buffered ahead
                 if(canRun){ const pp=v.play(); if(pp&&pp.catch) pp.catch(()=>{}); this._vtAt=performance.now(); }
+                // Playback can also be refused outright rather than merely stalled —
+                // Low Power Mode does it, and so did the missing playsinline. Waiting
+                // on a play() that will never resolve strands the tour at frame one,
+                // so give up after a beat and advance on the clock instead: _seekStep
+                // still paints frames from currentTime while the video stays paused.
+                if(this._autoWaitAt==null) this._autoWaitAt=performance.now();
+                else if(performance.now()-this._autoWaitAt>1500) this._autoNoPlay=true;
                 ny=y;
               }else{
                 // starvation guard: playing but no frame progress at the buffer edge → pause to buffer
