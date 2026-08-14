@@ -92,6 +92,19 @@
     .lm-cardimg{min-height:150px!important}
     .lm-capnum{font-size:40px!important}
     .lm-captitle{font-size:18px!important}
+    /* The scrub footage is 16:9. Covering a portrait stage with it showed only
+       the middle 26% of each frame — the campus rose off both edges of the
+       screen. Give the media its own 16:9 band (56.25vw is 9/16 of the width,
+       so cover crops nothing) and stack the copy underneath it instead of over
+       it. The stage paints brand navy because the band no longer fills it. */
+    .lm-hero-stage{background:var(--lm-blue-900)}
+    .lm-hero-media{height:56.25vw!important;bottom:auto!important}
+    .lm-hero-copy{justify-content:flex-end!important;padding-bottom:clamp(56px,10vh,96px)!important}
+    /* Desktop sizes leave the copy 599px tall — taller than the 601px below the
+       band, so it climbed back over the footage it was just moved out of. */
+    .lm-hero-copy img{height:44px!important}
+    .lm-hero-copy h1{font-size:clamp(30px,8.6vw,38px)!important;margin-top:14px!important}
+    .lm-hero-copy p{font-size:16px!important;margin:16px 0 24px!important}
   }
   @media(max-width:640px){.lm-nav{display:none!important}}
   @media(max-width:600px){.lm-g3,.lm-g4{grid-template-columns:1fr!important}}
@@ -213,18 +226,18 @@
     <div>
       <sc-if value="{{ isVideoHero }}" hint-placeholder-val="{{ true }}">
       <section class="lm-scroll-stop" ref="{{ heroTrackRef }}" style="position:relative;height:500vh;background:var(--lm-blue-900);scroll-snap-align:start">
-        <div style="position:sticky;top:0;height:100vh;overflow:hidden">
-          <sc-if value="{{ isVideoScrub }}" hint-placeholder-val="{{ false }}"><video ref="{{ heroVideoRef }}" poster="uploads/campus-v2-merged16-poster-eae9bed7.jpg" muted="{{ true }}" playsinline="{{ true }}" preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video></sc-if>
-          <sc-if value="{{ is3dHero }}" hint-placeholder-val="{{ true }}"><lm-campus-hero ref="{{ campusRef }}" style="position:absolute;inset:0"></lm-campus-hero></sc-if>
+        <div class="lm-hero-stage" style="position:sticky;top:0;height:100vh;overflow:hidden">
+          <sc-if value="{{ isVideoScrub }}" hint-placeholder-val="{{ false }}"><video class="lm-hero-media" ref="{{ heroVideoRef }}" poster="uploads/campus-v2-merged16-poster-eae9bed7.jpg" muted="{{ true }}" playsinline="{{ true }}" preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video></sc-if>
+          <sc-if value="{{ is3dHero }}" hint-placeholder-val="{{ true }}"><lm-campus-hero class="lm-hero-media" ref="{{ campusRef }}" style="position:absolute;inset:0"></lm-campus-hero></sc-if>
           <div ref="{{ heroTintRef }}" style="position:absolute;inset:0;background:rgba(7,36,72,.45);pointer-events:none"></div>
-          <img ref="{{ heroPhotoRef }}" src="uploads/frames/f10.jpg" alt="Aerial view of the completed DAY ONE data centre" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:opacity,transform"/>
+          <img class="lm-hero-media" ref="{{ heroPhotoRef }}" src="uploads/frames/f10.jpg" alt="Aerial view of the completed DAY ONE data centre" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:opacity,transform"/>
           
           <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,36,72,.6) 0%,rgba(7,36,72,0) 15%,rgba(7,36,72,0) 85%,rgba(7,36,72,.6) 100%),linear-gradient(180deg,rgba(7,36,72,.6) 0%,rgba(7,36,72,0) 15%,rgba(7,36,72,0) 85%,rgba(7,36,72,.6) 100%);pointer-events:none"></div>
           
           <div ref="{{ heroPatchRef }}" style="position:absolute;top:0;left:0;right:0;height:32%;background:linear-gradient(180deg,rgba(7,36,72,.92) 0%,rgba(7,36,72,.55) 55%,rgba(7,36,72,0) 100%);opacity:0;pointer-events:none"></div>
           <div ref="{{ heroScrimRef }}" style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,36,72,.88) 0%,rgba(7,36,72,.6) 32%,rgba(7,36,72,.15) 54%,rgba(7,36,72,0) 70%);pointer-events:none"></div>
           <div ref="{{ heroScrimBottomRef }}" style="position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(180deg,rgba(7,36,72,0),rgba(7,36,72,.82));pointer-events:none"></div>
-          <div style="position:relative;max-width:var(--container-max);margin:0 auto;height:100%;display:flex;flex-direction:column;justify-content:center;padding:0 var(--gutter) clamp(96px,18vh,150px)">
+          <div class="lm-hero-copy" style="position:relative;max-width:var(--container-max);margin:0 auto;height:100%;display:flex;flex-direction:column;justify-content:center;padding:0 var(--gutter) clamp(96px,18vh,150px)">
             <div ref="{{ heroCopyRef }}" style="will-change:opacity,transform">
               <div style="display:inline-block;position:relative;margin-bottom:clamp(12px,2.5vh,24px)"><div style="position:absolute;inset:-40% -55%;background:radial-gradient(ellipse at center,rgba(255,255,255,.2),rgba(255,255,255,.08) 45%,rgba(255,255,255,0) 72%);pointer-events:none"></div><img src="assets/lm-mark.png" alt="Longmotive" style="position:relative;height:clamp(40px,8vh,64px);width:auto;display:block;filter:drop-shadow(0 6px 22px rgba(7,36,72,.35))"></div>
               <div style="display:inline-flex;align-items:center;gap:10px;font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--lm-cyan-400)"><span style="width:30px;height:2px;background:currentColor"></span>Mechanical &amp; Electrical Engineering</div>
@@ -762,6 +775,11 @@ const NAV=['Home','About','Projects','Contact'];
 const FILTERS=['All','HVAC & Cooling','Electrical','ELV & Controls','Fire Protection','Data Hall'];
 const HOME_CURATED=['Rooftop Diesel Generators','Rooftop AC Outdoor Units','ECC Monitoring Room','Chiller Piping','Outdoor Chilled-Water Storage Tank','Rooftop Fluorine-Pump System'];
 const IMG='assets/img/';
+// Must stay in step with the <head> preloader's own query, or the two disagree
+// about which file this screen wants and the phone pays for both.
+const HERO_VIDEO=()=> (typeof matchMedia!=='undefined'&&matchMedia('(max-width: 760px)').matches)
+  ? 'uploads/merged16-scrub-mobile.mp4'
+  : 'uploads/merged16-scrub-desktop.mp4';
 const HOME_AUTO_SCROLL_VH_PER_SEC=.18;
 const HOME_MAX_WHEEL_VH=.08;
 
@@ -794,15 +812,21 @@ class Component extends DCLogic {
       el.addEventListener('loadedmetadata',this._updateHero);
       // Load as blob: a streamed response can report seekable [0,0], pinning currentTime to 0.
       // File is used byte-for-byte — never re-encoded; the template src stays as a direct fallback.
+      // The <head> preloader has already fetched the variant that matches this
+      // screen and parked the promise on window.__heroBlobUrl. Adopt it. Fetching
+      // our own copy here made a phone download the 19MB 1080p cut on top of the
+      // 2.4MB one it had just finished pulling.
+      const src=HERO_VIDEO();
       if(!Component._heroBlobUrl){
-        const load=(tries)=>fetch('uploads/merged16-scrub-1080p.mp4')
+        const load=(tries)=>fetch(src)
           .then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.blob(); })
           .then(b=>URL.createObjectURL(b))
           .catch(e=>{ if(tries>0) return new Promise(res=>setTimeout(res,1200)).then(()=>load(tries-1)); Component._heroBlobUrl=null; throw e; });
-        Component._heroBlobUrl = load(3);
+        const preloaded=typeof window!=='undefined'&&window.__heroBlobUrl;
+        Component._heroBlobUrl = preloaded ? preloaded.catch(()=>load(3)) : load(3);
       }
       Component._heroBlobUrl.then(u=>{ if(this._video===el){ el.src=u; el.load(); this._heroBlobReady=true; } })
-        .catch(()=>{ if(this._video===el&&!el.getAttribute('src')){ el.src='uploads/merged16-scrub-1080p.mp4'; el.load(); } });
+        .catch(()=>{ if(this._video===el&&!el.getAttribute('src')){ el.src=src; el.load(); } });
     }
   };
   _heroCopyRef=(el)=>{ this._copy=el; };
