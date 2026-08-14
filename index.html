@@ -783,7 +783,8 @@ const HERO_VIDEO=()=> (typeof matchMedia!=='undefined'&&matchMedia('(max-width: 
 const HOME_AUTO_SCROLL_VH_PER_SEC=.18;
 const HOME_HERO_SEEN_KEY='longmotive.hero-intro-seen.v1';
 const HOME_HERO_END_PROGRESS=.75;
-const SECTION_STEP_COOLDOWN_MS=420;
+const SECTION_STEP_DURATION_MS=650;
+const SECTION_STEP_COOLDOWN_MS=780;
 
 class Component extends DCLogic {
   state = { screen:null, filter:'All', projectsExpanded:false, contactTab:'careers', sent:false, err:false, submitting:false, errorMessage:'', openCert:null, logoStage:0, navRevealed:false, flyT:null, swapFront:0,
@@ -982,8 +983,23 @@ class Component extends DCLogic {
     this._lastY=top;
     this._heroUpdate();
   };
+  _finishSectionStep=(align=true)=>{
+    const pending=this._sectionStepPending;
+    if(!pending) return;
+    if(this._sectionStepTimer) clearTimeout(this._sectionStepTimer);
+    this._sectionStepTimer=null; this._sectionStepPending=null;
+    const {de,scrollBehavior,snapType,top}=pending;
+    if(align){
+      de.style.scrollBehavior='auto';
+      try{ window.scrollTo(0,top); }
+      finally{ de.style.scrollBehavior=scrollBehavior; de.style.scrollSnapType=snapType; }
+    }else{
+      de.style.scrollBehavior=scrollBehavior; de.style.scrollSnapType=snapType;
+    }
+  };
   // Desktop section stepper: one wheel/trackpad gesture selects exactly one
-  // adjacent page section. The active hero scrub and mobile layouts remain native.
+  // adjacent page section with a smooth, bounded transition. The active hero
+  // scrub and mobile layouts remain native.
   _stepSectionWheel=(e)=>{
     const scr=this.state.screen||this.props.startScreen||'Home';
     if((scr!=='Home'&&scr!=='About')||this._locked||e.ctrlKey||Math.abs(e.deltaX)>Math.abs(e.deltaY)) return;
@@ -997,7 +1013,7 @@ class Component extends DCLogic {
       if(p<HOME_HERO_END_PROGRESS&&r.bottom>window.innerHeight) return;
     }
     const now=performance.now();
-    if(now<(this._sectionStepUntil||0)){ e.preventDefault(); return; }
+    if(this._sectionStepPending||now<(this._sectionStepUntil||0)){ e.preventDefault(); return; }
     const main=document.querySelector('main');
     if(!main) return;
     const sections=Array.from(main.querySelectorAll('section')).filter(s=>
@@ -1019,9 +1035,12 @@ class Component extends DCLogic {
     e.preventDefault();
     this._sectionStepUntil=now+SECTION_STEP_COOLDOWN_MS;
     const de=document.documentElement,scrollBehavior=de.style.scrollBehavior,snapType=de.style.scrollSnapType;
-    de.style.scrollBehavior='auto'; de.style.scrollSnapType='none';
-    try{ window.scrollTo(0,Math.round(target.top)); }
-    finally{ de.style.scrollBehavior=scrollBehavior; de.style.scrollSnapType=snapType; }
+    const top=Math.round(target.top);
+    this._sectionStepPending={de,scrollBehavior,snapType,top};
+    de.style.scrollSnapType='none';
+    this._sectionStepTimer=setTimeout(()=>this._finishSectionStep(true),SECTION_STEP_DURATION_MS);
+    try{ window.scrollTo({top,behavior:'smooth'}); }
+    catch(err){ this._finishSectionStep(true); }
   };
   _startLogoSeq(){
     if(this._logoSeq||this.state.navRevealed) return; this._logoSeq=true;
@@ -1304,6 +1323,7 @@ class Component extends DCLogic {
     window.removeEventListener('resize',this._updateHero);
     window.removeEventListener('scroll',this._updateHero);
     window.removeEventListener('wheel',this._stepSectionWheel,{passive:false});
+    this._finishSectionStep(false);
     this._stopHeroLoop();
   }
   go(n,contactTab){
