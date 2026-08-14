@@ -182,7 +182,7 @@
           <a onClick="{{ n.onClick }}" style="{{ n.style }}">{{ n.label }}</a>
         </sc-for>
       </nav>
-      <button onClick="{{ goContact }}" style="display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid transparent;border-radius:var(--radius-sm);cursor:pointer;background:var(--color-brand);color:#fff;padding:11px 18px;font-size:.8rem" style-hover="background:var(--lm-blue-700)">Enquire {{ arrowIcon }}</button>
+      <button onClick="{{ goEnquiry }}" style="display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid transparent;border-radius:var(--radius-sm);cursor:pointer;background:var(--color-brand);color:#fff;padding:11px 18px;font-size:.8rem" style-hover="background:var(--lm-blue-700)">Enquire {{ arrowIcon }}</button>
     </div>
   </header>
 
@@ -268,7 +268,7 @@
           <p style="color:#fff;font-weight:600;font-size:19px;line-height:1.65;max-width:56ch;margin:22px 0 34px;text-shadow:0 1px 3px rgba(7,36,72,.55),0 5px 26px rgba(7,36,72,.5)">CIDB G7 contractor &#183; 20+ years &#183; 500+ workforce &#8212; delivering MEP construction across Malaysia, Indonesia and China.</p>
           <div style="display:flex;gap:14px;flex-wrap:wrap">
             <button onClick="{{ goProjects }}" style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid transparent;border-radius:var(--radius-sm);cursor:pointer;background:var(--color-accent);color:var(--lm-blue-900);padding:15px 26px;font-size:.9rem" style-hover="background:var(--lm-cyan-400)">View Projects {{ arrowIcon }}</button>
-            <button onClick="{{ goContact }}" style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid rgba(255,255,255,.4);border-radius:var(--radius-sm);cursor:pointer;background:transparent;color:#fff;padding:15px 26px;font-size:.9rem" style-hover="background:rgba(255,255,255,.1)">Submit Enquiry</button>
+            <button onClick="{{ goEnquiry }}" style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid rgba(255,255,255,.4);border-radius:var(--radius-sm);cursor:pointer;background:transparent;color:#fff;padding:15px 26px;font-size:.9rem" style-hover="background:rgba(255,255,255,.1)">Submit Enquiry</button>
           </div>
         </div>
       </section>
@@ -371,7 +371,7 @@
             <h2 style="color:#fff;font-size:var(--fs-display);margin:0 0 8px">Have a project in mind?</h2>
             <p style="color:rgba(255,255,255,.9);font-size:18px;margin:0">Tell us the scope — we'll bring the team, the technology and the track record.</p>
           </div>
-          <button onClick="{{ goContact }}" style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid transparent;border-radius:var(--radius-sm);cursor:pointer;background:#fff;color:var(--color-brand);padding:15px 26px;font-size:.9rem" style-hover="background:var(--lm-blue-50)">Submit Enquiry {{ arrowIcon }}</button>
+          <button onClick="{{ goEnquiry }}" style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid transparent;border-radius:var(--radius-sm);cursor:pointer;background:#fff;color:var(--color-brand);padding:15px 26px;font-size:.9rem" style-hover="background:var(--lm-blue-50)">Submit Enquiry {{ arrowIcon }}</button>
         </div>
       </section>
     </div>
@@ -523,13 +523,18 @@
     <div>
       <section style="background:var(--lm-gradient-deep);padding:76px var(--gutter) 64px">
         <div data-reveal="0" style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;gap:12px;max-width:66ch">
-          <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--lm-cyan-400)"><span style="width:28px;height:2px;background:currentColor"></span>Join Our Team</span>
-          <h1 style="margin:0;font-size:var(--fs-display-lg);color:#fff">Build the Data-Center Backbone With Us</h1>
-          <p style="margin:0;font-size:18px;color:var(--lm-blue-100);line-height:1.6">We're hiring engineers across every MEP discipline. Pick your role, attach your CV and tell us how to reach you — or email us directly at info@longmotive.com.</p>
+          <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--lm-cyan-400)"><span style="width:28px;height:2px;background:currentColor"></span>{{ contactEyebrow }}</span>
+          <h1 style="margin:0;font-size:var(--fs-display-lg);color:#fff">{{ contactHeading }}</h1>
+          <p style="margin:0;font-size:18px;color:var(--lm-blue-100);line-height:1.6">{{ contactDescription }}</p>
         </div>
       </section>
       <section style="padding:var(--section-y) var(--gutter)">
-        <div class="lm-split2" style="max-width:var(--container-max);margin:0 auto;display:grid;grid-template-columns:0.85fr 1.15fr;gap:56px">
+        <div style="max-width:var(--container-max);margin:0 auto">
+          <div role="tablist" aria-label="Contact form type" style="display:inline-flex;gap:6px;padding:6px;margin-bottom:30px;border:1px solid var(--border-subtle);border-radius:999px;background:var(--surface-subtle)">
+            <button type="button" role="tab" aria-selected="{{ isEnquiryTab }}" disabled="{{ submitting }}" onClick="{{ showEnquiry }}" style="{{ enquiryTabStyle }}">Enquiry</button>
+            <button type="button" role="tab" aria-selected="{{ isCareersTab }}" disabled="{{ submitting }}" onClick="{{ showCareers }}" style="{{ careersTabStyle }}">Careers</button>
+          </div>
+        <div class="lm-split2" style="display:grid;grid-template-columns:0.85fr 1.15fr;gap:56px">
           <div data-reveal="0">
             <h3 style="font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-strong);margin:0 0 22px">Business Office</h3>
             <div style="display:flex;gap:14px;margin-bottom:22px">
@@ -548,33 +553,66 @@
           </div>
           <div data-reveal="1" style="background:#fff;border:1px solid var(--border-subtle);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:32px">
             <sc-if value="{{ sent }}" hint-placeholder-val="{{ false }}">
-              <div style="margin-bottom:20px;display:flex;gap:12px;padding:14px 16px;border-radius:var(--radius-md);background:#e7f6ec;border:1px solid #b7e0c4;color:#1c6b38"><span style="font-weight:700">Application received</span><span style="color:#2f7d4c">— thank you, our team will be in touch as soon as possible.</span></div>
+              <div role="status" style="margin-bottom:20px;display:flex;gap:12px;padding:14px 16px;border-radius:var(--radius-md);background:#e7f6ec;border:1px solid #b7e0c4;color:#1c6b38"><span style="font-weight:700">{{ successTitle }}</span><span style="color:#2f7d4c">{{ successMessage }}</span></div>
             </sc-if>
             <sc-if value="{{ err }}" hint-placeholder-val="{{ false }}">
-               <div style="margin-bottom:20px;display:flex;gap:12px;padding:14px 16px;border-radius:var(--radius-md);background:var(--lm-danger-bg);border:1px solid #eebcbc;color:var(--lm-danger)"><span style="font-weight:700">Unable to submit.</span><span>{{ errorMessage }}</span></div>
+              <div role="alert" style="margin-bottom:20px;display:flex;gap:12px;padding:14px 16px;border-radius:var(--radius-md);background:var(--lm-danger-bg);border:1px solid #eebcbc;color:var(--lm-danger)"><span style="font-weight:700">Unable to submit.</span><span>{{ errorMessage }}</span></div>
             </sc-if>
-            <form onSubmit="{{ submit }}" style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+            <sc-if value="{{ isEnquiryTab }}">
+            <form onSubmit="{{ submitEnquiry }}" role="tabpanel" aria-label="Business enquiry form" style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+              <input type="hidden" name="formType" value="enquiry"/>
+              <input type="text" name="website" value="{{ enquiry.website }}" onChange="{{ setEnquiryWebsite }}" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"/>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Name <span style="color:var(--lm-danger)">*</span></label>
+                <input name="name" value="{{ enquiry.name }}" onChange="{{ setEnquiryName }}" autocomplete="name" placeholder="Name" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Email <span style="color:var(--lm-danger)">*</span></label>
+                <input type="email" name="email" value="{{ enquiry.email }}" onChange="{{ setEnquiryEmail }}" autocomplete="email" placeholder="Email" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
+              </div>
+              <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
+                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Contact No. <span style="font-weight:400;color:var(--text-muted);text-transform:none;letter-spacing:0">(optional)</span></label>
+                <input name="contact" value="{{ enquiry.contact }}" onChange="{{ setEnquiryContact }}" autocomplete="tel" placeholder="Contact No." style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
+              </div>
+              <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
+                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Subject <span style="color:var(--lm-danger)">*</span></label>
+                <input name="subject" value="{{ enquiry.subject }}" onChange="{{ setEnquirySubject }}" placeholder="Subject" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
+              </div>
+              <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
+                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Message <span style="color:var(--lm-danger)">*</span></label>
+                <textarea rows="5" name="message" value="{{ enquiry.message }}" onChange="{{ setEnquiryMessage }}" placeholder="Message" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff;resize:vertical"></textarea>
+              </div>
+              <div style="grid-column:1 / -1;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px">
+                <span style="font-size:12px;color:var(--lm-danger)">* indicates mandatory field</span>
+                <button type="submit" disabled="{{ submitting }}" aria-busy="{{ submitting }}" style="display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid transparent;border-radius:var(--radius-sm);cursor:pointer;background:var(--color-brand);color:#fff;padding:15px 26px;font-size:.9rem" style-hover="background:var(--lm-blue-700)">{{ submitLabel }} {{ arrowIcon }}</button>
+              </div>
+            </form>
+            </sc-if>
+            <sc-if value="{{ isCareersTab }}">
+            <form onSubmit="{{ submitCareers }}" role="tabpanel" aria-label="Careers application form" style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+              <input type="hidden" name="formType" value="careers"/>
+              <input type="text" name="website" value="{{ form.website }}" onChange="{{ setWebsite }}" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"/>
               <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
                 <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Salutation</label>
-                <select value="{{ form.salutation }}" onChange="{{ setSalutation }}" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff">
+                <select name="salutation" value="{{ form.salutation }}" onChange="{{ setSalutation }}" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff">
                   <sc-for list="{{ salutations }}" as="o" hint-placeholder-count="5"><option value="{{ o }}">{{ o }}</option></sc-for>
                 </select>
               </div>
               <div style="display:flex;flex-direction:column;gap:6px">
                 <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Name <span style="color:var(--lm-danger)">*</span></label>
-                <input value="{{ form.name }}" onChange="{{ setName }}" placeholder="Name" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
+                <input name="name" value="{{ form.name }}" onChange="{{ setName }}" placeholder="Name" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
               </div>
               <div style="display:flex;flex-direction:column;gap:6px">
                 <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Contact No. <span style="color:var(--lm-danger)">*</span></label>
-                <input value="{{ form.contact }}" onChange="{{ setContact }}" placeholder="Contact No." style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
+                <input name="contact" value="{{ form.contact }}" onChange="{{ setContact }}" placeholder="Contact No." style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
               </div>
               <div style="display:flex;flex-direction:column;gap:6px">
                 <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Email <span style="color:var(--lm-danger)">*</span></label>
-                <input type="email" value="{{ form.email }}" onChange="{{ setEmail }}" placeholder="Email" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
+                <input type="email" name="email" value="{{ form.email }}" onChange="{{ setEmail }}" placeholder="Email" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
               </div>
               <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
                 <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Job Title <span style="color:var(--lm-danger)">*</span></label>
-                <select value="{{ form.jobTitle }}" onChange="{{ setJobTitle }}" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff">
+                <select name="jobTitle" value="{{ form.jobTitle }}" onChange="{{ setJobTitle }}" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff">
                   <sc-for list="{{ jobTitles }}" as="o" hint-placeholder-count="11"><option value="{{ o }}">{{ o }}</option></sc-for>
                 </select>
               </div>
@@ -583,15 +621,17 @@
                 <label style="display:flex;align-items:center;gap:12px;cursor:pointer;flex-wrap:wrap">
                   <span style="display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid var(--border-default);border-radius:var(--radius-sm);background:transparent;color:var(--color-brand);padding:11px 18px;font-size:.8rem">Choose File</span>
                   <span style="font-size:13px;color:var(--text-muted)">{{ cvName }}</span>
-                  <input type="file" accept=".pdf,.doc,.docx" onChange="{{ setCv }}" style="display:none"/>
+                  <input type="file" name="cv" accept=".pdf,.doc,.docx" onChange="{{ setCv }}" style="display:none"/>
                 </label>
               </div>
               <div style="grid-column:1 / -1;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px">
                 <span style="font-size:12px;color:var(--lm-danger)">* indicates mandatory field</span>
-                <button type="submit" style="display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid transparent;border-radius:var(--radius-sm);cursor:pointer;background:var(--color-brand);color:#fff;padding:15px 26px;font-size:.9rem" style-hover="background:var(--lm-blue-700)">Submit {{ arrowIcon }}</button>
+                <button type="submit" disabled="{{ submitting }}" aria-busy="{{ submitting }}" style="display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid transparent;border-radius:var(--radius-sm);cursor:pointer;background:var(--color-brand);color:#fff;padding:15px 26px;font-size:.9rem" style-hover="background:var(--lm-blue-700)">{{ submitLabel }} {{ arrowIcon }}</button>
               </div>
             </form>
+            </sc-if>
           </div>
+        </div>
         </div>
       </section>
     </div>
@@ -726,8 +766,9 @@ const HOME_AUTO_SCROLL_VH_PER_SEC=.18;
 const HOME_MAX_WHEEL_VH=.08;
 
 class Component extends DCLogic {
-  state = { screen:null, filter:'All', projectsExpanded:false, sent:false, err:false, submitting:false, errorMessage:'', openCert:null, logoStage:0, navRevealed:false, flyT:null, swapFront:0,
-    form:{salutation:'~ Please select one. ~',name:'',contact:'',email:'',jobTitle:'~ Please select one. ~',cv:''} };
+  state = { screen:null, filter:'All', projectsExpanded:false, contactTab:'careers', sent:false, err:false, submitting:false, errorMessage:'', openCert:null, logoStage:0, navRevealed:false, flyT:null, swapFront:0,
+    enquiry:{name:'',email:'',contact:'',subject:'',message:'',website:''},
+    form:{salutation:'~ Please select one. ~',name:'',contact:'',email:'',jobTitle:'~ Please select one. ~',cv:'',website:''} };
 
   icon(name,size){
     return React.createElement('svg',{viewBox:'0 0 24 24',width:size||24,height:size||24,fill:'none',
@@ -1189,8 +1230,19 @@ class Component extends DCLogic {
     if(this._snapResume){ clearTimeout(this._snapResume); this._snapResume=null; }
     this._stopHeroLoop();
   }
-  go(n){ this._logoSeq=true; this._heroFree=true; this.setState({screen:n,navRevealed:true,logoStage:3}); if(typeof window!=='undefined'&&window.scrollTo){try{window.scrollTo({top:0});}catch(e){window.scrollTo(0,0);}} }
+  go(n,contactTab){
+    this._logoSeq=true; this._heroFree=true;
+    const next={screen:n,navRevealed:true,logoStage:3,sent:false,err:false,errorMessage:''};
+    if(n==='Contact') next.contactTab=contactTab||'careers';
+    this.setState(next);
+    if(typeof window!=='undefined'&&window.scrollTo){try{window.scrollTo({top:0});}catch(e){window.scrollTo(0,0);}}
+  }
+  switchContactTab(tab){
+    if(this.state.submitting) return;
+    this.setState({contactTab:tab,sent:false,err:false,errorMessage:''});
+  }
   setField(k){ return (e)=> this.setState(s=>({form:{...s.form,[k]:e.target.value}})); }
+  setEnquiryField(k){ return (e)=> this.setState(s=>({enquiry:{...s.enquiry,[k]:e.target.value}})); }
    _setCv=(e)=>{
      const f=e.target.files&&e.target.files[0];
      this._cvFile=f||null;
@@ -1319,38 +1371,56 @@ class Component extends DCLogic {
     if(e.key==='ArrowRight'){ e.preventDefault(); this._swapNext({type:'key'}); return; }
     if(e.key==='Enter'||e.key===' '){ e.preventDefault(); const s=SWAP[this.state.swapFront]; if(s) window.location.href=s.href; }
   };
-   async submit(e){
-     e.preventDefault();
-     if(this.state.submitting) return;
-     const f=this.state.form;
-     if(!f.name||!f.email||!f.contact||f.jobTitle==='~ Please select one. ~'){
-       this.setState({err:true,sent:false,submitting:false,errorMessage:'Please complete all mandatory fields.'});
-       return;
-     }
-     const body=new FormData();
-     body.append('formType','careers');
-     body.append('salutation',f.salutation==='~ Please select one. ~'?'':f.salutation);
-     body.append('name',f.name);
-     body.append('contact',f.contact);
-     body.append('email',f.email);
-     body.append('jobTitle',f.jobTitle);
-     if(this._cvFile) body.append('cv',this._cvFile,this._cvFile.name);
-     this.setState({err:false,sent:false,submitting:true,errorMessage:''});
-     try{
-       const response=await fetch('/api/contact',{method:'POST',body});
-       const data=await response.json().catch(()=>({ok:false,error:'Invalid response from the server.'}));
-       if(!response.ok||!data.ok) throw new Error(data.error||'Unable to submit your application.');
-       this._cvFile=null;
-       this.setState({sent:true,err:false,submitting:false,errorMessage:'',form:{salutation:'~ Please select one. ~',name:'',contact:'',email:'',jobTitle:'~ Please select one. ~',cv:''}});
-     }catch(error){
-       this.setState({err:true,sent:false,submitting:false,errorMessage:error&&error.message?error.message:'Network error. Please try again.'});
-     }
-   }
+  submitEnquiry(e){ return this._submitContact(e,'enquiry'); }
+  submitCareers(e){ return this._submitContact(e,'careers'); }
+  async _submitContact(e,formType){
+    e.preventDefault();
+    if(this.state.submitting) return;
+    const formElement=e.currentTarget;
+    const isEnquiry=formType==='enquiry';
+    const f=isEnquiry?this.state.enquiry:this.state.form;
+    const invalid=isEnquiry
+      ?(!f.name||!f.email||!f.subject||!f.message)
+      :(!f.name||!f.email||!f.contact||f.jobTitle==='~ Please select one. ~');
+    if(invalid){
+      this.setState({err:true,sent:false,submitting:false,errorMessage:'Please complete all mandatory fields.'});
+      return;
+    }
+    const body=new FormData();
+    body.append('formType',formType);
+    const fields=isEnquiry
+      ?['name','email','contact','subject','message','website']
+      :['salutation','name','contact','email','jobTitle','website'];
+    fields.forEach(k=>{
+      const v=f[k]||'';
+      body.append(k,v==='~ Please select one. ~'?'':v);
+    });
+    if(!isEnquiry&&this._cvFile) body.append('cv',this._cvFile,this._cvFile.name);
+    this.setState({err:false,sent:false,submitting:true,errorMessage:''});
+    try{
+      const response=await fetch('/api/contact',{method:'POST',body});
+      const data=await response.json().catch(()=>({ok:false,error:'Invalid response from the server.'}));
+      if(!response.ok||!data.ok) throw new Error(data.error||(isEnquiry?'Unable to send your enquiry.':'Unable to submit your application.'));
+      if(!isEnquiry) this._cvFile=null;
+      if(formElement&&formElement.reset) formElement.reset();
+      const reset={sent:true,err:false,submitting:false,errorMessage:''};
+      if(isEnquiry) reset.enquiry={name:'',email:'',contact:'',subject:'',message:'',website:''};
+      else reset.form={salutation:'~ Please select one. ~',name:'',contact:'',email:'',jobTitle:'~ Please select one. ~',cv:'',website:''};
+      this.setState(reset);
+    }catch(error){
+      this.setState({err:true,sent:false,submitting:false,errorMessage:error&&error.message?error.message:'Network error. Please try again.'});
+    }
+  }
 
   renderVals(){
     this._startHeroLoop(); // self-heal: restarts the scrub loop after hot reloads
     if(typeof window!=='undefined') requestAnimationFrame(()=>{ this._revealScan(); this._applySrcs(); });
     const scr = this.state.screen || this.props.startScreen || 'Home';
+    const isEnquiryTab=this.state.contactTab==='enquiry';
+    const isCareersTab=!isEnquiryTab;
+    const tabBase={appearance:'none',border:'0',borderRadius:'999px',padding:'10px 20px',fontFamily:'var(--font-display)',fontSize:'13px',fontWeight:700,letterSpacing:'.05em',textTransform:'uppercase',cursor:'pointer',transition:'background .2s,color .2s,box-shadow .2s'};
+    const tabActive={...tabBase,background:'var(--color-brand)',color:'#fff',boxShadow:'var(--shadow-xs)'};
+    const tabIdle={...tabBase,background:'transparent',color:'var(--text-body)'};
     this._applyNav();
     if(typeof document!=='undefined') document.documentElement.style.scrollSnapType = (scr==='Home'||scr==='About') ? 'y proximity' : '';
     const _ls=this.state.logoStage, _f=this.state.flyT||{dx:0,dy:0};
@@ -1470,15 +1540,31 @@ class Component extends DCLogic {
       heroPhotoRef: this._heroPhotoRef, heroTintRef: this._heroTintRef,
       principlesVideoRef: this._principlesVideoRef,
       chevronIcon: this.icon('ChevronDown',15),
-      goHome:()=>this.go('Home'), goProjects:()=>this.go('Projects'), goContact:()=>this.go('Contact'),
+      goHome:()=>this.go('Home'), goProjects:()=>this.go('Projects'),
+      goContact:()=>this.go('Contact','careers'), goEnquiry:()=>this.go('Contact','enquiry'),
       arrowIcon: this.icon('Arrow',16),
       cubeIcon: this.icon('Cube',13),
       mapIcon: this.icon('MapPin',18), phoneIcon: this.icon('Phone',18), mailIcon: this.icon('Mail',18),
-       form: this.state.form, sent: this.state.sent, err: this.state.err, submitting: this.state.submitting, errorMessage: this.state.errorMessage,
-      submit: this.submit.bind(this),
+      isEnquiryTab, isCareersTab,
+      showEnquiry:()=>this.switchContactTab('enquiry'), showCareers:()=>this.switchContactTab('careers'),
+      enquiryTabStyle:isEnquiryTab?tabActive:tabIdle, careersTabStyle:isCareersTab?tabActive:tabIdle,
+      contactEyebrow:isEnquiryTab?'Get In Touch':'Join Our Team',
+      contactHeading:isEnquiryTab?'Submit Your Enquiry':'Build the Data-Center Backbone With Us',
+      contactDescription:isEnquiryTab
+        ?"We welcome project enquiries and feedback. Submit the form below or email info@longmotive.com — we'll reply as soon as possible."
+        :"We're hiring engineers across every MEP discipline. Pick your role, attach your CV and tell us how to reach you — or email us directly at info@longmotive.com.",
+      successTitle:isEnquiryTab?'Enquiry received':'Application received',
+      successMessage:isEnquiryTab?'— thank you, we\'ll get back to you as soon as possible.':'— thank you, our team will be in touch as soon as possible.',
+      enquiry: this.state.enquiry,
+      form: this.state.form, sent: this.state.sent, err: this.state.err, submitting: this.state.submitting, errorMessage: this.state.errorMessage,
+      submitLabel: this.state.submitting?'Submitting...':'Submit',
+      submitEnquiry: this.submitEnquiry.bind(this), submitCareers: this.submitCareers.bind(this),
+      setEnquiryName:this.setEnquiryField('name'), setEnquiryEmail:this.setEnquiryField('email'),
+      setEnquiryContact:this.setEnquiryField('contact'), setEnquirySubject:this.setEnquiryField('subject'),
+      setEnquiryMessage:this.setEnquiryField('message'), setEnquiryWebsite:this.setEnquiryField('website'),
       setSalutation: this.setField('salutation'), setName: this.setField('name'),
       setContact: this.setField('contact'), setEmail: this.setField('email'),
-      setJobTitle: this.setField('jobTitle'),
+      setJobTitle: this.setField('jobTitle'), setWebsite: this.setField('website'),
       setCv: this._setCv,
       cvName: this.state.form.cv || 'No file chosen'
     };
