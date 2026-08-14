@@ -315,7 +315,7 @@
 
       <section class="lm-snapsec" style="position:relative;height:100vh;overflow:hidden;background:var(--surface-page);scroll-snap-align:start">
         <div style="position:relative;height:100%;display:flex;flex-direction:column;justify-content:center;padding:0 var(--gutter)">
-        <video ref="{{ principlesVideoRef }}" src="https://www.longmotive-m.com/data/cms/images/1710215268_longmotive.mp4" muted="{{ true }}" loop="{{ true }}" playsinline="{{ true }}" preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center bottom;opacity:.42;pointer-events:none"></video>
+        <sc-if value="{{ showPrinciplesVideo }}" hint-placeholder-val="{{ false }}"><video ref="{{ principlesVideoRef }}" data-src="https://www.longmotive-m.com/data/cms/images/1710215268_longmotive.mp4" muted="{{ true }}" loop="{{ true }}" playsinline="{{ true }}" preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center bottom;opacity:.42;pointer-events:none"></video></sc-if>
         <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.88) 0%,rgba(255,255,255,.55) 40%,rgba(255,255,255,0) 75%);pointer-events:none"></div>
         <div style="position:relative;max-width:var(--container-max);margin:0 auto;width:100%">
           <div data-reveal="0" style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:clamp(6px,1.2vh,12px);max-width:60ch;margin:0 auto">
@@ -1651,6 +1651,11 @@ class Component extends DCLogic {
       isVideoHero: this.props.videoHero!==false,
       isStaticHero: this.props.videoHero===false,
       isVideoScrub: this.props.videoHero!==false && (this.props.heroMode||'Video scrub')==='Video scrub',
+      // The What We Do backdrop is decorative, sits at .42 opacity under a white
+      // scrim, and is preload=auto — a phone downloads the whole clip to tint a
+      // panel it can barely see. Don't render it there at all; display:none would
+      // still let the browser fetch the src.
+      showPrinciplesVideo: typeof matchMedia==='undefined'||!matchMedia('(max-width:760px)').matches,
       is3dHero: this.props.videoHero!==false && (this.props.heroMode||'Video scrub')==='3D build',
       campusRef: this._campusRef,
       heroPhases: HERO_PHASES.map((p,i)=>({...p,capRef:this._capRef(i)})),
