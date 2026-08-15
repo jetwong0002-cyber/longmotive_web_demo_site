@@ -1323,19 +1323,17 @@ class Component extends DCLogic {
     // deep link from viewer pages: index.html#Projects / #About / #Contact
     const h=decodeURIComponent((location.hash||'').slice(1));
     const deepLinked=['About','Projects','Contact'].indexOf(h)!==-1;
-    const returnToSeenHero=!deepLinked&&this._heroSeen();
     if(deepLinked){ this.go(h); try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){} }
-    else if(returnToSeenHero){
-      this._logoSeq=true; this._landed=true; this._heroFree=true;
-      this.setState({screen:'Home',navRevealed:true,logoStage:3},()=>requestAnimationFrame(this._returnHomeToHeroEnd));
-    }
+    // A load is not a return. The hero-seen flag skips the tour when go('Home')
+    // brings you back from another screen; on a refresh it should play from the
+    // top, so nothing on this path consults it.
     window.addEventListener('resize',this._updateHero);
     // the rAF loop is the smooth path; this listener exists so the >200ms fallback
     // in _heroUpdate can still fire when rAF is throttled or unavailable
     window.addEventListener('scroll',this._updateHero,{passive:true});
     window.addEventListener('wheel',this._stepSectionWheel,{passive:false});
     // only real scroll input hands control to the user — clicks/taps don't end the tour
-    this._auto=!returnToSeenHero; this._autoAt=returnToSeenHero?Infinity:performance.now()+2000;
+    this._auto=true; this._autoAt=performance.now()+2000;
     this._stopAuto=(e)=>{ if(e.type==='keydown'&&['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].indexOf(e.key)===-1) return; this._haltAuto(); };
     ['wheel','touchmove','keydown'].forEach(t=>window.addEventListener(t,this._stopAuto,{passive:true}));
     this._startHeroLoop();
