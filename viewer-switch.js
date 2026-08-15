@@ -19,7 +19,7 @@
    root is the only safe place to build. Page CSS variables still inherit in.
 
    Posters are PHOTOGRAPHS of the real rooms, reusing the project card images in
-   assets/img/projects/ through the POSTER map below. They were renders captured
+   assets/img/projects-2x/ through the POSTER map below. They were renders captured
    from each page's own canvas, which had the nice property of showing exactly
    what you get when you click; it was not worth what it cost, because several of
    the models do not read at thumbnail size and one viewer cannot be framed at
@@ -64,28 +64,28 @@
     ['pre-action',       'Pre-action valves',    'pre-action-valve-room-viewer.dc.html',   'Fire'],
     ['data-hall',        'Data hall',            'data-hall-viewer.dc.html',               'Data hall']
   ];
-  // viewer key -> the room's photo in assets/img/projects/
+  // viewer key -> the room's photo in assets/img/projects-2x/
   var POSTER = {
-    'chiller-plant':          'chiller-plant-room.jpg',
-    'chiller-room':           'cooling-room.jpg',
-    'makeup-water':           'makeup-water-pump.jpg',
-    'fp-cooling':             'fluorine-pump-cooling-tower.jpg',
-    'rooftop-fluorine-pump':  'fluorine-pump-system.jpg',
-    'open-cooling':           'open-cooling-tower.jpg',
-    'chilled-tank':           'chilled-water-tank.jpg',
-    'chiller-piping':         'chiller-piping.jpg',
-    'ahu-room':               'ahu-room.jpg',
-    'crah-room':              'crah-room.jpg',
-    'rooftop-ac':             'roof-ac-unit.jpg',
-    'rooftop-generator':      'roof-diesel-generator.jpg',
-    'msb':                    'msb.jpg',
-    'generator-plant':        'generator.jpg',
-    'ecc-room':               'ecc-room.jpg',
-    'elv-room':               'elv-room.jpg',
-    'ba-control-room':        'ba-control-room.jpg',
-    'telecom-room':           'telecom-access-room.jpg',
-    'pre-action':             'pre-action-valve-room.jpg',
-    'data-hall':              'data-hall.jpg'
+    'chiller-plant':          'chiller-plant-room.webp',
+    'chiller-room':           'cooling-room.webp',
+    'makeup-water':           'makeup-water-pump.webp',
+    'fp-cooling':             'fluorine-pump-cooling-tower.webp',
+    'rooftop-fluorine-pump':  'fluorine-pump-system.webp',
+    'open-cooling':           'open-cooling-tower.webp',
+    'chilled-tank':           'chilled-water-tank.webp',
+    'chiller-piping':         'chiller-piping.webp',
+    'ahu-room':               'ahu-room.webp',
+    'crah-room':              'crah-room.webp',
+    'rooftop-ac':             'roof-ac-unit.webp',
+    'rooftop-generator':      'roof-diesel-generator.webp',
+    'msb':                    'msb.webp',
+    'generator-plant':        'generator.webp',
+    'ecc-room':               'ecc-room.webp',
+    'elv-room':               'elv-room.webp',
+    'ba-control-room':        'ba-control-room.webp',
+    'telecom-room':           'telecom-access-room.webp',
+    'pre-action':             'pre-action-valve-room.webp',
+    'data-hall':              'data-hall.webp'
   };
 
   // discipline colours, taken from the HUD's own PALETTE so the two agree
@@ -156,7 +156,7 @@
         ' style="--g:' + GROUP[v[3]] + '"' + (on ? ' aria-current="page"' : '') +
         ' title="' + esc(v[1]) + ' · ' + esc(v[3]) + '">' +
         '<span class="lm-vsshot"' + (POSTER[v[0]]
-          ? ' style="background-image:url(assets/img/projects/' + encodeURI(POSTER[v[0]]) + ')"' : '') + '></span>' +
+          ? ' style="background-image:url(assets/img/projects-2x/' + encodeURI(POSTER[v[0]]) + ')"' : '') + '></span>' +
         '<span class="lm-vsname">' + esc(v[1]) + '</span></a>';
     }).join('');
 
