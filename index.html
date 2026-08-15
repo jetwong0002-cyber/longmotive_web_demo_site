@@ -806,14 +806,23 @@ const SWAP=[
 ];
 
 const CERTS=[
-  {img:'assets/certs/cert-3.jpg',code:'ISO 9001:2015',title:'Quality Management'},
-  {img:'assets/certs/cert-6.jpg',code:'ISO 14001:2015',title:'Environmental Management'},
-  {img:'assets/certs/cert-7.jpg',code:'ISO 45001:2018',title:'Occupational Health & Safety'},
-  {img:'assets/certs/cert-1.jpg',code:'ISO 50001:2018',title:'Energy Management'},
-  {img:'assets/certs/cert-8.jpg',code:'ISO 22301:2019',title:'Business Continuity'},
-  {img:'assets/certs/cert-4.jpg',code:'ISO 37001:2016',title:'Anti-Bribery Management'},
-  {img:'assets/certs/cert-5.jpg',code:'DS 49001:2012',title:'Social Responsibility (CSR)'},
-  {img:'assets/certs/cert-2.jpg',code:'ESG',title:'ESG Compliance'}
+  // Genuine full-page scans as published on longmotive-m.com/our-certifications,
+  // copied byte-for-byte. 848x1200 to 1000x1415, every registration number and
+  // date legible. They replace 597x845 Lanczos upscales of 239px badge crops
+  // lifted from the brochure PDF, which is why the old set looked soft.
+  // DO NOT run these through an AI upscaler to make them larger. It was tried
+  // twice (Bytedance Image Upscale, Topaz Text Refine) and both fabricated
+  // certificate text: invented registration numbers, ISO 80001 in place of
+  // 50001, a seal reading INFERCFET. A sharper large version has to come from
+  // Intercert's own originals, not from a model.
+  {img:'assets/certs/iso-9001-2015-quality-management.jpg',code:'ISO 9001:2015',title:'Quality Management'},
+  {img:'assets/certs/iso-14001-2015-environmental-management.jpg',code:'ISO 14001:2015',title:'Environmental Management'},
+  {img:'assets/certs/iso-45001-2018-occupational-health-safety.jpg',code:'ISO 45001:2018',title:'Occupational Health & Safety'},
+  {img:'assets/certs/iso-50001-2018-energy-management.jpg',code:'ISO 50001:2018',title:'Energy Management'},
+  {img:'assets/certs/iso-22301-2019-business-continuity.jpg',code:'ISO 22301:2019',title:'Business Continuity'},
+  {img:'assets/certs/iso-37001-2016-anti-bribery.jpg',code:'ISO 37001:2016',title:'Anti-Bribery Management'},
+  {img:'assets/certs/ds-49001-2012-csr.jpg',code:'DS 49001:2012',title:'Social Responsibility (CSR)'},
+  {img:'assets/certs/esg-sustainability.jpg',code:'ESG',title:'ESG Compliance'}
 ];
 const NAV=['Home','About','Projects','Contact'];
 const FILTERS=['All','HVAC & Cooling','Electrical','ELV & Controls','Fire Protection','Data Hall'];
