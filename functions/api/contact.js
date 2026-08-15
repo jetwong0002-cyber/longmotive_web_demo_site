@@ -81,9 +81,12 @@ export async function onRequestPost({ request, env }) {
 
   if (isCareers) {
     if (!contact) errors.push('Contact No. is required');
+    if (!salutation) errors.push('Salutation is required');
     if (!jobTitle) errors.push('Job Title is required');
     if (jobTitle && !JOB_TITLES.includes(jobTitle)) errors.push('Invalid job title');
     if (salutation.length > 20) errors.push('Salutation is too long');
+    // An application with no CV attached is not one the team can act on.
+    if (!hasCv) errors.push('CV is required');
   } else {
     if (!subject) errors.push('Subject is required');
     if (!message) errors.push('Message is required');
