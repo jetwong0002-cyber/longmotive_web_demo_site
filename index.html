@@ -650,7 +650,7 @@
               <input type="hidden" name="formType" value="careers"/>
               <input type="text" name="website" value="{{ form.website }}" onChange="{{ setWebsite }}" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"/>
               <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
-                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Salutation</label>
+                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Salutation <span style="color:var(--lm-danger)">*</span></label>
                 <select name="salutation" value="{{ form.salutation }}" onChange="{{ setSalutation }}" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff">
                   <sc-for list="{{ salutations }}" as="o" hint-placeholder-count="5"><option value="{{ o }}">{{ o }}</option></sc-for>
                 </select>
@@ -674,7 +674,7 @@
                 </select>
               </div>
               <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
-                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Upload CV <span style="font-weight:400;color:var(--text-muted);text-transform:none;letter-spacing:0">(PDF / DOC)</span></label>
+                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Upload CV <span style="color:var(--lm-danger)">*</span> <span style="font-weight:400;color:var(--text-muted);text-transform:none;letter-spacing:0">(PDF / DOC)</span></label>
                 <label style="display:flex;align-items:center;gap:12px;cursor:pointer;flex-wrap:wrap">
                   <span style="display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:2px solid var(--border-default);border-radius:var(--radius-sm);background:transparent;color:var(--color-brand);padding:11px 18px;font-size:.8rem">Choose File</span>
                   <span style="font-size:13px;color:var(--text-muted)">{{ cvName }}</span>
@@ -1541,7 +1541,7 @@ class Component extends DCLogic {
     const f=isEnquiry?this.state.enquiry:this.state.form;
     const invalid=isEnquiry
       ?(!f.name||!f.email||!f.subject||!f.message)
-      :(!f.name||!f.email||!f.contact||f.jobTitle==='~ Please select one. ~');
+      :(!f.name||!f.email||!f.contact||f.salutation==='~ Please select one. ~'||f.jobTitle==='~ Please select one. ~'||!f.cv);
     if(invalid){
       this.setState({err:true,sent:false,submitting:false,errorMessage:'Please complete all mandatory fields.'});
       return;
