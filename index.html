@@ -561,7 +561,7 @@
           <div class="lm-g3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px">
             <sc-for list="{{ filteredProjects }}" as="p" hint-placeholder-count="6">
               <div class="lm-pcard" data-comment-anchor="project-card-{{ p.title }}" onClick="{{ p.onOpen }}" style="{{ p.cardStyle }}" style-hover="box-shadow:var(--shadow-md);transform:translateY(-3px);border-color:var(--lm-blue-200)">
-                <div onMouseEnter="{{ p.onHover }}" style="position:relative;height:200px;overflow:hidden;background:var(--lm-blue-50)"><img data-src="{{ p.img }}" alt="{{ p.title }}" style="width:100%;height:100%;object-fit:cover;display:block"/><sc-if value="{{ p.viewer3d }}" hint-placeholder-val="{{ false }}"><span class="lm-3dbadge">{{ cubeIcon }} 3D</span></sc-if></div>
+                <div style="position:relative;height:200px;overflow:hidden;background:var(--lm-blue-50)"><img data-src="{{ p.img }}" alt="{{ p.title }}" style="width:100%;height:100%;object-fit:cover;display:block"/><sc-if value="{{ p.viewer3d }}" hint-placeholder-val="{{ false }}"><span class="lm-3dbadge">{{ cubeIcon }} 3D</span></sc-if></div>
                 <div style="padding:16px 18px 18px;display:flex;flex-direction:column;gap:6px">
                   <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent)">{{ p.cat }}</span>
                   <h3 style="margin:0;font-size:18px;color:var(--text-strong)">{{ p.title }}</h3>
@@ -760,7 +760,7 @@ const STATS=[
   {value:'100',suffix:'%',label:'QA / QC Coverage'}
 ];
 const PROJECTS=[
-  {img:'uploads/generated-views/rackrow-frame-start.png',abs:true,rack:true,cat:'Data Hall',title:'Data Hall',meta:'Racks, busway & containment',tags:['Data Hall']},
+  {img:'projects-2x/data-hall-rackrow.webp',cat:'Data Hall',title:'Data Hall',meta:'Racks, busway & containment',tags:['Data Hall']},
   {img:'projects-2x/chiller-plant-room.webp',cat:'Cooling',title:'Chiller Plant Room',meta:'Chilled-water plant install & commissioning',tags:['HVAC & Cooling']},
   {img:'projects-2x/msb.webp',cat:'Electrical',title:'Main Switchboard (MSB)',meta:'Power-distribution module interior',tags:['Electrical']},
   {img:'projects-2x/generator.webp',cat:'Electrical',title:'Generator Plant',meta:'Standby power installation',tags:['Electrical']},
@@ -1350,31 +1350,8 @@ class Component extends DCLogic {
     this._revealScan();
     this._applySrcs();
   }
-  _rackHover=(e)=>{
-    const box=e.currentTarget;
-    if(box._rackBusy||box._rackDone) return;
-    const img=box.querySelector('img'); if(!img) return;
-    box._rackBusy=true;
-    const v=document.createElement('video');
-    v.src='uploads/generated-views/rackrow-pushpull-seedance.mp4';
-    v.muted=true; v.playsInline=true; v.preload='auto';
-    v.style.cssText='width:100%;height:100%;object-fit:cover;display:block';
-    const bail=()=>{ v.remove(); img.style.display=''; box._rackBusy=false; };
-    v.onerror=bail;
-    v.onplaying=()=>{ img.style.display='none'; };
-    v.onended=()=>{
-      const end=new Image();
-      end.onload=()=>{ img.src='uploads/generated-views/rackrow-frame-end.png'; img.setAttribute('data-src','uploads/generated-views/rackrow-frame-end.png'); box._rackDone=true; bail(); };
-      end.onerror=bail;
-      end.src='uploads/generated-views/rackrow-frame-end.png';
-    };
-    box.appendChild(v);
-    v.play().catch(bail);
-  };
   _applySrcs=()=>{
     if(typeof document==='undefined') return;
-    // Self-heal: if a rack hover video was removed by a re-render, unhide the still image
-    document.querySelectorAll('img[data-src]').forEach(el=>{ if(el.style.display==='none'&&!el.parentElement.querySelector('video')) el.style.display=''; });
     document.querySelectorAll('img[data-src],video[data-src]').forEach(el=>{
       const s=el.getAttribute('data-src');
       if(!s||s.indexOf('{{')!==-1) return;
@@ -1641,7 +1618,7 @@ class Component extends DCLogic {
       const open=VIEWERS[p.title];
       const code=p.tags[0]==='Electrical'?'ELEC':p.tags[0]==='ELV & Controls'?'ELV':p.tags[0]==='Fire Protection'?'FIRE':p.tags[0]==='Data Hall'?'DATA':'HVAC';
       const disciplineClass=code==='ELEC'?'lm-project-card--electrical':code==='ELV'?'lm-project-card--elv':code==='FIRE'?'lm-project-card--fire':code==='DATA'?'lm-project-card--data':'lm-project-card--hvac';
-      return {...p,img:p.abs?p.img:IMG+p.img,onHover:p.rack?this._rackHover:undefined,
+      return {...p,img:p.abs?p.img:IMG+p.img,
         onOpen:open,
         disciplineCode:code,disciplineClass,accessibleLabel:p.title+' — Open 3D model',
         cardStyle:open?{...baseCard,cursor:'pointer'}:baseCard};
