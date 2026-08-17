@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.longmotive-m.com/sitemap.xml
+Sitemap: https://longmotive-web-demo-site.pages.dev/sitemap.xml
