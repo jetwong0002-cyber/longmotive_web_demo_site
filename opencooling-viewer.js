@@ -8,7 +8,11 @@
    on the lower roof, looking up past the plant band at the cells. */
 (function(){
 const ESM='https://cdn.jsdelivr.net/npm/three@0.160.0';
-const POSTER='assets/img/projects/open-cooling-tower.jpg'; // the reference photo itself — it dissolves into the replica
+// 1200px, not the 800px copy in assets/img/projects/. The poster sits at 16%
+// opacity behind the loading spinner, where resolution is irrelevant — but
+// hud.fail() takes it to opacity 1 as the no-WebGL fallback, full-bleed, and
+// 800px under a 1198px viewer was 0.67x there.
+const POSTER='assets/img/projects-2x/open-cooling-tower.webp'; // the reference photo itself — it dissolves into the replica
 const SKY='uploads/sky-overcast-equirect.jpg'; // 2:1 equirect, 46KB — skybox + reflections
 const UNIT='Open cell · louvre banks · X tie-rods · guardrail crown · fan-deck hump';
 const SEC={
