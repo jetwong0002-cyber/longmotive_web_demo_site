@@ -276,7 +276,7 @@
           <sc-if value="{{ isVideoScrub }}" hint-placeholder-val="{{ false }}"><video class="lm-hero-media" ref="{{ heroVideoRef }}" poster="uploads/campus-v2-merged16-poster-eae9bed7.jpg" muted="{{ true }}" playsinline="{{ true }}" preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video></sc-if>
           <sc-if value="{{ is3dHero }}" hint-placeholder-val="{{ true }}"><lm-campus-hero class="lm-hero-media" ref="{{ campusRef }}" style="position:absolute;inset:0"></lm-campus-hero></sc-if>
           <div ref="{{ heroTintRef }}" style="position:absolute;inset:0;background:rgba(7,36,72,.45);pointer-events:none"></div>
-          <img class="lm-hero-media" ref="{{ heroPhotoRef }}" src="uploads/frames/f10.jpg" alt="Aerial view of the completed DAY ONE data centre" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:opacity,transform"/>
+          <img class="lm-hero-media" ref="{{ heroPhotoRef }}" src="uploads/frames/f10-1920.jpg" srcset="uploads/frames/f10-960.webp 960w, uploads/frames/f10-1280.webp 1280w, uploads/frames/f10-1920.webp 1920w" sizes="100vw" alt="Aerial view of the completed DAY ONE data centre" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:opacity,transform"/>
           
           <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,36,72,.6) 0%,rgba(7,36,72,0) 15%,rgba(7,36,72,0) 85%,rgba(7,36,72,.6) 100%),linear-gradient(180deg,rgba(7,36,72,.6) 0%,rgba(7,36,72,0) 15%,rgba(7,36,72,0) 85%,rgba(7,36,72,.6) 100%);pointer-events:none"></div>
           
@@ -446,7 +446,7 @@
         <div style="flex:1;display:flex;align-items:center;padding:0 var(--gutter);min-height:0">
           <div class="lm-split2" style="max-width:var(--container-max);margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1.05fr;gap:clamp(24px,4vw,56px);align-items:center">
             <div data-reveal="0" style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(10px,1.6vh,16px)">
-              <div style="grid-column:1/-1;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-lg);height:clamp(190px,34vh,330px)"><img src="assets/img/about-2.jpg" alt="Rack systems being installed in a data hall" style="width:100%;height:100%;object-fit:cover"/></div>
+              <div style="grid-column:1/-1;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-lg);height:clamp(190px,34vh,330px)"><img src="assets/img/about-2-1400.webp" alt="Rack systems being installed in a data hall" style="width:100%;height:100%;object-fit:cover"/></div>
               <div style="border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);height:clamp(115px,20vh,200px)"><img src="assets/img/about-1.jpg" alt="Technicians working on rooftop cooling towers" style="width:100%;height:100%;object-fit:cover"/></div>
               <div style="border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);height:clamp(115px,20vh,200px)"><img src="assets/img/about-5.jpg" alt="Structured cabling inside network racks" style="width:100%;height:100%;object-fit:cover"/></div>
             </div>
@@ -513,7 +513,7 @@
             <p style="margin:0;font-size:16px;color:var(--text-muted);line-height:1.6;max-width:70ch">Relying on a strong team and the right development philosophy, Longmotive has steadily built a dependable presence in the electromechanical industry.</p>
           </div>
           <div data-reveal="2" style="border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border-subtle);box-shadow:var(--shadow-lg);background:var(--lm-blue-900)">
-            <img data-parallax="1" src="uploads/hf_20260724_082014_acbf4dcc-fbba-4224-80e9-1281580f6fc6.png" alt="The Longmotive team in a data hall" style="width:100%;height:auto;display:block;transform:scale(1.08)"/>
+            <img data-parallax="1" src="uploads/about-team-datahall-2560.webp" alt="The Longmotive team in a data hall" style="width:100%;height:auto;display:block;transform:scale(1.08)"/>
           </div>
         </div>
       </section>
@@ -761,25 +761,25 @@ const STATS=[
 ];
 const PROJECTS=[
   {img:'uploads/generated-views/rackrow-frame-start.png',abs:true,rack:true,cat:'Data Hall',title:'Data Hall',meta:'Racks, busway & containment',tags:['Data Hall']},
-  {img:'projects/chiller-plant-room.jpg',cat:'Cooling',title:'Chiller Plant Room',meta:'Chilled-water plant install & commissioning',tags:['HVAC & Cooling']},
-  {img:'projects/msb.jpg',cat:'Electrical',title:'Main Switchboard (MSB)',meta:'Power-distribution module interior',tags:['Electrical']},
-  {img:'projects/generator.jpg',cat:'Electrical',title:'Generator Plant',meta:'Standby power installation',tags:['Electrical']},
-  {img:'projects/roof-diesel-generator.jpg',cat:'Electrical',title:'Rooftop Diesel Generators',meta:'Roof-mounted standby power',tags:['Electrical']},
-  {img:'projects/open-cooling-tower.jpg',cat:'Cooling',title:'Open Cooling Towers',meta:'Heat-rejection plant',tags:['HVAC & Cooling']},
-  {img:'projects/chilled-water-tank.jpg',cat:'Cooling',title:'Outdoor Chilled-Water Storage Tank',meta:'Thermal energy storage',tags:['HVAC & Cooling']},
-  {img:'projects/chiller-piping.jpg',cat:'Cooling',title:'Chiller Piping',meta:'Large-bore chilled-water piping',tags:['HVAC & Cooling']},
-  {img:'projects/cooling-room.jpg',cat:'Cooling',title:'Level 3 Chiller Room',meta:'Refrigeration plant works',tags:['HVAC & Cooling']},
-  {img:'projects/ahu-room.jpg',cat:'HVAC',title:'Air Handling Unit Room',meta:'Fresh-air AHU installation',tags:['HVAC & Cooling']},
-  {img:'projects/crah-room.jpg',cat:'HVAC',title:'CRAH Room',meta:'Fluorine-pump AC system',tags:['HVAC & Cooling']},
-  {img:'projects/roof-ac-unit.jpg',cat:'HVAC',title:'Rooftop AC Outdoor Units',meta:'Roof-mounted condensing units',tags:['HVAC & Cooling']},
-  {img:'projects/fluorine-pump-system.jpg',cat:'HVAC',title:'Rooftop Fluorine-Pump System',meta:'Roof-level pump skids & piping',tags:['HVAC & Cooling']},
-  {img:'projects/fluorine-pump-cooling-tower.jpg',cat:'Cooling',title:'Fluorine-Pump Cooling Towers',meta:'Rooftop heat rejection',tags:['HVAC & Cooling']},
-  {img:'projects/makeup-water-pump.jpg',cat:'Cooling',title:'AC Makeup-Water Pump Room',meta:'Condenser make-up water plant',tags:['HVAC & Cooling']},
-  {img:'projects/pre-action-valve-room.jpg',cat:'Fire',title:'Pre-Action Sprinkler Valve Room',meta:'Pre-action valve assemblies',tags:['Fire Protection']},
-  {img:'projects/ba-control-room.jpg',cat:'ELV',title:'BA Control Room',meta:'Building-automation control suite',tags:['ELV & Controls']},
-  {img:'projects/ecc-room.jpg',cat:'ELV',title:'ECC Monitoring Room',meta:'Campus monitoring & command',tags:['ELV & Controls']},
-  {img:'projects/elv-room.jpg',cat:'ELV',title:'ELV Room',meta:'Extra-low-voltage equipment room',tags:['ELV & Controls']},
-  {img:'projects/telecom-access-room.jpg',cat:'ELV',title:'Telecom Operator Access Room',meta:'Carrier meet-me room fit-out',tags:['ELV & Controls']}
+  {img:'projects-2x/chiller-plant-room.webp',cat:'Cooling',title:'Chiller Plant Room',meta:'Chilled-water plant install & commissioning',tags:['HVAC & Cooling']},
+  {img:'projects-2x/msb.webp',cat:'Electrical',title:'Main Switchboard (MSB)',meta:'Power-distribution module interior',tags:['Electrical']},
+  {img:'projects-2x/generator.webp',cat:'Electrical',title:'Generator Plant',meta:'Standby power installation',tags:['Electrical']},
+  {img:'projects-2x/roof-diesel-generator.webp',cat:'Electrical',title:'Rooftop Diesel Generators',meta:'Roof-mounted standby power',tags:['Electrical']},
+  {img:'projects-2x/open-cooling-tower.webp',cat:'Cooling',title:'Open Cooling Towers',meta:'Heat-rejection plant',tags:['HVAC & Cooling']},
+  {img:'projects-2x/chilled-water-tank.webp',cat:'Cooling',title:'Outdoor Chilled-Water Storage Tank',meta:'Thermal energy storage',tags:['HVAC & Cooling']},
+  {img:'projects-2x/chiller-piping.webp',cat:'Cooling',title:'Chiller Piping',meta:'Large-bore chilled-water piping',tags:['HVAC & Cooling']},
+  {img:'projects-2x/cooling-room.webp',cat:'Cooling',title:'Level 3 Chiller Room',meta:'Refrigeration plant works',tags:['HVAC & Cooling']},
+  {img:'projects-2x/ahu-room.webp',cat:'HVAC',title:'Air Handling Unit Room',meta:'Fresh-air AHU installation',tags:['HVAC & Cooling']},
+  {img:'projects-2x/crah-room.webp',cat:'HVAC',title:'CRAH Room',meta:'Fluorine-pump AC system',tags:['HVAC & Cooling']},
+  {img:'projects-2x/roof-ac-unit.webp',cat:'HVAC',title:'Rooftop AC Outdoor Units',meta:'Roof-mounted condensing units',tags:['HVAC & Cooling']},
+  {img:'projects-2x/fluorine-pump-system.webp',cat:'HVAC',title:'Rooftop Fluorine-Pump System',meta:'Roof-level pump skids & piping',tags:['HVAC & Cooling']},
+  {img:'projects-2x/fluorine-pump-cooling-tower.webp',cat:'Cooling',title:'Fluorine-Pump Cooling Towers',meta:'Rooftop heat rejection',tags:['HVAC & Cooling']},
+  {img:'projects-2x/makeup-water-pump.webp',cat:'Cooling',title:'AC Makeup-Water Pump Room',meta:'Condenser make-up water plant',tags:['HVAC & Cooling']},
+  {img:'projects-2x/pre-action-valve-room.webp',cat:'Fire',title:'Pre-Action Sprinkler Valve Room',meta:'Pre-action valve assemblies',tags:['Fire Protection']},
+  {img:'projects-2x/ba-control-room.webp',cat:'ELV',title:'BA Control Room',meta:'Building-automation control suite',tags:['ELV & Controls']},
+  {img:'projects-2x/ecc-room.webp',cat:'ELV',title:'ECC Monitoring Room',meta:'Campus monitoring & command',tags:['ELV & Controls']},
+  {img:'projects-2x/elv-room.webp',cat:'ELV',title:'ELV Room',meta:'Extra-low-voltage equipment room',tags:['ELV & Controls']},
+  {img:'projects-2x/telecom-access-room.webp',cat:'ELV',title:'Telecom Operator Access Room',meta:'Carrier meet-me room fit-out',tags:['ELV & Controls']}
 ];
 const VALUES=[
   {icon:'Shield',title:'Survival by Quality',desc:'Standardized construction and rigorous QA/QC on every project.'},
@@ -797,12 +797,12 @@ const HERO_PHASES=[
 // CardSwap deck (adapted from React Bits CardSwap): 6 flagship projects that
 // have both a reference photo and a 3D model render + a locked viewer page
 const SWAP=[
-  {title:'Rooftop Diesel Generators',cat:'Electrical',meta:'Containerised standby power plant',img:'projects/roof-diesel-generator.jpg',render:'assets/img/model-posters/rooftop-diesel-generator-studio.png',href:'rooftop-diesel-generator-viewer.dc.html'},
-  {title:'Rooftop AC Outdoor Units',cat:'HVAC & Cooling',meta:'High-density condenser installation',img:'projects/roof-ac-unit.jpg',render:'assets/img/model-posters/rooftop-ac-outdoor-units-studio.png',href:'rooftop-ac-outdoor-unit-viewer.dc.html'},
-  {title:'ECC Monitoring Room',cat:'ELV & Controls',meta:'Mission-critical operations centre',img:'projects/ecc-room.jpg',render:'assets/img/model-posters/ecc-monitoring-room-studio.png',href:'ecc-room-viewer.dc.html'},
-  {title:'Chiller Piping',cat:'HVAC & Cooling',meta:'Primary chilled-water distribution corridor',img:'projects/chiller-piping.jpg',render:'assets/img/model-posters/chiller-piping-studio.png',href:'chiller-piping-viewer.dc.html'},
-  {title:'Outdoor Chilled-Water Storage Tank',cat:'HVAC & Cooling',meta:'Thermal storage tank installation',img:'projects/chilled-water-tank.jpg',render:'assets/img/model-posters/outdoor-chilled-water-tank-studio.png',href:'outdoor-chilled-water-tank-viewer.dc.html'},
-  {title:'Rooftop Fluorine-Pump System',cat:'HVAC & Cooling',meta:'Packaged rooftop cooling modules',img:'projects/fluorine-pump-system.jpg',render:'assets/img/model-posters/rooftop-fluorine-pump-system-studio.png',href:'rooftop-fluorine-pump-system-viewer.dc.html'}
+  {title:'Rooftop Diesel Generators',cat:'Electrical',meta:'Containerised standby power plant',img:'projects-2x/roof-diesel-generator.webp',render:'assets/img/model-posters/rooftop-diesel-generator-studio.png',href:'rooftop-diesel-generator-viewer.dc.html'},
+  {title:'Rooftop AC Outdoor Units',cat:'HVAC & Cooling',meta:'High-density condenser installation',img:'projects-2x/roof-ac-unit.webp',render:'assets/img/model-posters/rooftop-ac-outdoor-units-studio.png',href:'rooftop-ac-outdoor-unit-viewer.dc.html'},
+  {title:'ECC Monitoring Room',cat:'ELV & Controls',meta:'Mission-critical operations centre',img:'projects-2x/ecc-room.webp',render:'assets/img/model-posters/ecc-monitoring-room-studio.png',href:'ecc-room-viewer.dc.html'},
+  {title:'Chiller Piping',cat:'HVAC & Cooling',meta:'Primary chilled-water distribution corridor',img:'projects-2x/chiller-piping.webp',render:'assets/img/model-posters/chiller-piping-studio.png',href:'chiller-piping-viewer.dc.html'},
+  {title:'Outdoor Chilled-Water Storage Tank',cat:'HVAC & Cooling',meta:'Thermal storage tank installation',img:'projects-2x/chilled-water-tank.webp',render:'assets/img/model-posters/outdoor-chilled-water-tank-studio.png',href:'outdoor-chilled-water-tank-viewer.dc.html'},
+  {title:'Rooftop Fluorine-Pump System',cat:'HVAC & Cooling',meta:'Packaged rooftop cooling modules',img:'projects-2x/fluorine-pump-system.webp',render:'assets/img/model-posters/rooftop-fluorine-pump-system-studio.png',href:'rooftop-fluorine-pump-system-viewer.dc.html'}
 ];
 
 const CERTS=[
