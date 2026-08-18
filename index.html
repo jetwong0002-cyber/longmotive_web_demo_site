@@ -371,17 +371,17 @@
         <div class="lm-project-shell">
           <div class="lm-work-stage">
             <div class="lm-work-copy" data-reveal="0">
-              <span class="lm-work-kicker">Selected Work · Interactive BIM</span>
-              <h2 id="selected-work-title" class="lm-work-heading">Built work.<br/>Revealed.</h2>
-              <p class="lm-work-intro">Drag across each frame to compare the completed site with its interactive reconstruction. Six flagship systems, viewed as evidence—not thumbnails.</p>
+              <span class="lm-work-kicker">Selected Work</span>
+              <h2 id="selected-work-title" class="lm-work-heading">Interactive<br/>BIM viewers</h2>
+              <p class="lm-work-intro">Six projects with both a site photograph and a BIM model. Drag across a card to compare them, or open one in the 3D viewer.</p>
               <div class="lm-work-current" ref="{{ swapTitleRef }}" aria-live="polite">
                 <div class="lm-work-count">{{ swapCount }}</div>
                 <h3 class="lm-work-title">{{ swapTitle }}</h3>
                 <p class="lm-work-meta">{{ swapCat }} · {{ swapMeta }}</p>
                 <div class="lm-work-actions">
                   <button class="lm-work-open" onClick="{{ swapOpenFront }}">Open current 3D model {{ arrowIcon }}</button>
-                  <button class="lm-work-arrow" onClick="{{ swapPrev }}" aria-label="Previous flagship project">←</button>
-                  <button class="lm-work-arrow" onClick="{{ swapNext }}" aria-label="Next flagship project">→</button>
+                  <button class="lm-work-arrow" onClick="{{ swapPrev }}" aria-label="Previous project">←</button>
+                  <button class="lm-work-arrow" onClick="{{ swapNext }}" aria-label="Next project">→</button>
                 </div>
               </div>
             </div>
@@ -794,7 +794,7 @@ const HERO_PHASES=[
   {number:'04',label:'M&E Fit-Out & Rooftop Plant',blurb:'Facade cladding lands while rows of rooftop cooling plant are set and piped.'},
   {number:'05',label:'Live Data Centre Campus',blurb:'Commissioned, energised and operational — a hyperscale campus, delivered.'}
 ];
-// CardSwap deck (adapted from React Bits CardSwap): 6 flagship projects that
+// CardSwap deck (adapted from React Bits CardSwap): the 6 projects that
 // have both a reference photo and a 3D model render + a locked viewer page
 const SWAP=[
   {title:'Rooftop Diesel Generators',cat:'Electrical',meta:'Containerised standby power plant',img:'projects-2x/roof-diesel-generator.webp',render:'assets/img/model-posters/rooftop-diesel-generator-studio.png',href:'rooftop-diesel-generator-viewer.dc.html'},
