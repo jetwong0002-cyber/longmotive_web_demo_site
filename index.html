@@ -941,9 +941,30 @@ class Component extends DCLogic {
     // ~960MB of pixels. As <img> the browser owns the cache and can evict.
     const one=(i)=>fetch(SEQ_URL(i)).then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.blob(); })
       .then(b=>new Promise((res,rej)=>{ const im=new Image();
-        im.onload=()=>{ this._seqImg[i]=im; this._seqOk[i]=true; this._seqDone++; this._seqDraw(); res(); };
+        im.onload=()=>{
+          // DECODE BEFORE MARKING THE FRAME USABLE. onload only means the bytes
+          // arrived; the first drawImage of each frame then decodes a 2560x1440
+          // WebP synchronously on the main thread. That is why the first pass
+          // down the hero stuttered and every pass after it was smooth -- the
+          // decodes were already paid for. decode() moves that cost off the
+          // scroll and into loading, where nobody is watching.
+          let settled=false;
+          const ready=()=>{ if(settled) return; settled=true;
+            this._seqImg[i]=im; this._seqOk[i]=true; this._seqDone++; this._seqDraw(); res(); };
+          // decode() can stay pending indefinitely when the document is not
+          // rendering. Never let that strand the hero -- the image is already
+          // usable, decode() is only an optimisation.
+          if(im.decode){ im.decode().then(ready,ready); setTimeout(ready,400); } else ready();
+        };
         im.onerror=rej; im.src=URL.createObjectURL(b); }));
-    const run=(list)=>list.reduce((pr,i)=>pr.then(()=>one(i)),Promise.resolve());
+    // Bounded concurrency, not a strict chain. Sequentially this pulled 33MB one
+    // frame at a time, so late frames were still missing on the first scroll and
+    // the nearest-loaded fallback jumped between distant frames.
+    const run=(list,par)=>{
+      let k=0;
+      const next=()=>k<list.length ? one(list[k++]).catch(()=>{}).then(next) : Promise.resolve();
+      return Promise.all(Array.from({length:Math.min(par||6,list.length)},next));
+    };
     const t1=[],t2=[];
     for(let i=0;i<SEQ_N;i++) (i%SEQ_TIER===0?t1:t2).push(i);
     run(t1).then(()=>{
