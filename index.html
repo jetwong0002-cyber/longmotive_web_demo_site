@@ -284,7 +284,7 @@
     <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
     <div>
       <sc-if value="{{ isVideoHero }}" hint-placeholder-val="{{ true }}">
-      <section class="lm-scroll-stop" ref="{{ heroTrackRef }}" style="position:relative;height:300vh;background:var(--lm-blue-900);scroll-snap-align:start">
+      <section class="lm-scroll-stop" ref="{{ heroTrackRef }}" style="position:relative;height:400vh;background:var(--lm-blue-900);scroll-snap-align:start">
         <div class="lm-hero-stage" style="position:sticky;top:0;height:100vh;overflow:hidden">
           <sc-if value="{{ isVideoScrub }}" hint-placeholder-val="{{ false }}"><video class="lm-hero-media" ref="{{ heroVideoRef }}" poster="uploads/campus-v2-merged16-poster-eae9bed7.jpg" muted="{{ true }}" playsinline="{{ true }}" preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video></sc-if><sc-if value="{{ isVideoScrub }}" hint-placeholder-val="{{ false }}"><canvas class="lm-hero-media" ref="{{ heroCanvasRef }}" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none"></canvas></sc-if>
           <sc-if value="{{ is3dHero }}" hint-placeholder-val="{{ true }}"><lm-campus-hero class="lm-hero-media" ref="{{ campusRef }}" style="position:absolute;inset:0"></lm-campus-hero></sc-if>
@@ -855,14 +855,16 @@ const IMG='assets/img/';
 // frames fail to arrive (including a browser with no AVIF support) the video
 // path takes over.
 // THE TRACK LENGTH IS THE OTHER HALF OF SMOOTHNESS. Stepping is
-// (scrollable distance / frames), so shortening the track improves it for
-// free -- no extra bytes -- and makes the hero quicker to get through at the
-// same time. The hero section is 300vh (was 500vh): 1800px of scroll at a
-// 900px viewport, so 13.2px per frame against 26.5px before, and 1.67x less
-// scrolling to reach the end. Everything downstream is proportional -- p is
-// normalised over (rect.height - innerHeight), the 0..0.75 scrub window and
-// the auto-tour duration both derive from it -- so this is the only number
-// that changes.
+// (scrollable distance / frames), so shortening the track improves it for free
+// -- no extra bytes -- and makes the hero quicker to get through at the same
+// time. The hero section is 400vh (was 500vh): 2700px of scroll at a 900px
+// viewport, so 19.9px per frame against 26.5px before, and 1.33x less scrolling
+// to reach the end. Everything downstream is proportional -- p is normalised
+// over (rect.height - innerHeight), and the 0..0.75 scrub window, the photo
+// crossfade, the ending hold and the auto-tour duration all derive from it --
+// so this is the only number that changes.
+// The five phase captions get 0.75*2700/5 = 405px of scroll each, i.e. 45vh.
+// 300vh was tried first and gave them only 30vh, which read as hurried.
 const SEQ_N=136, SEQ_DIR='uploads/hero-seq/', SEQ_TIER=8;
 const SEQ_OK=()=>{
   if(typeof matchMedia==='undefined') return false;
