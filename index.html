@@ -44,8 +44,8 @@
     if(matchMedia('(min-width: 1025px)').matches
        && !matchMedia('(prefers-reduced-motion: reduce)').matches
        && !(conn && /(^|-)3g$/.test(conn.effectiveType||''))){
-      for(var i=0;i<68;i+=4){
-        fetch('uploads/hero-seq/f'+('00'+(i+1)).slice(-3)+'.webp',{priority:'high'})
+      for(var i=0;i<136;i+=8){
+        fetch('uploads/hero-seq/f'+('00'+(i+1)).slice(-3)+'.avif',{priority:'high'})
           .catch(function(){});
       }
       return;
@@ -843,12 +843,18 @@ const HOME_CURATED=['Rooftop Diesel Generators','Rooftop AC Outdoor Units','ECC 
 const IMG='assets/img/';
 // Must stay in step with the <head> preloader's own query, or the two disagree
 // about which file this screen wants and the phone pays for both.
-// Hero image sequence. The scrubbed clip spends 48.8 KB per frame; a WebP still
-// from the 2560 master costs ~500 KB, which is the sharpness the codec cannot
-// reach at any bitrate. 68 frames = 33.4 MB, so this is DESKTOP ONLY -- phones
-// keep the 2.5MB video below, which is also the documented advice for anything
-// above the fold. If the frames fail to arrive the video path takes over.
-const SEQ_N=68, SEQ_DIR='uploads/hero-seq/', SEQ_TIER=4;
+// Hero image sequence. The scrubbed clip spends 48.8 KB per frame, a sharpness
+// ceiling no encoder setting can lift; stills cost more and buy it back.
+// FRAME COUNT BEATS PER-FRAME PIXELS on a scrubbed hero. The first build shipped
+// 68 WebP frames at 2560w / 506 KB and stepped every 56px of scroll. AVIF at
+// 1920w costs 279 KB, so a similar budget buys ALL 136 source frames instead --
+// 27.8px per frame, half the stepping. Motion hides pixel detail; stepping does
+// not hide at all.
+// 136 frames = 37.1 MB, so this is DESKTOP ONLY -- phones keep the 2.5MB video
+// below, which is also the documented advice for anything above the fold. If the
+// frames fail to arrive (including a browser with no AVIF support) the video
+// path takes over.
+const SEQ_N=136, SEQ_DIR='uploads/hero-seq/', SEQ_TIER=8;
 const SEQ_OK=()=>{
   if(typeof matchMedia==='undefined') return false;
   if(matchMedia('(max-width: 1024px)').matches) return false;
@@ -857,7 +863,7 @@ const SEQ_OK=()=>{
   if(c&&(c.saveData||/(^|-)(2g|3g)$/.test(c.effectiveType||''))) return false;
   return true;
 };
-const SEQ_URL=(i)=>SEQ_DIR+'f'+('00'+(i+1)).slice(-3)+'.webp';
+const SEQ_URL=(i)=>SEQ_DIR+'f'+('00'+(i+1)).slice(-3)+'.avif';
 const HERO_VIDEO=()=> (typeof matchMedia!=='undefined'&&matchMedia('(max-width: 760px)').matches)
   ? 'uploads/merged16-scrub-mobile.mp4'
   : 'uploads/merged16-scrub-desktop.mp4';
