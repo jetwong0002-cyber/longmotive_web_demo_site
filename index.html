@@ -932,6 +932,11 @@ class Component extends DCLogic {
     this._seqCtx=el.getContext('2d',{alpha:false});
     this._seqResize();
     if(!this._seqResizeBound){ this._seqResizeBound=()=>this._seqResize(); addEventListener('resize',this._seqResizeBound); }
+    // a window resize does NOT fire when the scrollbar appears or the shell
+    // settles, and that is exactly when the box width changes
+    if(typeof ResizeObserver!=='undefined'&&!this._seqRO){
+      this._seqRO=new ResizeObserver(()=>this._seqResize()); this._seqRO.observe(el);
+    }
     // Frames are <img>, never ImageBitmap: 68 decoded 2560x1440 bitmaps would pin
     // ~960MB of pixels. As <img> the browser owns the cache and can evict.
     const one=(i)=>fetch(SEQ_URL(i)).then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.blob(); })
@@ -946,7 +951,12 @@ class Component extends DCLogic {
       this._seqReady=true;
       if(this._cvs) this._cvs.style.display='block';
       if(this._video) this._video.style.display='none';
-      this._seqDraw();
+      // size it HERE, explicitly. Until this point the canvas was display:none,
+      // so it measured 0x0 and kept the default 300x150 backing store. Relying on
+      // the ResizeObserver to catch the 0 -> 1425 change is not safe: a document
+      // that is not compositing never delivers one, and the hero would then paint
+      // a 300x150 buffer stretched across the viewport.
+      this._seqResize();
       return run(t2).catch(()=>{}); // fill-in failures are survivable: nearest frame is drawn
     }).catch(()=>this._seqFail());
   };
@@ -966,10 +976,18 @@ class Component extends DCLogic {
   _seqResize=()=>{
     const el=this._cvs; if(!el) return;
     const r=el.getBoundingClientRect();
+    const w=r.width||el.clientWidth, h=r.height||el.clientHeight;
+    if(!(w>0&&h>0)) return; // measured before layout; sizing off innerWidth breaks the aspect
     const dpr=Math.min(typeof devicePixelRatio!=='undefined'?devicePixelRatio:1,2);
-    // never exceed the 2560x1440 source; a 2x canvas on a wide monitor is a big blit
-    el.width=Math.max(1,Math.min(2560,Math.round((r.width||innerWidth)*dpr)));
-    el.height=Math.max(1,Math.min(1440,Math.round((r.height||innerHeight)*dpr)));
+    // THE BACKING STORE MUST KEEP THE BOX ASPECT EXACTLY. The canvas is styled
+    // object-fit:cover, so any mismatch makes the browser resample the WHOLE
+    // canvas -- a full bilinear pass that throws away the sharpness these frames
+    // were shipped for. Sizing off innerWidth (1440) instead of the real box
+    // (1425, once the scrollbar exists) was doing exactly that. Clamp UNIFORMLY.
+    const maxPx=3.4e6;
+    const k=Math.sqrt(Math.min(1,maxPx/(w*dpr*h*dpr)));
+    const bw=Math.max(1,Math.round(w*dpr*k)), bh=Math.max(1,Math.round(h*dpr*k));
+    if(el.width!==bw||el.height!==bh){ el.width=bw; el.height=bh; }
     this._seqDraw();
   };
   _seqNearest=(k)=>{
