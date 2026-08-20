@@ -44,7 +44,7 @@
     if(matchMedia('(min-width: 1025px)').matches
        && !matchMedia('(prefers-reduced-motion: reduce)').matches
        && !(conn && /(^|-)3g$/.test(conn.effectiveType||''))){
-      for(var i=0;i<219;i+=12){
+      for(var i=0;i<271;i+=12){
         fetch('uploads/hero-seq/f'+('00'+(i+1)).slice(-3)+'.webp',{priority:'high'})
           .catch(function(){});
       }
@@ -855,7 +855,7 @@ const IMG='assets/img/';
 // intra decode is much heavier than WebP. WebP at 1600w is SMALLER (29.8 MB),
 // cheaper to decode, and drops the decoded footprint to 0.73 GB. 1600 still
 // exceeds the ~1425px the canvas is actually drawn at.
-// 219 frames = 35.7 MB, so this is DESKTOP ONLY -- phones keep the 2.5MB video
+// 271 frames = 59.5 MB, so this is DESKTOP ONLY -- phones keep the 2.5MB video
 // below, which is also the documented advice for anything above the fold. If the
 // frames fail to arrive (including a browser with no AVIF support) the video
 // path takes over.
@@ -869,7 +869,7 @@ const IMG='assets/img/';
 // it started. Everything downstream is proportional -- p is normalised over
 // (rect.height - innerHeight), and the 0..0.75 scrub window, the photo crossfade,
 // the ending hold and the auto-tour duration all derive from it.
-const SEQ_N=219, SEQ_DIR='uploads/hero-seq/', SEQ_TIER=8;
+const SEQ_N=271, SEQ_DIR='uploads/hero-seq/', SEQ_TIER=8;
 const SEQ_OK=()=>{
   if(typeof matchMedia==='undefined') return false;
   if(matchMedia('(max-width: 1024px)').matches) return false;
@@ -891,9 +891,11 @@ const SEQ_URL=(i)=>SEQ_DIR+'f'+('00'+(i+1)).slice(-3)+'.webp';
 // So the master is now the EDIT MAP and the clips are the PIXEL SOURCE. Every
 // master frame was matched to (clip, frame) by 48x27 thumbnail MAD -- the map
 // came out perfectly monotonic, uniform step 8, residual 0.5-2.0 -- and the
-// sequence takes every 5th source frame across exactly the master-used ranges,
-// ending each segment on the very frame the editor ended on. 219 frames,
-// 1440x810, 35.7 MB. 1.6x the master density, zero dissolve frames.
+// sequence takes every 4th source frame across exactly the master-used ranges,
+// ending each segment on the very frame the editor ended on. 271 frames at the
+// clips' NATIVE 1920x1080 (a 1440w frame is upscaled ~33% on a 1920 viewport,
+// which is where "not sharp" came from), q76, 59.5 MB. 2x the master density,
+// zero dissolve frames by construction.
 // THE FIVE CUTS ARE HARD CUTS AT THE MASTER'S OWN CUT POINTS. Measured MAD at
 // them: 4.9-17.3 against an in-clip median of 5.0. The largest (clip1->clip2,
 // now f038->f039) is near-identical camera position with the piles appearing --
@@ -917,7 +919,7 @@ const SEQ_URL=(i)=>SEQ_DIR+'f'+('00'+(i+1)).slice(-3)+'.webp';
 // SEQ_CUM[k] is where frame k starts, in ten-thousandths of the scrub range.
 // REGENERATE if the frame set changes: 48x27 grey thumbnails, mean absolute
 // difference between consecutive frames, weight 1/m, clamp, cumulative sum.
-const SEQ_CUM=[0,79,159,231,298,367,424,475,520,562,602,646,685,724,761,797,831,854,876,899,922,944,967,989,1012,1034,1071,1105,1141,1171,1206,1235,1264,1289,1313,1335,1358,1437,1460,1513,1554,1634,1713,1792,1872,1921,2001,2080,2159,2239,2312,2350,2409,2489,2568,2648,2727,2806,2886,2965,3029,3092,3163,3233,3300,3356,3403,3451,3482,3507,3540,3588,3665,3706,3729,3758,3795,3835,3866,3889,3919,3958,3993,4031,4063,4100,4142,4187,4235,4271,4301,4338,4386,4439,4485,4518,4548,4579,4611,4647,4687,4720,4761,4801,4841,4882,4929,4983,5025,5088,5144,5224,5246,5288,5327,5372,5414,5452,5499,5541,5577,5621,5680,5737,5772,5804,5844,5892,5948,5994,6025,6064,6138,6214,6292,6361,6432,6470,6499,6546,6569,6613,6655,6695,6728,6761,6833,6855,6909,6947,7013,7066,7115,7138,7196,7218,7252,7296,7343,7395,7448,7499,7557,7603,7649,7688,7710,7733,7756,7780,7809,7846,7874,7915,7958,8012,8072,8138,8205,8273,8353,8432,8456,8499,8530,8558,8589,8616,8639,8666,8692,8723,8758,8789,8821,8858,8893,8927,8961,8992,9031,9071,9106,9140,9173,9210,9252,9293,9341,9393,9451,9511,9570,9632,9698,9771,9846,9921,10000];
+const SEQ_CUM=[0,64,128,191,248,305,364,413,458,498,534,569,603,639,674,707,740,770,801,831,859,878,897,915,934,952,971,990,1008,1027,1045,1064,1090,1120,1148,1178,1203,1231,1258,1282,1306,1328,1347,1366,1385,1403,1459,1478,1521,1560,1602,1666,1730,1794,1858,1922,1965,2029,2092,2156,2220,2284,2343,2384,2412,2476,2540,2604,2668,2731,2795,2859,2923,2987,3042,3097,3150,3209,3266,3329,3378,3423,3461,3503,3531,3556,3575,3603,3643,3689,3753,3781,3800,3819,3847,3877,3907,3935,3953,3972,4004,4033,4058,4087,4119,4146,4174,4210,4243,4285,4318,4345,4368,4398,4428,4471,4514,4549,4580,4598,4620,4643,4668,4701,4729,4762,4786,4818,4846,4879,4911,4944,4983,5025,5066,5102,5153,5193,5257,5275,5308,5338,5374,5410,5441,5470,5506,5541,5572,5602,5636,5684,5735,5777,5803,5830,5858,5893,5931,5978,6016,6040,6080,6113,6175,6238,6302,6357,6415,6474,6505,6524,6569,6619,6637,6676,6706,6735,6766,6791,6815,6850,6869,6915,6952,6995,7047,7090,7130,7152,7175,7218,7237,7261,7302,7338,7374,7417,7459,7498,7549,7590,7624,7661,7691,7717,7736,7756,7774,7795,7815,7840,7869,7889,7918,7947,7981,8022,8066,8112,8160,8209,8258,8315,8370,8389,8425,8454,8477,8503,8527,8552,8570,8592,8613,8636,8661,8689,8718,8743,8771,8801,8832,8861,8889,8917,8943,8974,9007,9039,9068,9096,9124,9152,9184,9220,9254,9293,9334,9380,9429,9478,9527,9578,9631,9686,9747,9809,9872,9936,10000];
 // frame index for a scrub position, by binary search over SEQ_CUM
 const SEQ_AT=(p)=>{
   const t=Math.max(0,Math.min(10000,p*10000));
@@ -1110,6 +1112,16 @@ class Component extends DCLogic {
     const p=Math.min(1,Math.max(0,this._cur!=null?this._cur:(this._target||0)));
     const k=SEQ_AT(p);
     const a=this._seqNearest(k); if(a<0) return;
+    // DECODE-AHEAD. At 1920x1080 the browser will evict decoded frames under
+    // memory pressure, and a mid-scrub re-decode is a synchronous stall on the
+    // main thread. Warm the neighbours asynchronously whenever the frame
+    // changes, so by the time the scrub arrives the pixels are already decoded.
+    if(this._seqWarmK!==k){ this._seqWarmK=k;
+      for(const j of [k+1,k+2,k+3,k-1]){
+        const im=j>=0&&j<SEQ_N&&this._seqOk[j]&&this._seqImg[j];
+        if(im&&im.decode) im.decode().catch(()=>{});
+      }
+    }
     // The rAF loop calls this every frame whether or not anything moved. At rest
     // that was 60 redraws a second of an identical frame. Skip when nothing has
     // changed; canvas dims are in the signature because resizing CLEARS the
