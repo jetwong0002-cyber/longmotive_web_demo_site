@@ -44,7 +44,7 @@
     if(matchMedia('(min-width: 1025px)').matches
        && !matchMedia('(prefers-reduced-motion: reduce)').matches
        && !(conn && /(^|-)3g$/.test(conn.effectiveType||''))){
-      for(var i=0;i<132;i+=8){
+      for(var i=0;i<216;i+=12){
         fetch('uploads/hero-seq/f'+('00'+(i+1)).slice(-3)+'.webp',{priority:'high'})
           .catch(function(){});
       }
@@ -855,7 +855,7 @@ const IMG='assets/img/';
 // intra decode is much heavier than WebP. WebP at 1600w is SMALLER (29.8 MB),
 // cheaper to decode, and drops the decoded footprint to 0.73 GB. 1600 still
 // exceeds the ~1425px the canvas is actually drawn at.
-// 132 frames = 29.0 MB, so this is DESKTOP ONLY -- phones keep the 2.5MB video
+// 216 frames = 35.3 MB, so this is DESKTOP ONLY -- phones keep the 2.5MB video
 // below, which is also the documented advice for anything above the fold. If the
 // frames fail to arrive (including a browser with no AVIF support) the video
 // path takes over.
@@ -869,7 +869,7 @@ const IMG='assets/img/';
 // it started. Everything downstream is proportional -- p is normalised over
 // (rect.height - innerHeight), and the 0..0.75 scrub window, the photo crossfade,
 // the ending hold and the auto-tour duration all derive from it.
-const SEQ_N=132, SEQ_DIR='uploads/hero-seq/', SEQ_TIER=8;
+const SEQ_N=216, SEQ_DIR='uploads/hero-seq/', SEQ_TIER=8;
 const SEQ_OK=()=>{
   if(typeof matchMedia==='undefined') return false;
   if(matchMedia('(max-width: 1024px)').matches) return false;
@@ -879,19 +879,25 @@ const SEQ_OK=()=>{
   return true;
 };
 const SEQ_URL=(i)=>SEQ_DIR+'f'+('00'+(i+1)).slice(-3)+'.webp';
-// FOUR DISSOLVE FRAMES WERE REMOVED FROM THE SET (2026-08-20).
-// The master is an edited montage and carries CROSS-DISSOLVE transitions.
-// Those frames are literally two shots averaged together. Played as video at
-// 24fps a dissolve reads as a normal transition; scrubbed, you stop ON one and
-// it is a double exposure. That is the ghosting -- it was baked into the
-// source, not produced by any blending we do, which is why removing our own
-// crossfade did not fix it.
-// Found by edge energy: a dissolve is two images averaged, so its high-frequency
-// detail drops well below both neighbours. Four single-frame dips, confirmed by
-// eye against a sharp control: original f023, f069, f105, f114. Removed and the
-// set renumbered 136 -> 132.
-// REGENERATE the check if the frames are ever recut: 320px grey, 4-neighbour
-// Laplacian, mean magnitude; flag any frame under ~0.90 of its neighbours mean.
+// BUILT FROM THE SIX ORIGINAL CLIPS, NOT THE MERGED MASTER (2026-08-20).
+// clips/New folder/1-6.mp4, 193 frames each at 24fps, 1158 in total. The
+// merged master was an EDIT of these with cross-dissolve transitions between
+// shots, and those dissolve frames are two shots averaged together -- as video
+// they read as a transition, scrubbed you stop on one and it is a double
+// exposure. Going back to the sources removes the whole class of problem
+// rather than deleting bad frames after the fact.
+// 36 frames per clip, evenly in time, 1440x810 to match the canvas (~1425px
+// at dpr 1). 216 frames, 35.3 MB.
+// THE JOINS DO NOT NEED HIDING. Measured across the five clip boundaries the
+// frame-to-frame difference is 0.7x to 1.7x the in-clip median -- the six clips
+// are one continuous drone orbit of the same site at successive build stages,
+// so they butt together naturally. The dissolves in the master were never
+// necessary; they were the entire defect.
+// Median in-clip difference is now 5.0, down from 7.3 at 132 frames: more
+// frames means smaller steps, which is smoothness bought directly.
+// Checked for dissolves after rebuilding: one frame flagged (f021, 0.87 of its
+// neighbours) and confirmed by eye to be clean motion, not a blend. Zero real
+// dissolves remain.
 // SCROLL IS ALLOCATED BY MOTION, NOT EVENLY.
 // The master runs its 136 frames in 5.67s -- 24fps -- and looked fine as video.
 // Spread evenly over a 3600px track at 270px/s the hero plays those same frames
@@ -908,7 +914,7 @@ const SEQ_URL=(i)=>SEQ_DIR+'f'+('00'+(i+1)).slice(-3)+'.webp';
 // SEQ_CUM[k] is where frame k starts, in ten-thousandths of the scrub range.
 // REGENERATE if the frame set changes: 48x27 grey thumbnails, mean absolute
 // difference between consecutive frames, weight 1/m, clamp, cumulative sum.
-const SEQ_CUM=[0,134,244,350,435,506,570,636,698,756,812,852,891,931,971,1010,1050,1103,1155,1207,1253,1292,1332,1393,1528,1662,1796,1931,2065,2199,2270,2377,2511,2646,2780,2914,3017,3125,3242,3320,3398,3452,3503,3595,3697,3738,3804,3861,3905,3968,4038,4096,4160,4235,4298,4357,4429,4506,4560,4610,4669,4736,4789,4855,4919,5006,5081,5121,5192,5269,5338,5419,5482,5565,5663,5714,5776,5866,5928,5999,6134,6252,6376,6421,6534,6588,6657,6738,6801,6867,6963,7072,7172,7220,7267,7358,7455,7541,7637,7725,7800,7839,7879,7938,7995,8076,8187,8315,8449,8583,8623,8669,8709,8748,8791,8843,8891,8947,9001,9050,9108,9166,9217,9271,9334,9406,9490,9579,9670,9773,9884,10000];
+const SEQ_CUM=[0,80,160,241,300,372,436,484,532,577,612,658,693,733,772,804,838,863,887,912,936,961,985,1010,1034,1069,1099,1137,1168,1198,1228,1258,1282,1307,1331,1356,1381,1441,1502,1562,1606,1667,1748,1828,1908,1963,2043,2123,2203,2284,2356,2389,2469,2549,2629,2709,2790,2870,2950,3019,3075,3148,3210,3275,3332,3374,3415,3446,3470,3516,3574,3645,3682,3706,3744,3782,3813,3839,3863,3894,3929,3967,3997,4036,4073,4123,4167,4202,4239,4279,4327,4370,4410,4435,4463,4496,4533,4574,4603,4645,4688,4722,4768,4823,4866,4916,4972,5037,5072,5112,5155,5199,5234,5280,5326,5363,5411,5455,5489,5540,5599,5649,5684,5712,5759,5813,5859,5892,5932,5997,6076,6157,6218,6294,6318,6368,6430,6458,6498,6537,6575,6607,6662,6729,6792,6851,6887,6940,6978,7044,7103,7131,7165,7200,7224,7276,7319,7374,7429,7477,7534,7580,7623,7657,7681,7706,7731,7756,7791,7822,7859,7904,7960,8018,8088,8156,8216,8297,8377,8457,8502,8541,8582,8611,8638,8669,8694,8718,8745,8777,8807,8839,8868,8906,8943,8972,9006,9042,9076,9116,9151,9180,9218,9260,9297,9346,9392,9454,9515,9568,9633,9704,9770,9848,9928,10000];
 // frame index for a scrub position, by binary search over SEQ_CUM
 const SEQ_AT=(p)=>{
   const t=Math.max(0,Math.min(10000,p*10000));
