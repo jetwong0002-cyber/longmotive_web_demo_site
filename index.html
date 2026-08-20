@@ -38,16 +38,16 @@
     var conn=navigator.connection;
     if(conn&&(conn.saveData||/(^|-)2g$/.test(conn.effectiveType||''))) return;
     // Desktop drives the hero from the image sequence, so do NOT also pull the
-    // 6.5MB clip. Warm only the first four 1920x1080 base frames here; the
+    // 6.5MB clip. Warm only the first four quality-2 master frames here; the
     // priority scheduler fills a contiguous startup buffer after the app boots.
-    // Loading full-resolution anchors in <head> used to put 17.71MB ahead of
-    // React, fonts and layout, which delayed the very autoplay it was meant to help.
+    // Only the first four master frames load in <head>; the remaining 20-frame
+    // startup buffer is scheduled after React and layout are ready.
     // If the frames fail, the component's _seqFail() loads this same video.
     if(matchMedia('(min-width: 1025px)').matches
        && !matchMedia('(prefers-reduced-motion: reduce)').matches
        && !(conn && /(^|-)3g$/.test(conn.effectiveType||''))){
       for(var i=0;i<4;i++){
-        fetch('assets/frames-preview/frame-'+('000'+(i+1)).slice(-4)+'.jpg',{priority:'high'})
+        fetch('assets/frames/frame-'+('000'+(i+1)).slice(-4)+'.jpg?v=q2-20260820',{priority:'high'})
           .catch(function(){});
       }
       return;
@@ -853,8 +853,8 @@ const IMG='assets/img/';
 // concurrency and draws the nearest available frame if the target is not ready.
 // Keep this desktop-only: phones retain the compact scrub video and reduced
 // motion/data-saving users retain the static/video fallback.
-const SEQ_N=136, SEQ_DIR='assets/frames/', SEQ_PREVIEW_DIR='assets/frames-preview/';
-const SEQ_STARTUP=12, SEQ_AHEAD=20, SEQ_BEHIND=3;
+const SEQ_N=136, SEQ_DIR='assets/frames/', SEQ_VERSION='q2-20260820';
+const SEQ_STARTUP=20, SEQ_AHEAD=28, SEQ_BEHIND=3;
 const SEQ_OK=()=>{
   if(typeof matchMedia==='undefined') return false;
   if(matchMedia('(max-width: 1024px)').matches) return false;
@@ -863,8 +863,8 @@ const SEQ_OK=()=>{
   if(c&&(c.saveData||/(^|-)(2g|3g)$/.test(c.effectiveType||''))) return false;
   return true;
 };
-const SEQ_URL=(i)=>SEQ_DIR+'frame-'+('000'+(i+1)).slice(-4)+'.jpg';
-const SEQ_PREVIEW_URL=(i)=>SEQ_PREVIEW_DIR+'frame-'+('000'+(i+1)).slice(-4)+'.jpg';
+const SEQ_URL=(i)=>globalThis.LMSequencePriority.frameUrl(SEQ_DIR,i,SEQ_VERSION);
+const SEQ_PREVIEW_URL=SEQ_URL;
 // The 271-frame sequence used two source samples per master frame. Sampling
 // every second point from its motion-weighted scroll map restores the exact
 // 136-frame master cadence while preserving extra scroll for low-motion shots
@@ -1026,8 +1026,8 @@ class Component extends DCLogic {
       };
       im.onerror=rej; im.src=kind==='full'?SEQ_URL(i):SEQ_PREVIEW_URL(i);
     });
-    // Six base workers establish the 12-frame startup buffer quickly; after the
-    // first paint, three workers maintain the rolling 1080p buffer without decode spikes.
+    // Six workers establish the 20-frame master-quality startup buffer; after the
+    // first paint, two workers maintain the rolling buffer without decode spikes.
     this._seqPump=(kind)=>{
       const preview=kind==='preview', q=preview?this._seqPreviewQ:this._seqFullQ;
       const activeKey=preview?'_seqPreviewActive':'_seqFullActive';
@@ -1036,7 +1036,7 @@ class Component extends DCLogic {
         const i=q.next(); if(i==null) break;
         this[activeKey]++;
         this._seqOne(kind,i).catch(()=>{
-          // A failed proxy must not strand autoplay: request that native frame.
+          // A failed master request must not strand autoplay: retry through the fallback queue.
           if(preview){ this._seqFullQ.add([i],0); this._seqPump('full'); }
         }).finally(()=>{
           q.complete(i); this[activeKey]--;
@@ -1051,7 +1051,8 @@ class Component extends DCLogic {
   };
   _seqEnableNative=()=>{
     this._seqNativeRequested=true;
-    if(!this._seqReady||!this._seqPlan||!this._seqFullQ||this._seqNativeStarted) return;
+    if(!this._seqPlan||!this._seqPlan.nativeUpgradeNeeded(SEQ_PREVIEW_URL(0),SEQ_URL(0))) return;
+    if(!this._seqReady||!this._seqFullQ||this._seqNativeStarted) return;
     this._seqNativeStarted=true; this._seqFullLimit=1;
     const p=Math.min(1,Math.max(0,this._cur!=null?this._cur:(this._target||0)));
     const k=SEQ_AT(p);

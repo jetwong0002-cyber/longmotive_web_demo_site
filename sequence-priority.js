@@ -5,6 +5,18 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
   const clampCount=(value)=>Math.max(0,Math.floor(Number(value)||0));
 
+  function frameUrl(directory,index,version){
+    const root=String(directory||'');
+    const frame=clampCount(index)+1;
+    const name='frame-'+String(frame).padStart(4,'0')+'.jpg';
+    const token=encodeURIComponent(String(version||''));
+    return root+name+(token?'?v='+token:'');
+  }
+
+  function nativeUpgradeNeeded(baseUrl,nativeUrl){
+    return String(baseUrl)!==String(nativeUrl);
+  }
+
   function startupIndices(frameCount,startupCount){
     const count=Math.min(clampCount(frameCount),clampCount(startupCount));
     return Array.from({length:count},(_,index)=>index);
@@ -38,7 +50,7 @@
   }
 
   function previewWorkerLimit(startupReady){
-    return startupReady?3:6;
+    return startupReady?2:6;
   }
 
   function shouldRepaint(beforeIndex,beforeImage,afterIndex,afterImage){
@@ -86,5 +98,5 @@
     get completed(){ return this._done.size; }
   }
 
-  return {SequencePriorityQueue,startupIndices,rollingIndices,bufferedAhead,playbackScale,previewWorkerLimit,shouldRepaint};
+  return {SequencePriorityQueue,startupIndices,rollingIndices,bufferedAhead,playbackScale,previewWorkerLimit,frameUrl,nativeUpgradeNeeded,shouldRepaint};
 });
