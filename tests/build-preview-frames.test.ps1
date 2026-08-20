@@ -17,7 +17,7 @@ try {
         -t 1 -q:v 2 -start_number 1 (Join-Path $source 'frame-%04d.jpg')
     if ($LASTEXITCODE -ne 0) { throw 'Fixture frame generation failed.' }
 
-    & $script -SourceDirectory $source -OutputDirectory $output -Width 320 -ExpectedFrameCount 4
+    & $script -SourceDirectory $source -OutputDirectory $output -ExpectedFrameCount 4
     if ($LASTEXITCODE -ne 0) { throw "Preview builder exited with $LASTEXITCODE." }
 
     $frames = @(Get-ChildItem -LiteralPath $output -Filter 'frame-*.jpg' -File | Sort-Object Name)
@@ -31,12 +31,12 @@ try {
     foreach ($frame in @($frames[0], $frames[-1])) {
         $dimensions = (& ffprobe -v error -select_streams v:0 `
             -show_entries stream=width,height -of 'csv=s=x:p=0' $frame.FullName).Trim()
-        if ($dimensions -ne '320x180') {
-            throw "$($frame.Name) reported $dimensions instead of 320x180."
+        if ($dimensions -ne '1920x1080') {
+            throw "$($frame.Name) reported $dimensions instead of the 1920x1080 autoplay baseline."
         }
     }
 
-    Write-Host 'PASS: preview builder preserves frame cadence and produces the requested width.'
+    Write-Host 'PASS: base-frame builder preserves cadence and defaults to a 1920x1080 autoplay baseline.'
 }
 finally {
     $resolvedTestRoot = [IO.Path]::GetFullPath($testRoot)

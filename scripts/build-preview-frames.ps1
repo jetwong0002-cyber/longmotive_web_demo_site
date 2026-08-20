@@ -4,7 +4,7 @@ param(
     [string]$OutputDirectory = (Join-Path $PSScriptRoot '..\assets\frames-preview'),
 
     [ValidateRange(160, 3840)]
-    [int]$Width = 960,
+    [int]$Width = 1920,
 
     [ValidateRange(2, 31)]
     [int]$Quality = 5,

@@ -1,27 +1,27 @@
-# Campus progressive JPEG hero
+# Campus progressive 1080p JPEG hero
 
-The desktop homepage hero uses two aligned JPEG sequences extracted from `campus-v2-merged16.mp4`. A lightweight sequence provides uninterrupted cold autoplay; native frames are requested around the current position only after the user takes manual control.
+The desktop homepage hero uses two aligned 1920x1080 JPEG sequences extracted from `campus-v2-merged16.mp4`. A web-compressed base sequence provides sharp cold autoplay; master-quality frames are requested around the current position only after the user takes manual control.
 
 ## Runtime assets
 
 | Tier | Directory | Resolution | Size | Purpose |
 |---|---|---:|---:|---|
-| Preview | `assets/frames-preview/` | 960x540 | 14.81 MiB | First autoplay and rolling buffer |
-| Native | `assets/frames/` | 1920x1080 | 70.33 MiB | On-demand high-quality manual scrubbing |
+| Base | `assets/frames-preview/` | 1920x1080 | 40.17 MiB | First autoplay and rolling buffer |
+| Master | `assets/frames/` | 1920x1080 | 70.33 MiB | On-demand quality-2 manual scrubbing |
 
 Both tiers contain `frame-0001.jpg` through `frame-0136.jpg`, preserving the supplied 24 fps edit one-for-one.
 
 ## Cold-start behavior
 
 - The existing poster is preloaded and displayed immediately.
-- `<head>` warms only the first four preview frames, approximately 0.46 MiB.
-- Autoplay begins after 12 consecutive preview frames decode, approximately 1.38 MiB.
-- Six prioritized preview workers keep 20 frames ahead and three behind the current frame.
+- `<head>` warms only the first four 1080p base frames, approximately 1.29 MiB.
+- Autoplay begins after 12 consecutive base frames decode, approximately 3.86 MiB.
+- Six prioritized workers fill the startup buffer; concurrency drops to three for autoplay while keeping 20 frames ahead and three behind.
 - Autoplay eases between 35% and 100% speed based on the contiguous decoded look-ahead buffer, avoiding abrupt buffer stops.
-- Native JPEGs remain completely off during autoplay. Wheel, touch, navigation-key, or scrollbar takeover enables one native worker around the current position.
-- Completing the preview tier never triggers a global native download/decode pass.
+- Master JPEGs remain completely off during autoplay. Wheel, touch, navigation-key, or scrollbar takeover enables one master worker around the current position.
+- Completing the base tier never triggers a global master download/decode pass.
 - A newly decoded image repaints the canvas only when it changes the visible source frame.
-- Failed preview frames fall back individually to the corresponding native JPEG.
+- Failed base frames fall back individually to the corresponding master JPEG.
 
 Mobile, reduced-motion, data-saving, 2G, and 3G paths retain the existing compact video/static fallback and download neither JPEG tier.
 
@@ -36,7 +36,7 @@ FFmpeg and FFprobe must be on `PATH`.
 ./scripts/build-preview-frames.ps1
 ```
 
-The native extraction defaults to 136 JPEGs at source resolution and FFmpeg quality 2. The preview builder defaults to 960px wide, Lanczos scaling, and FFmpeg JPEG quality 5.
+The master extraction defaults to 136 JPEGs at source resolution and FFmpeg quality 2. The base builder defaults to 1920px wide, Lanczos scaling, and FFmpeg JPEG quality 5.
 
 ## Verify
 
