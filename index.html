@@ -45,7 +45,7 @@
        && !matchMedia('(prefers-reduced-motion: reduce)').matches
        && !(conn && /(^|-)3g$/.test(conn.effectiveType||''))){
       for(var i=0;i<136;i+=8){
-        fetch('uploads/hero-seq/f'+('00'+(i+1)).slice(-3)+'.avif',{priority:'high'})
+        fetch('uploads/hero-seq/f'+('00'+(i+1)).slice(-3)+'.webp',{priority:'high'})
           .catch(function(){});
       }
       return;
@@ -284,7 +284,7 @@
     <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
     <div>
       <sc-if value="{{ isVideoHero }}" hint-placeholder-val="{{ true }}">
-      <section class="lm-scroll-stop" ref="{{ heroTrackRef }}" style="position:relative;height:400vh;background:var(--lm-blue-900);scroll-snap-align:start">
+      <section class="lm-scroll-stop" ref="{{ heroTrackRef }}" style="position:relative;height:500vh;background:var(--lm-blue-900);scroll-snap-align:start">
         <div class="lm-hero-stage" style="position:sticky;top:0;height:100vh;overflow:hidden">
           <sc-if value="{{ isVideoScrub }}" hint-placeholder-val="{{ false }}"><video class="lm-hero-media" ref="{{ heroVideoRef }}" poster="uploads/campus-v2-merged16-poster-eae9bed7.jpg" muted="{{ true }}" playsinline="{{ true }}" preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video></sc-if><sc-if value="{{ isVideoScrub }}" hint-placeholder-val="{{ false }}"><canvas class="lm-hero-media" ref="{{ heroCanvasRef }}" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none"></canvas></sc-if>
           <sc-if value="{{ is3dHero }}" hint-placeholder-val="{{ true }}"><lm-campus-hero class="lm-hero-media" ref="{{ campusRef }}" style="position:absolute;inset:0"></lm-campus-hero></sc-if>
@@ -845,26 +845,30 @@ const IMG='assets/img/';
 // about which file this screen wants and the phone pays for both.
 // Hero image sequence. The scrubbed clip spends 48.8 KB per frame, a sharpness
 // ceiling no encoder setting can lift; stills cost more and buy it back.
-// FRAME COUNT BEATS PER-FRAME PIXELS on a scrubbed hero. The first build shipped
-// 68 WebP frames at 2560w / 506 KB and stepped every 56px of scroll. AVIF at
-// 1920w costs 279 KB, so a similar budget buys ALL 136 source frames instead --
-// 27.8px per frame, half the stepping. Motion hides pixel detail; stepping does
-// not hide at all.
-// 136 frames = 37.1 MB, so this is DESKTOP ONLY -- phones keep the 2.5MB video
+// FRAME COUNT BEATS PER-FRAME PIXELS on a scrubbed hero: 136 frames (every frame
+// the master holds) at 1600w beats 68 at 2560w, because motion hides pixel
+// detail and stepping never does.
+// FORMAT IS A DECODE DECISION, NOT JUST A SIZE ONE. A pass with AVIF at 1920w
+// was 37.1 MB and felt laggy. Bytes were not the problem -- decode was. 136
+// frames at 1920x1080 is 1.13 GB of decoded pixels, far past what any browser
+// keeps, so frames are certainly evicted and re-decoded mid-scroll, and AV1
+// intra decode is much heavier than WebP. WebP at 1600w is SMALLER (29.8 MB),
+// cheaper to decode, and drops the decoded footprint to 0.73 GB. 1600 still
+// exceeds the ~1425px the canvas is actually drawn at.
+// 136 frames = 29.8 MB, so this is DESKTOP ONLY -- phones keep the 2.5MB video
 // below, which is also the documented advice for anything above the fold. If the
 // frames fail to arrive (including a browser with no AVIF support) the video
 // path takes over.
 // THE TRACK LENGTH IS THE OTHER HALF OF SMOOTHNESS. Stepping is
-// (scrollable distance / frames), so shortening the track improves it for free
-// -- no extra bytes -- and makes the hero quicker to get through at the same
-// time. The hero section is 400vh (was 500vh): 2700px of scroll at a 900px
-// viewport, so 19.9px per frame against 26.5px before, and 1.33x less scrolling
-// to reach the end. Everything downstream is proportional -- p is normalised
-// over (rect.height - innerHeight), and the 0..0.75 scrub window, the photo
-// crossfade, the ending hold and the auto-tour duration all derive from it --
-// so this is the only number that changes.
-// The five phase captions get 0.75*2700/5 = 405px of scroll each, i.e. 45vh.
-// 300vh was tried first and gave them only 30vh, which read as hurried.
+// (scrollable distance / frames). Shortening the track speeds the hero up and
+// smooths it at once, for no bytes -- but it was tried and walked back:
+//   500vh  3600px scroll  26.5 px/frame  caption 60vh each   <- here, original
+//   400vh  2700px         19.9           45vh                   still too fast
+//   300vh  1800px         13.2           30vh                   hurried
+// At 136 frames the stepping is fine at 500vh anyway, so the track is back where
+// it started. Everything downstream is proportional -- p is normalised over
+// (rect.height - innerHeight), and the 0..0.75 scrub window, the photo crossfade,
+// the ending hold and the auto-tour duration all derive from it.
 const SEQ_N=136, SEQ_DIR='uploads/hero-seq/', SEQ_TIER=8;
 const SEQ_OK=()=>{
   if(typeof matchMedia==='undefined') return false;
@@ -874,7 +878,7 @@ const SEQ_OK=()=>{
   if(c&&(c.saveData||/(^|-)(2g|3g)$/.test(c.effectiveType||''))) return false;
   return true;
 };
-const SEQ_URL=(i)=>SEQ_DIR+'f'+('00'+(i+1)).slice(-3)+'.avif';
+const SEQ_URL=(i)=>SEQ_DIR+'f'+('00'+(i+1)).slice(-3)+'.webp';
 const HERO_VIDEO=()=> (typeof matchMedia!=='undefined'&&matchMedia('(max-width: 760px)').matches)
   ? 'uploads/merged16-scrub-mobile.mp4'
   : 'uploads/merged16-scrub-desktop.mp4';
@@ -1047,6 +1051,15 @@ class Component extends DCLogic {
     const p=Math.min(1,Math.max(0,this._cur!=null?this._cur:(this._target||0)));
     const f=p*(SEQ_N-1), k=Math.max(0,Math.min(SEQ_N-1,Math.floor(f))), frac=f-k;
     const a=this._seqNearest(k); if(a<0) return;
+    // The rAF loop calls this every frame whether or not anything moved. At rest
+    // that was 60 redraws a second of an identical composite -- two 1600x900
+    // blits each. Skip when nothing visible has changed; quantise frac so a
+    // sub-perceptual change does not defeat the check.
+    // canvas dims are in the signature because resizing CLEARS the canvas -- skip
+    // the redraw then and the hero is left blank
+    const sig=a+':'+Math.round(frac*192)+':'+this._cvs.width+'x'+this._cvs.height;
+    if(sig===this._seqSig) return;
+    this._seqSig=sig;
     this._seqPaint(this._seqImg[a],1);
     if(frac>0.004&&k+1<SEQ_N){ const b=this._seqNearest(k+1); if(b>=0&&b!==a) this._seqPaint(this._seqImg[b],frac); }
   };
