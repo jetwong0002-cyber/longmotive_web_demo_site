@@ -879,6 +879,20 @@ const SEQ_OK=()=>{
   return true;
 };
 const SEQ_URL=(i)=>SEQ_DIR+'f'+('00'+(i+1)).slice(-3)+'.webp';
+// BOUNDARIES THAT MUST NOT BE CROSSFADED.
+// Crossfading is motion blur: it works because consecutive frames are nearly the
+// same. Where the footage moves fast they are NOT, and blending two very
+// different frames 50/50 reads as a double exposure rather than blur -- which is
+// what was glitching just before stage 02. It was never non-adjacent frames;
+// these are genuinely adjacent and genuinely different.
+// Measured on the shipped frames: 48x27 grey thumbnails, mean absolute
+// difference between consecutive frames. Median is 7.3; these six boundaries
+// exceed 2x that, peaking at 30.8 (4.2x) across f013-f016. Six of 135, so 96% of
+// the sequence keeps its smoothing and only the fast passage steps -- a small
+// step is invisible next to a ghost.
+// REGENERATE THIS if the frame set changes; the numbers are 0-based k for the
+// k -> k+1 boundary.
+const SEQ_NOBLEND=new Set([10,11,12,13,14,21]);
 const HERO_VIDEO=()=> (typeof matchMedia!=='undefined'&&matchMedia('(max-width: 760px)').matches)
   ? 'uploads/merged16-scrub-mobile.mp4'
   : 'uploads/merged16-scrub-desktop.mp4';
@@ -1057,7 +1071,8 @@ class Component extends DCLogic {
     // sub-perceptual change does not defeat the check.
     // canvas dims are in the signature because resizing CLEARS the canvas -- skip
     // the redraw then and the hero is left blank
-    const sig=a+':'+Math.round(frac*192)+':'+this._cvs.width+'x'+this._cvs.height;
+    const blended=frac>0.004&&k+1<SEQ_N&&a===k&&this._seqOk[k+1]&&!SEQ_NOBLEND.has(k);
+    const sig=a+':'+(blended?Math.round(frac*192):'x')+':'+this._cvs.width+'x'+this._cvs.height;
     if(sig===this._seqSig) return;
     this._seqSig=sig;
     this._seqPaint(this._seqImg[a],1);
@@ -1067,7 +1082,7 @@ class Component extends DCLogic {
     // ghost of a completely different moment was being laid over the picture. That
     // is the glitch before stage 02: it is not the sequence stepping, it is two
     // unrelated frames superimposed. With a gap, show the exact frame alone.
-    if(frac>0.004&&k+1<SEQ_N&&a===k&&this._seqOk[k+1]) this._seqPaint(this._seqImg[k+1],frac);
+    if(blended) this._seqPaint(this._seqImg[k+1],frac);
   };
   _seqStep=()=>{
     if(!this._seqReady||this._target==null) return;
