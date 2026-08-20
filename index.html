@@ -44,7 +44,7 @@
     if(matchMedia('(min-width: 1025px)').matches
        && !matchMedia('(prefers-reduced-motion: reduce)').matches
        && !(conn && /(^|-)3g$/.test(conn.effectiveType||''))){
-      for(var i=0;i<216;i+=12){
+      for(var i=0;i<219;i+=12){
         fetch('uploads/hero-seq/f'+('00'+(i+1)).slice(-3)+'.webp',{priority:'high'})
           .catch(function(){});
       }
@@ -855,7 +855,7 @@ const IMG='assets/img/';
 // intra decode is much heavier than WebP. WebP at 1600w is SMALLER (29.8 MB),
 // cheaper to decode, and drops the decoded footprint to 0.73 GB. 1600 still
 // exceeds the ~1425px the canvas is actually drawn at.
-// 216 frames = 35.3 MB, so this is DESKTOP ONLY -- phones keep the 2.5MB video
+// 219 frames = 35.7 MB, so this is DESKTOP ONLY -- phones keep the 2.5MB video
 // below, which is also the documented advice for anything above the fold. If the
 // frames fail to arrive (including a browser with no AVIF support) the video
 // path takes over.
@@ -869,7 +869,7 @@ const IMG='assets/img/';
 // it started. Everything downstream is proportional -- p is normalised over
 // (rect.height - innerHeight), and the 0..0.75 scrub window, the photo crossfade,
 // the ending hold and the auto-tour duration all derive from it.
-const SEQ_N=216, SEQ_DIR='uploads/hero-seq/', SEQ_TIER=8;
+const SEQ_N=219, SEQ_DIR='uploads/hero-seq/', SEQ_TIER=8;
 const SEQ_OK=()=>{
   if(typeof matchMedia==='undefined') return false;
   if(matchMedia('(max-width: 1024px)').matches) return false;
@@ -879,25 +879,28 @@ const SEQ_OK=()=>{
   return true;
 };
 const SEQ_URL=(i)=>SEQ_DIR+'f'+('00'+(i+1)).slice(-3)+'.webp';
-// BUILT FROM THE SIX ORIGINAL CLIPS, NOT THE MERGED MASTER (2026-08-20).
-// clips/New folder/1-6.mp4, 193 frames each at 24fps, 1158 in total. The
-// merged master was an EDIT of these with cross-dissolve transitions between
-// shots, and those dissolve frames are two shots averaged together -- as video
-// they read as a transition, scrubbed you stop on one and it is a double
-// exposure. Going back to the sources removes the whole class of problem
-// rather than deleting bad frames after the fact.
-// 36 frames per clip, evenly in time, 1440x810 to match the canvas (~1425px
-// at dpr 1). 216 frames, 35.3 MB.
-// THE JOINS DO NOT NEED HIDING. Measured across the five clip boundaries the
-// frame-to-frame difference is 0.7x to 1.7x the in-clip median -- the six clips
-// are one continuous drone orbit of the same site at successive build stages,
-// so they butt together naturally. The dissolves in the master were never
-// necessary; they were the entire defect.
-// Median in-clip difference is now 5.0, down from 7.3 at 132 frames: more
-// frames means smaller steps, which is smoothness bought directly.
-// Checked for dissolves after rebuilding: one frame flagged (f021, 0.87 of its
-// neighbours) and confirmed by eye to be clean motion, not a blend. Zero real
-// dissolves remain.
+// BUILT FROM THE SIX ORIGINAL CLIPS, USING THE MASTER AS THE EDIT MAP (2026-08-20).
+// The six clips are separate drone passes flown on DIFFERENT DAYS. Within each
+// the camera glides along a path; at a naive join it snaps back to the next
+// pass's start and the light changes. The merged master is the editor's answer
+// to exactly that: each clip trimmed (f7-f188 etc.), compressed uniformly
+// (1 master frame per 8 source frames), cut at five chosen points, dissolves
+// over the cuts. A previous rebuild sampled the clips full-range and cut at
+// f193->f1 -- discarding all of those decisions -- and looked worse than the
+// dissolve problem it fixed.
+// So the master is now the EDIT MAP and the clips are the PIXEL SOURCE. Every
+// master frame was matched to (clip, frame) by 48x27 thumbnail MAD -- the map
+// came out perfectly monotonic, uniform step 8, residual 0.5-2.0 -- and the
+// sequence takes every 5th source frame across exactly the master-used ranges,
+// ending each segment on the very frame the editor ended on. 219 frames,
+// 1440x810, 35.7 MB. 1.6x the master density, zero dissolve frames.
+// THE FIVE CUTS ARE HARD CUTS AT THE MASTER'S OWN CUT POINTS. Measured MAD at
+// them: 4.9-17.3 against an in-clip median of 5.0. The largest (clip1->clip2,
+// now f038->f039) is near-identical camera position with the piles appearing --
+// it reads as a chapter turn, which is what the phase captions say it is. A
+// hard cut scrubs cleanly; a dissolve scrubbed is a double exposure.
+// Dissolve scan after rebuild: one flag (f023, 0.89 of neighbours), confirmed
+// clean motion by eye. Zero real dissolves.
 // SCROLL IS ALLOCATED BY MOTION, NOT EVENLY.
 // The master runs its 136 frames in 5.67s -- 24fps -- and looked fine as video.
 // Spread evenly over a 3600px track at 270px/s the hero plays those same frames
@@ -914,7 +917,7 @@ const SEQ_URL=(i)=>SEQ_DIR+'f'+('00'+(i+1)).slice(-3)+'.webp';
 // SEQ_CUM[k] is where frame k starts, in ten-thousandths of the scrub range.
 // REGENERATE if the frame set changes: 48x27 grey thumbnails, mean absolute
 // difference between consecutive frames, weight 1/m, clamp, cumulative sum.
-const SEQ_CUM=[0,80,160,241,300,372,436,484,532,577,612,658,693,733,772,804,838,863,887,912,936,961,985,1010,1034,1069,1099,1137,1168,1198,1228,1258,1282,1307,1331,1356,1381,1441,1502,1562,1606,1667,1748,1828,1908,1963,2043,2123,2203,2284,2356,2389,2469,2549,2629,2709,2790,2870,2950,3019,3075,3148,3210,3275,3332,3374,3415,3446,3470,3516,3574,3645,3682,3706,3744,3782,3813,3839,3863,3894,3929,3967,3997,4036,4073,4123,4167,4202,4239,4279,4327,4370,4410,4435,4463,4496,4533,4574,4603,4645,4688,4722,4768,4823,4866,4916,4972,5037,5072,5112,5155,5199,5234,5280,5326,5363,5411,5455,5489,5540,5599,5649,5684,5712,5759,5813,5859,5892,5932,5997,6076,6157,6218,6294,6318,6368,6430,6458,6498,6537,6575,6607,6662,6729,6792,6851,6887,6940,6978,7044,7103,7131,7165,7200,7224,7276,7319,7374,7429,7477,7534,7580,7623,7657,7681,7706,7731,7756,7791,7822,7859,7904,7960,8018,8088,8156,8216,8297,8377,8457,8502,8541,8582,8611,8638,8669,8694,8718,8745,8777,8807,8839,8868,8906,8943,8972,9006,9042,9076,9116,9151,9180,9218,9260,9297,9346,9392,9454,9515,9568,9633,9704,9770,9848,9928,10000];
+const SEQ_CUM=[0,79,159,231,298,367,424,475,520,562,602,646,685,724,761,797,831,854,876,899,922,944,967,989,1012,1034,1071,1105,1141,1171,1206,1235,1264,1289,1313,1335,1358,1437,1460,1513,1554,1634,1713,1792,1872,1921,2001,2080,2159,2239,2312,2350,2409,2489,2568,2648,2727,2806,2886,2965,3029,3092,3163,3233,3300,3356,3403,3451,3482,3507,3540,3588,3665,3706,3729,3758,3795,3835,3866,3889,3919,3958,3993,4031,4063,4100,4142,4187,4235,4271,4301,4338,4386,4439,4485,4518,4548,4579,4611,4647,4687,4720,4761,4801,4841,4882,4929,4983,5025,5088,5144,5224,5246,5288,5327,5372,5414,5452,5499,5541,5577,5621,5680,5737,5772,5804,5844,5892,5948,5994,6025,6064,6138,6214,6292,6361,6432,6470,6499,6546,6569,6613,6655,6695,6728,6761,6833,6855,6909,6947,7013,7066,7115,7138,7196,7218,7252,7296,7343,7395,7448,7499,7557,7603,7649,7688,7710,7733,7756,7780,7809,7846,7874,7915,7958,8012,8072,8138,8205,8273,8353,8432,8456,8499,8530,8558,8589,8616,8639,8666,8692,8723,8758,8789,8821,8858,8893,8927,8961,8992,9031,9071,9106,9140,9173,9210,9252,9293,9341,9393,9451,9511,9570,9632,9698,9771,9846,9921,10000];
 // frame index for a scrub position, by binary search over SEQ_CUM
 const SEQ_AT=(p)=>{
   const t=Math.max(0,Math.min(10000,p*10000));
