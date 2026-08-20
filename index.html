@@ -38,7 +38,7 @@
     var conn=navigator.connection;
     if(conn&&(conn.saveData||/(^|-)2g$/.test(conn.effectiveType||''))) return;
     // Desktop drives the hero from the image sequence, so do NOT also pull the
-    // 6.5MB clip. Warm only the first four 960px preview frames here; the
+    // 6.5MB clip. Warm only the first four 1920x1080 base frames here; the
     // priority scheduler fills a contiguous startup buffer after the app boots.
     // Loading full-resolution anchors in <head> used to put 17.71MB ahead of
     // React, fonts and layout, which delayed the very autoplay it was meant to help.
@@ -1026,12 +1026,12 @@ class Component extends DCLogic {
       };
       im.onerror=rej; im.src=kind==='full'?SEQ_URL(i):SEQ_PREVIEW_URL(i);
     });
-    // Six preview workers establish a rolling low-bandwidth buffer. Full-size
-    // upgrades get one worker until every preview has been attempted, then three.
+    // Six base workers establish the 12-frame startup buffer quickly; after the
+    // first paint, three workers maintain the rolling 1080p buffer without decode spikes.
     this._seqPump=(kind)=>{
       const preview=kind==='preview', q=preview?this._seqPreviewQ:this._seqFullQ;
       const activeKey=preview?'_seqPreviewActive':'_seqFullActive';
-      const limit=preview?6:this._seqFullLimit;
+      const limit=preview?this._seqPlan.previewWorkerLimit(this._seqReady):this._seqFullLimit;
       while(this[activeKey]<limit){
         const i=q.next(); if(i==null) break;
         this[activeKey]++;

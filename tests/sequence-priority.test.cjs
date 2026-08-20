@@ -9,6 +9,7 @@ const {
   SequencePriorityQueue,
   startupIndices,
   rollingIndices,
+  previewWorkerLimit,
 } = require(modulePath);
 
 assert.deepEqual(
@@ -28,6 +29,9 @@ assert.deepEqual(
   [4, 3, 2],
   'rolling window should clamp to sequence bounds',
 );
+
+assert.equal(previewWorkerLimit(false), 6, 'startup should fill its first contiguous buffer quickly');
+assert.equal(previewWorkerLimit(true), 3, 'autoplay should reduce concurrent 1080p decoding after startup');
 
 const queue = new SequencePriorityQueue(136);
 queue.add([10, 11], 100);

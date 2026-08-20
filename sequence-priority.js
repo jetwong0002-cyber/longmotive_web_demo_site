@@ -37,6 +37,10 @@
     return floor+(1-floor)*ratio;
   }
 
+  function previewWorkerLimit(startupReady){
+    return startupReady?3:6;
+  }
+
   function shouldRepaint(beforeIndex,beforeImage,afterIndex,afterImage){
     return beforeIndex!==afterIndex||beforeImage!==afterImage;
   }
@@ -82,5 +86,5 @@
     get completed(){ return this._done.size; }
   }
 
-  return {SequencePriorityQueue,startupIndices,rollingIndices,bufferedAhead,playbackScale,shouldRepaint};
+  return {SequencePriorityQueue,startupIndices,rollingIndices,bufferedAhead,playbackScale,previewWorkerLimit,shouldRepaint};
 });
