@@ -921,6 +921,17 @@ const SEQ_URL=(i)=>SEQ_DIR+'f'+('00'+(i+1)).slice(-3)+'.webp';
 // difference between consecutive frames, weight 1/m, clamp, cumulative sum.
 const SEQ_CUM=[0,64,128,191,248,305,364,413,458,498,534,569,603,639,674,707,740,770,801,831,859,878,897,915,934,952,971,990,1008,1027,1045,1064,1090,1120,1148,1178,1203,1231,1258,1282,1306,1328,1347,1366,1385,1403,1459,1478,1521,1560,1602,1666,1730,1794,1858,1922,1965,2029,2092,2156,2220,2284,2343,2384,2412,2476,2540,2604,2668,2731,2795,2859,2923,2987,3042,3097,3150,3209,3266,3329,3378,3423,3461,3503,3531,3556,3575,3603,3643,3689,3753,3781,3800,3819,3847,3877,3907,3935,3953,3972,4004,4033,4058,4087,4119,4146,4174,4210,4243,4285,4318,4345,4368,4398,4428,4471,4514,4549,4580,4598,4620,4643,4668,4701,4729,4762,4786,4818,4846,4879,4911,4944,4983,5025,5066,5102,5153,5193,5257,5275,5308,5338,5374,5410,5441,5470,5506,5541,5572,5602,5636,5684,5735,5777,5803,5830,5858,5893,5931,5978,6016,6040,6080,6113,6175,6238,6302,6357,6415,6474,6505,6524,6569,6619,6637,6676,6706,6735,6766,6791,6815,6850,6869,6915,6952,6995,7047,7090,7130,7152,7175,7218,7237,7261,7302,7338,7374,7417,7459,7498,7549,7590,7624,7661,7691,7717,7736,7756,7774,7795,7815,7840,7869,7889,7918,7947,7981,8022,8066,8112,8160,8209,8258,8315,8370,8389,8425,8454,8477,8503,8527,8552,8570,8592,8613,8636,8661,8689,8718,8743,8771,8801,8832,8861,8889,8917,8943,8974,9007,9039,9068,9096,9124,9152,9184,9220,9254,9293,9334,9380,9429,9478,9527,9578,9631,9686,9747,9809,9872,9936,10000];
 // frame index for a scrub position, by binary search over SEQ_CUM
+// PHASE CAPTIONS MUST LINE UP WITH THE CLIP BOUNDARIES.
+// Each clip is one build stage shot on one day, so a caption window that
+// straddles a clip boundary shows a stage finishing AND the next beginning --
+// the building appears to complete once per phase, which is what it was doing.
+// The old thresholds (0.2/0.42/0.64/0.86) were an even split of the scrub range,
+// correct only while frames were spread evenly in it. SEQ_CUM deliberately is
+// not even, so the split has to be derived from it rather than assumed.
+// Last frame of each phase, 1-based: clip1 | clip2+clip3 | clip4 | clip5 | clip6
+const SEQ_PHASE_END=[47,139,182,225,271];
+// mp at the START of the next phase's first frame
+const PHASE_TH=SEQ_PHASE_END.slice(0,4).map(f=>SEQ_CUM[f]/10000);
 const SEQ_AT=(p)=>{
   const t=Math.max(0,Math.min(10000,p*10000));
   let lo=0,hi=SEQ_N-1;
@@ -1595,7 +1606,7 @@ class Component extends DCLogic {
       this._photo.style.filter='none';
     }
     if(p>=0.965) this._startLogoSeq();
-    const idx=mp<0.2?0:(mp<0.42?1:(mp<0.64?2:(mp<0.86?3:4)));
+    const idx=mp<PHASE_TH[0]?0:(mp<PHASE_TH[1]?1:(mp<PHASE_TH[2]?2:(mp<PHASE_TH[3]?3:4)));
     // staggered handoff: outgoing snaps out fast, incoming fades in after it — the
     // captions share one slot, so they must never both be readable at once
     if(this._capIdx!==idx){ this._capIdx=idx;
