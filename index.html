@@ -879,6 +879,30 @@ const SEQ_OK=()=>{
   return true;
 };
 const SEQ_URL=(i)=>SEQ_DIR+'f'+('00'+(i+1)).slice(-3)+'.webp';
+// SCROLL IS ALLOCATED BY MOTION, NOT EVENLY.
+// The master runs its 136 frames in 5.67s -- 24fps -- and looked fine as video.
+// Spread evenly over a 3600px track at 270px/s the hero plays those same frames
+// in 13.3s, i.e. 10.2fps: the footage is being slow-motioned to 43 per cent
+// speed with no intermediate frames to fill in. Slow-motioning a fast camera
+// move is exactly when the eye starts resolving individual frames, which is the
+// judder through the drone pull-back around f012-f017.
+// So fast passages now take LESS scroll (they pass nearer their native speed)
+// and calm passages take MORE (nothing is moving, low fps is invisible there).
+// Weight is 1/motion, clamped to the 10th..90th percentile so nothing is starved.
+// Total scroll and total duration are unchanged; only the distribution moves.
+//   fastest passage  10.1 -> 19.4 fps
+//   slowest passage  10.1 ->  5.7 fps   (near-static frames)
+// SEQ_CUM[k] is where frame k starts, in ten-thousandths of the scrub range.
+// REGENERATE if the frame set changes: 48x27 grey thumbnails, mean absolute
+// difference between consecutive frames, weight 1/m, clamp, cumulative sum.
+const SEQ_CUM=[0,131,238,342,425,494,556,621,681,738,793,832,870,909,948,987,1025,1078,1128,1179,1223,1262,1301,1340,1399,1530,1662,1793,1924,2055,2186,2256,2360,2491,2622,2753,2885,2985,3090,3205,3281,3357,3410,3459,3549,3649,3689,3753,3809,3852,3914,3982,4039,4101,4174,4236,4294,4364,4439,4492,4541,4598,4664,4715,4780,4842,4928,5001,5068,5124,5193,5268,5336,5415,5476,5558,5653,5702,5763,5851,5912,5981,6113,6228,6349,6393,6504,6556,6624,6703,6765,6828,6922,7029,7127,7173,7220,7308,7403,7487,7581,7667,7740,7778,7817,7856,7914,7969,8048,8156,8281,8412,8543,8615,8655,8700,8739,8778,8819,8870,8917,8972,9024,9073,9129,9185,9235,9289,9350,9420,9502,9589,9678,9778,9887,10000];
+// frame index for a scrub position, by binary search over SEQ_CUM
+const SEQ_AT=(p)=>{
+  const t=Math.max(0,Math.min(10000,p*10000));
+  let lo=0,hi=SEQ_N-1;
+  while(lo<hi){ const mid=(lo+hi+1)>>1; if(SEQ_CUM[mid]<=t) lo=mid; else hi=mid-1; }
+  return lo;
+};
 // NO CROSSFADING. This footage is a construction TIME-LAPSE, not a moving
 // camera. Consecutive frames are different states of a building -- slab poured,
 // then columns erected -- so blending them cross-dissolves between two states
@@ -1062,7 +1086,7 @@ class Component extends DCLogic {
   _seqDraw=()=>{
     if(!this._seqCtx||!this._cvs) return;
     const p=Math.min(1,Math.max(0,this._cur!=null?this._cur:(this._target||0)));
-    const k=Math.max(0,Math.min(SEQ_N-1,Math.round(p*(SEQ_N-1))));
+    const k=SEQ_AT(p);
     const a=this._seqNearest(k); if(a<0) return;
     // The rAF loop calls this every frame whether or not anything moved. At rest
     // that was 60 redraws a second of an identical frame. Skip when nothing has
@@ -1454,7 +1478,7 @@ class Component extends DCLogic {
               // tour waits for the sequence instead of dragging it.
               if(seqDrives){
                 const p0=Math.min(1,Math.max(0,(cand-top)/range));
-                const need=Math.min(SEQ_N-1,Math.ceil(this._mapScrub(Math.min(1,p0/0.75))*(SEQ_N-1)));
+                const need=Math.min(SEQ_N-1,SEQ_AT(this._mapScrub(Math.min(1,p0/0.75)))+1);
                 if(!this._seqOk[need]){
                   // ...but never wait forever. One frame that 404s or fails to decode
                   // must not freeze the hero; after 4s give up on it and walk on, and
