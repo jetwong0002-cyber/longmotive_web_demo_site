@@ -1061,7 +1061,13 @@ class Component extends DCLogic {
     if(sig===this._seqSig) return;
     this._seqSig=sig;
     this._seqPaint(this._seqImg[a],1);
-    if(frac>0.004&&k+1<SEQ_N){ const b=this._seqNearest(k+1); if(b>=0&&b!==a) this._seqPaint(this._seqImg[b],frac); }
+    // ONLY CROSSFADE BETWEEN THE TWO GENUINELY ADJACENT FRAMES, and only when both
+    // are actually loaded. This used to blend _seqNearest(k+1), which -- while the
+    // fill-in tier is still arriving -- can be EIGHT frames away, so a quarter-alpha
+    // ghost of a completely different moment was being laid over the picture. That
+    // is the glitch before stage 02: it is not the sequence stepping, it is two
+    // unrelated frames superimposed. With a gap, show the exact frame alone.
+    if(frac>0.004&&k+1<SEQ_N&&a===k&&this._seqOk[k+1]) this._seqPaint(this._seqImg[k+1],frac);
   };
   _seqStep=()=>{
     if(!this._seqReady||this._target==null) return;
@@ -1433,7 +1439,26 @@ class Component extends DCLogic {
             }else{
               if(this._autoV&&v){ v.pause(); this._autoV=false; }
               const dt=Math.min(50,performance.now()-(this._lastTick||performance.now()));
-              ny=(this._autoY==null?y:this._autoY)+window.innerHeight*HOME_AUTO_SCROLL_VH_PER_SEC*dt/1000;
+              const from=(this._autoY==null?y:this._autoY);
+              let cand=from+window.innerHeight*HOME_AUTO_SCROLL_VH_PER_SEC*dt/1000;
+              // DO NOT LET THE TOUR OUTRUN THE FRAMES. It advances on a clock, which
+              // knows nothing about loading; early on it would march past frames that
+              // had not arrived and _seqNearest would substitute whatever was closest,
+              // popping between distant frames. Hold at the last position whose frame
+              // is actually loaded and resume the moment the next one lands -- the
+              // tour waits for the sequence instead of dragging it.
+              if(seqDrives){
+                const p0=Math.min(1,Math.max(0,(cand-top)/range));
+                const need=Math.min(SEQ_N-1,Math.ceil(this._mapScrub(Math.min(1,p0/0.75))*(SEQ_N-1)));
+                if(!this._seqOk[need]){
+                  // ...but never wait forever. One frame that 404s or fails to decode
+                  // must not freeze the hero; after 4s give up on it and walk on, and
+                  // the nearest-loaded fallback covers the hole.
+                  if(this._seqWaitAt==null) this._seqWaitAt=performance.now();
+                  if(performance.now()-this._seqWaitAt<4000) cand=from;
+                } else this._seqWaitAt=null;
+              }
+              ny=cand;
             }
             this._autoY=ny; y=ny;
             // bypass html{scroll-behavior:smooth} — per-frame smooth scrolls cancel each other
