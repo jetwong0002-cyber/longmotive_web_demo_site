@@ -879,20 +879,19 @@ const SEQ_OK=()=>{
   return true;
 };
 const SEQ_URL=(i)=>SEQ_DIR+'f'+('00'+(i+1)).slice(-3)+'.webp';
-// BOUNDARIES THAT MUST NOT BE CROSSFADED.
-// Crossfading is motion blur: it works because consecutive frames are nearly the
-// same. Where the footage moves fast they are NOT, and blending two very
-// different frames 50/50 reads as a double exposure rather than blur -- which is
-// what was glitching just before stage 02. It was never non-adjacent frames;
-// these are genuinely adjacent and genuinely different.
-// Measured on the shipped frames: 48x27 grey thumbnails, mean absolute
-// difference between consecutive frames. Median is 7.3; these six boundaries
-// exceed 2x that, peaking at 30.8 (4.2x) across f013-f016. Six of 135, so 96% of
-// the sequence keeps its smoothing and only the fast passage steps -- a small
-// step is invisible next to a ghost.
-// REGENERATE THIS if the frame set changes; the numbers are 0-based k for the
-// k -> k+1 boundary.
-const SEQ_NOBLEND=new Set([10,11,12,13,14,21]);
+// NO CROSSFADING. This footage is a construction TIME-LAPSE, not a moving
+// camera. Consecutive frames are different states of a building -- slab poured,
+// then columns erected -- so blending them cross-dissolves between two states
+// and reads as a double exposure wherever anything changed, which is everywhere.
+// Measured on the shipped frames (48x27 grey thumbnails, mean absolute
+// difference between consecutive frames): min 1.7, median 7.3, max 30.8, and
+// HALF of the 135 boundaries exceed the median. A genuinely smooth pan would sit
+// near 1-2. There is no threshold separating "safe to blend" from "not" here,
+// which is why suppressing only the worst six still ghosted at stage 02 -- that
+// region measures 6.3, under the threshold and over the eye.
+// Crossfade was added when the hero had 68 frames and stepped every 56px of
+// scroll. 136 frames at 26.5px already solved that; the blend outlived its
+// reason and only contributed artefacts.
 const HERO_VIDEO=()=> (typeof matchMedia!=='undefined'&&matchMedia('(max-width: 760px)').matches)
   ? 'uploads/merged16-scrub-mobile.mp4'
   : 'uploads/merged16-scrub-desktop.mp4';
@@ -1057,32 +1056,23 @@ class Component extends DCLogic {
     const w=im.naturalWidth*s,h=im.naturalHeight*s;
     x.globalAlpha=a; x.drawImage(im,(c.width-w)/2,(c.height-h)/2,w,h); x.globalAlpha=1;
   };
-  // Crossfade adjacent frames by the fractional position. Without it the picture
-  // only changes every ~56px of scroll, which reads as stepping however sharp
-  // each frame is.
+  // Draws the single nearest frame, opaque. See the SEQ_N block above for why
+  // there is no blending: this is a time-lapse, so any blend is a cross-dissolve
+  // between two states of the building rather than motion blur.
   _seqDraw=()=>{
     if(!this._seqCtx||!this._cvs) return;
     const p=Math.min(1,Math.max(0,this._cur!=null?this._cur:(this._target||0)));
-    const f=p*(SEQ_N-1), k=Math.max(0,Math.min(SEQ_N-1,Math.floor(f))), frac=f-k;
+    const k=Math.max(0,Math.min(SEQ_N-1,Math.round(p*(SEQ_N-1))));
     const a=this._seqNearest(k); if(a<0) return;
     // The rAF loop calls this every frame whether or not anything moved. At rest
-    // that was 60 redraws a second of an identical composite -- two 1600x900
-    // blits each. Skip when nothing visible has changed; quantise frac so a
-    // sub-perceptual change does not defeat the check.
-    // canvas dims are in the signature because resizing CLEARS the canvas -- skip
-    // the redraw then and the hero is left blank
-    const blended=frac>0.004&&k+1<SEQ_N&&a===k&&this._seqOk[k+1]&&!SEQ_NOBLEND.has(k);
-    const sig=a+':'+(blended?Math.round(frac*192):'x')+':'+this._cvs.width+'x'+this._cvs.height;
+    // that was 60 redraws a second of an identical frame. Skip when nothing has
+    // changed; canvas dims are in the signature because resizing CLEARS the
+    // canvas, and skipping the redraw then would leave the hero blank.
+    const sig=a+':'+this._cvs.width+'x'+this._cvs.height;
     if(sig===this._seqSig) return;
     this._seqSig=sig;
     this._seqPaint(this._seqImg[a],1);
-    // ONLY CROSSFADE BETWEEN THE TWO GENUINELY ADJACENT FRAMES, and only when both
-    // are actually loaded. This used to blend _seqNearest(k+1), which -- while the
-    // fill-in tier is still arriving -- can be EIGHT frames away, so a quarter-alpha
-    // ghost of a completely different moment was being laid over the picture. That
-    // is the glitch before stage 02: it is not the sequence stepping, it is two
-    // unrelated frames superimposed. With a gap, show the exact frame alone.
-    if(blended) this._seqPaint(this._seqImg[k+1],frac);
+    // exactly one frame, fully opaque -- nothing can superimpose
   };
   _seqStep=()=>{
     if(!this._seqReady||this._target==null) return;
