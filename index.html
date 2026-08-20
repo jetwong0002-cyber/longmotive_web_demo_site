@@ -1383,8 +1383,17 @@ class Component extends DCLogic {
             const range=r.height-window.innerHeight, top=y+r.top;
             const v=this._video, dur=(v&&v.readyState>=1&&Number.isFinite(v.duration)&&v.duration>0)?v.duration-0.05:0;
             let ny;
-            if(v&&dur===0){ ny=y; /* video still loading — hold the tour, don't scroll past it */ }
-            else if(dur>0&&!this._autoNoPlay&&v.currentTime<dur-0.02){
+            // THE SEQUENCE OWNS THE HERO ON DESKTOP, so there is no video to play
+            // and none to wait for: v has no src and readyState 0, which means
+            // dur===0 and the tour used to sit on the "still loading" branch
+            // below forever. The autoplay was not slow, it was stranded. When the
+            // frames are driving, skip both video branches and advance on the
+            // clock -- the same path the tour already uses once the clip ends.
+            // While the frames are still arriving _seqReady is false and the hold
+            // below is correct: the tour should wait for something to show.
+            const seqDrives=!!this._seqReady;
+            if(!seqDrives&&v&&dur===0){ ny=y; /* video still loading — hold the tour, don't scroll past it */ }
+            else if(!seqDrives&&dur>0&&!this._autoNoPlay&&v.currentTime<dur-0.02){
               // how much is buffered ahead of the playhead (Infinity once the blob owns src)
               let ahead=this._heroBlobReady?Infinity:0;
               if(ahead===0){ try{ const b=v.buffered; for(let i=0;i<b.length;i++){ if(v.currentTime>=b.start(i)-0.1&&v.currentTime<=b.end(i)+0.01) ahead=Math.max(ahead,b.end(i)-v.currentTime); } }catch(e){} }
