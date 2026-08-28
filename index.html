@@ -164,6 +164,20 @@
   @media(max-width:640px){.lm-nav{display:none!important}.lm-menubtn{display:inline-flex}.lm-menupanel{display:block}}
   @media(max-width:600px){.lm-g3,.lm-g4{grid-template-columns:1fr!important}}
 
+  /* Projects opens like a portfolio index: identity on the left, scope on the
+     right. The cyan rail gives the short scope statement a structural anchor
+     without adding another decorative element to the brand system. */
+  .lm-projects-hero-inner{max-width:var(--container-max);margin:0 auto;display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(320px,.78fr);gap:clamp(48px,7vw,104px);align-items:end}
+  .lm-projects-hero-title{display:flex;flex-direction:column;gap:12px}
+  .lm-projects-hero-scope{max-width:38ch;margin:0 0 5px;padding-left:20px;
+    border-left:2px solid var(--lm-cyan-400);color:var(--lm-blue-100);
+    font-size:clamp(16px,1.2vw,18px);line-height:1.6}
+  @media(max-width:760px){
+    .lm-projects-hero-inner{grid-template-columns:1fr;gap:18px}
+    .lm-projects-hero-scope{max-width:36ch;margin:0;padding-left:14px}
+  }
+
   /* --- project card: the "has a 3D viewer" affordance ---------------------
      Two parts doing two jobs. The BADGE sits on the thumbnail and answers
      "which of these can I open?" while the grid is being scanned — that is
@@ -561,10 +575,12 @@
     <sc-if value="{{ isProjects }}">
     <div>
       <section class="lm-projects-hero" style="background:var(--lm-gradient-deep);padding:clamp(24px,2.5vw,30px) var(--gutter)">
-        <div data-reveal="0" style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;gap:12px;max-width:64ch">
-          <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--lm-cyan-400)"><span style="width:28px;height:2px;background:currentColor"></span>Portfolio</span>
-          <h1 style="margin:0;font-size:var(--fs-display-lg);color:#fff">Our Projects</h1>
-          <p style="margin:0;font-size:18px;color:var(--lm-blue-100);line-height:1.6">Representative MEP works from the data-center projects we have delivered &#8212; plant rooms, power distribution, data halls and controls.</p>
+        <div class="lm-projects-hero-inner" data-reveal="0">
+          <div class="lm-projects-hero-title">
+            <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--lm-cyan-400)"><span style="width:28px;height:2px;background:currentColor"></span>Portfolio</span>
+            <h1 style="margin:0;font-size:var(--fs-display-lg);color:#fff">Our Projects</h1>
+          </div>
+          <p class="lm-projects-hero-scope">Data-center MEP delivery across cooling, power, data halls and controls.</p>
         </div>
       </section>
       <section style="background:var(--surface-page);padding:44px var(--gutter) var(--section-y)">
