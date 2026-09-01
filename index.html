@@ -1890,6 +1890,22 @@ class Component extends DCLogic {
           }
         }
       }else if(this._autoY!=null){ const a=this._auto; this._haltAuto(); this._auto=a; }else this._autoY=null;
+      // NEVER TRAP THE VISITOR. Everything above can fail -- a tour that never
+      // arms, a video that never reports ready, a rAF chain that dies -- and each
+      // of those failures looks the same from the sofa: a still picture you cannot
+      // scroll past, because the first-visit lock is holding you inside a 500vh
+      // section for a tour that is not coming. Measured on a real machine: seven
+      // seconds with frame-to-frame change of 0.00 in the hero.
+      // So the lock gets a deadline of its own. If the hero has been mounted for
+      // twelve seconds and the tour has still not moved the page once, give up on
+      // it and let the visitor out. The tour is a nicety; being stuck is not a
+      // trade anyone would take.
+      if(!this._heroFree&&!this._logoSeq){
+        if(this._heroSince==null) this._heroSince=performance.now();
+        else if(this._autoY==null&&performance.now()-this._heroSince>12000){
+          this._heroFree=true; this._auto=false; this._tourStyle(false);
+        }
+      }
       if(y!==this._lastY){ this._lastY=y; this._heroUpdate(); }
       this._lastTick=performance.now();
       this._seekStep();
@@ -2080,7 +2096,19 @@ class Component extends DCLogic {
       };
       armWhenReady();
     }
-    this._stopAuto=(e)=>{ if(e.type==='keydown'&&['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].indexOf(e.key)===-1) return; this._haltAuto(); };
+    // HANDING CONTROL OVER IS PERMANENT, so it must take a real gesture. This
+    // listener is installed at mount, before the tour has started, and it used to
+    // halt on ANY wheel event -- a trackpad still coasting from before the
+    // reload, or a single notch while the page was still loading, killed the tour
+    // before it ran and there is no path back from _haltAuto. Require a delta
+    // worth calling a scroll, and ignore anything that arrives before the tour
+    // has actually moved the page: there is nothing to opt out of yet.
+    this._stopAuto=(e)=>{
+      if(e.type==='keydown'&&['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].indexOf(e.key)===-1) return;
+      if(e.type==='wheel'&&Math.abs(e.deltaY||0)<12&&Math.abs(e.deltaX||0)<12) return;
+      if(this._autoY==null&&e.type!=='keydown') return;   // tour has not moved anything yet
+      this._haltAuto();
+    };
     ['wheel','touchmove','keydown'].forEach(t=>window.addEventListener(t,this._stopAuto,{passive:true}));
     this._startHeroLoop();
     this._heroUpdate();
