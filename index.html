@@ -1025,6 +1025,14 @@ const SEQ_AT=(p)=>{
 const HERO_VIDEO=()=> (typeof matchMedia!=='undefined'&&matchMedia('(max-width: 760px)').matches)
   ? 'uploads/merged16-scrub-mobile.mp4'
   : 'uploads/merged16-scrub-desktop.mp4';
+// THE SCRUB CURVE, in one place. _mapScrub maps track position to sequence
+// position and the auto-tour inverts it; they were two hand-written copies of the
+// same two numbers and they drifted the moment one was tuned.
+// c is where the curve bends, v is how much of the sequence is spent before the
+// bend. v=.79 puts the last 21% of frames across the last 28% of the window --
+// a 0.75 tail rate. At .86 it was 0.50, and that was half of why the ending felt
+// long.
+const SCRUB_C=.72, SCRUB_V=.79;
 const HOME_AUTO_SCROLL_VH_PER_SEC=.3;
 const HOME_HERO_SEEN_KEY='longmotive.hero-intro-seen.v1';
 const HOME_HERO_END_PROGRESS=.75;
@@ -1298,7 +1306,7 @@ class Component extends DCLogic {
   // so 8.5% of the sequence became 12.7% of the track. At .79 the tail runs at
   // 0.75 rate instead of 0.50. The head pays for it (1.19 -> 1.10), which means
   // the BUILD gets the 22vh the ending gives up, and that is the right way round.
-  _mapScrub(p){ const c=.72,v=.79; return p<c?(p/c)*v:v+((p-c)/(1-c))*(1-v); }
+  _mapScrub(p){ const c=SCRUB_C,v=SCRUB_V; return p<c?(p/c)*v:v+((p-c)/(1-c))*(1-v); }
   _principlesVideoRef=(el)=>{
     if(this._bgVideoObs){ this._bgVideoObs.disconnect(); this._bgVideoObs=null; }
     if(el){
@@ -1649,7 +1657,12 @@ class Component extends DCLogic {
                 const now=performance.now();
                 if(v.currentTime===this._vtLast){ if(now-this._vtAt>1000&&ahead<0.3) v.pause(); }
                 else{ this._vtLast=v.currentTime; this._vtAt=now; }
-                const m=v.currentTime/dur, c=.72, k=.86; // inverse of _mapScrub
+                // INVERSE OF _mapScrub, and it must use the same two numbers.
+                // It was a second hand-written copy and it was left at k=.86 when
+                // the forward map went to .79, so on the video path the scroll
+                // position stopped agreeing with the frame on screen and the phase
+                // captions desynced from it. Shared constants now: it cannot drift.
+                const m=v.currentTime/dur, c=SCRUB_C, k=SCRUB_V;
                 const pv=m<k?(m/k)*c:c+((m-k)/(1-k))*(1-c);
                 ny=top+pv*0.75*range;
                 this._cur=m; this._target=m;
