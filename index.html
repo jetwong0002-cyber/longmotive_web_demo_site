@@ -37,28 +37,33 @@
   try{
     var conn=navigator.connection;
     if(conn&&(conn.saveData||/(^|-)2g$/.test(conn.effectiveType||''))) return;
-    // Desktop drives the hero from the image sequence, so do NOT also pull the
-    // 6.5MB clip -- warm the first tier of frames instead. Phones keep the
-    // 2.5MB video: 50MB of stills has no business on a mobile connection.
-    // If the frames fail, the component's _seqFail() loads this same video.
-    if(matchMedia('(min-width: 1025px)').matches
-       && !matchMedia('(prefers-reduced-motion: reduce)').matches
-       && !(conn && /(^|-)3g$/.test(conn.effectiveType||''))){
-      // stride MUST equal SEQ_TIER in the page below: multiples of 12 are not
-      // multiples of 8, so the stride this replaces warmed frames the first pass
-      // never draws while missing the ones it does.
-      for(var i=0;i<271;i+=8){
-        fetch('uploads/hero-seq-1440/f'+('00'+(i+1)).slice(-3)+'.webp',{priority:'high'})
-          .catch(function(){});
-      }
-      return;
-    }
+    // The hero is the VIDEO again (HERO_SOURCE in the page below). The frame
+    // sequence branch that used to sit here is gone with it.
+    // MUST NAME THE SAME FILE AS HERO_VIDEO() BELOW or the browser fetches two
+    // clips. Desktop takes the 1080p cut because it is the one encoded for
+    // scrubbing -- 23 keyframes across the clip against 6 in the 1600x900 cut,
+    // and seeking decodes forward from a keyframe, so a sparse GOP is paid for
+    // on every drag.
     var src=matchMedia('(max-width: 760px)').matches
       ? 'uploads/merged16-scrub-mobile.mp4'
-      : 'uploads/merged16-scrub-desktop.mp4';
+      : 'uploads/merged16-scrub-1080p.mp4';
+    // Streamed against Content-Length so the hero's loading bar can show this
+    // download -- it is the only thing between arriving and the tour starting,
+    // and this preloader, not the component, is what normally fetches it.
     var load=function(tries){
       return fetch(src,{priority:'high'})
-        .then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.blob(); })
+        .then(function(r){
+          if(!r.ok) throw new Error('http '+r.status);
+          var total=+(r.headers.get('content-length')||0);
+          if(!r.body||!total||!r.body.getReader) return r.blob();
+          var reader=r.body.getReader(), parts=[], got=0;
+          var pump=function(){ return reader.read().then(function(s){
+            if(s.done){ window.__heroPct=1; return new Blob(parts,{type:'video/mp4'}); }
+            parts.push(s.value); got+=s.value.length;
+            window.__heroPct=Math.min(0.999,got/total);
+            return pump(); }); };
+          return pump();
+        })
         .then(function(b){ return URL.createObjectURL(b); })
         .catch(function(e){
           if(tries>0) return new Promise(function(res){ setTimeout(res,1200); }).then(function(){ return load(tries-1); });
@@ -927,11 +932,20 @@ const SEQ_N=271, SEQ_DIR='uploads/hero-seq-1440/', SEQ_TIER=8;
 // later momentary 3g reading does not downgrade the session -- saveData and
 // reduced-motion are user PREFERENCES and are still honoured every time; only
 // the network guess is made sticky.
+// THE HERO IS THE VIDEO. Flip this to 'frames' to put the 271-frame WebP
+// sequence back; nothing else has to change and the frames are still deployed.
+//
+// The sequence was sharper per frame -- 192KB against roughly 50KB -- and it cost
+// too much for that: 50.7MB, and the scrub decoded a 1440x810 still on the main
+// thread at every step. The auto-tour was the worst of it, because it moves at a
+// fixed rate and never stops to let a decode land.
+const HERO_SOURCE='video';
 const SEQ_PROVEN_KEY='longmotive.hero-frames.v1';
 let SEQ_OK_MEMO=null;
 const SEQ_OK=()=>{
   if(SEQ_OK_MEMO!==null) return SEQ_OK_MEMO;
   const settle=(r)=>(SEQ_OK_MEMO=r);
+  if(HERO_SOURCE!=='frames') return settle(false);
   if(typeof matchMedia==='undefined') return settle(false);
   if(matchMedia('(max-width: 1024px)').matches) return settle(false);
   if(matchMedia('(prefers-reduced-motion: reduce)').matches) return settle(false);
@@ -1022,9 +1036,24 @@ const SEQ_AT=(p)=>{
 // Crossfade was added when the hero had 68 frames and stepped every 56px of
 // scroll. 136 frames at 26.5px already solved that; the blend outlived its
 // reason and only contributed artefacts.
+// KEYFRAME DENSITY, NOT FILE SIZE, DECIDES WHETHER A VIDEO CAN BE SCRUBBED.
+// Seeking lands on a keyframe and then decodes forward to the target, so a sparse
+// GOP makes every drag pay for frames nobody sees. Measured over the whole 136
+// frame clip:
+//   merged16-scrub-1080p.mp4    1920x1080  19.1MB  23 keyframes  (GOP 6)
+//   merged16-scrub-desktop.mp4  1600x900    6.5MB   6 keyframes  (GOP ~23)
+// The 6.5MB cut is a third of the bytes and four times the seek cost. Desktop
+// takes the 1080p cut, which is the one that was encoded for this.
+// The <head> preloader MUST name the same file or the browser fetches both.
+// Whoever is actually downloading reports here. Normally that is the <head>
+// preloader, which starts before this script parses; Component._heroPct only
+// carries it when the component had to fetch the clip itself.
+const HERO_PCT=()=>Math.max(
+  (typeof window!=='undefined'&&window.__heroPct)||0,
+  Component._heroPct||0);
 const HERO_VIDEO=()=> (typeof matchMedia!=='undefined'&&matchMedia('(max-width: 760px)').matches)
   ? 'uploads/merged16-scrub-mobile.mp4'
-  : 'uploads/merged16-scrub-desktop.mp4';
+  : 'uploads/merged16-scrub-1080p.mp4';
 // THE SCRUB CURVE, in one place. _mapScrub maps track position to sequence
 // position and the auto-tour inverts it; they were two hand-written copies of the
 // same two numbers and they drifted the moment one was tuned.
@@ -1085,14 +1114,41 @@ class Component extends DCLogic {
       // _seqFail() below starts this same load if the frames never arrive.
       if(SEQ_OK()){ this._seqVideoSrc=src; return; }
       if(!Component._heroBlobUrl){
+        // Streamed, so the loading gate can show real progress instead of a
+        // spinner over a 19MB download. Falls back to .blob() when the response
+        // has no length or no readable body -- the gate then just sits at 0 and
+        // hides on canplay, which is what it did before.
         const load=(tries)=>fetch(src)
-          .then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.blob(); })
+          .then(r=>{
+            if(!r.ok) throw new Error('http '+r.status);
+            const total=+(r.headers.get('content-length')||0);
+            if(!r.body||!total||!r.body.getReader) return r.blob();
+            const reader=r.body.getReader(), parts=[]; let got=0;
+            const pump=()=>reader.read().then(({done,value})=>{
+              if(done){ Component._heroPct=1; return new Blob(parts,{type:'video/mp4'}); }
+              parts.push(value); got+=value.length;
+              Component._heroPct=Math.min(0.999,got/total);
+              return pump();
+            });
+            return pump();
+          })
           .then(b=>URL.createObjectURL(b))
           .catch(e=>{ if(tries>0) return new Promise(res=>setTimeout(res,1200)).then(()=>load(tries-1)); Component._heroBlobUrl=null; throw e; });
         const preloaded=typeof window!=='undefined'&&window.__heroBlobUrl;
         Component._heroBlobUrl = preloaded ? preloaded.catch(()=>load(3)) : load(3);
       }
-      Component._heroBlobUrl.then(u=>{ if(this._video===el){ el.src=u; el.load(); this._heroBlobReady=true; } })
+      // the gate is showing this download; poll it while it runs
+      if(!this._pctTimer) this._pctTimer=setInterval(()=>{ this._loadSync(); },200);
+      Component._heroBlobUrl.then(u=>{ if(this._video===el){
+          el.src=u; el.load(); this._heroBlobReady=true; Component._heroPct=1;
+          // READ THE BAR, THEN PLAY -- no fixed delay between the two. canplay is
+          // the first moment the tour can actually run, so it is also the moment
+          // the gate has nothing left to cover.
+          const go=()=>{ this._loadSync(); if(this._auto) this._autoAt=performance.now(); };
+          if(el.readyState>=3) go(); else el.addEventListener('canplay',go,{once:true});
+          // and never strand it if canplay does not come
+          setTimeout(go,4000);
+        } })
         .catch(()=>{ if(this._video===el&&!el.getAttribute('src')){ el.src=src; el.load(); } });
     }
   };
@@ -1283,9 +1339,23 @@ class Component extends DCLogic {
   // loaded and handed you a hero that was 44MB short.
   _loadSync=()=>{
     if(!this._load) return;
-    if(!SEQ_OK()){ this._loadHide(); return; }   // phones never see it: they get the 2.5MB video
+    let pct;
+    if(!SEQ_OK()){
+      // VIDEO PATH. The gate covers the blob download, which is the only thing
+      // standing between arriving and the tour starting. It used to hide itself
+      // here immediately, which meant the bar vanished and then nothing happened
+      // for as long as the video took.
+      if(!this._heroBlobReady && !(this._video&&this._video.readyState>=3)){
+        pct=Math.round(HERO_PCT()*100);
+        if(this._loadBar) this._loadBar.style.width=pct+'%';
+        if(this._loadPct) this._loadPct.textContent='Preparing '+pct+'%';
+        return;
+      }
+      if(this._pctTimer){ clearInterval(this._pctTimer); this._pctTimer=null; }
+      this._loadHide(); return;
+    }
     const total=Math.ceil(SEQ_N/SEQ_TIER);
-    const pct=Math.max(0,Math.min(100,Math.round((this._seqDone||0)/total*100)));
+    pct=Math.max(0,Math.min(100,Math.round((this._seqDone||0)/total*100)));
     if(this._loadBar) this._loadBar.style.width=pct+'%';
     if(this._loadPct) this._loadPct.textContent=pct<100?'Preparing '+pct+'%':'Ready';
     if(pct>=100) this._loadHide();
@@ -1805,7 +1875,10 @@ class Component extends DCLogic {
     // it two seconds after tier 1 meant it always ran at the worst possible
     // moment. It now waits for the sequence to be substantially in, with a
     // ceiling so it always eventually plays.
-    this._autoAt=performance.now()+2000;
+    // On the video path this is a ceiling, not a delay: whichever of canplay or
+    // this comes first arms the tour, and canplay normally comes first.
+    this._autoAt=performance.now()+(SEQ_OK()?2000:6000);
+    if(this._heroBlobReady||(this._video&&this._video.readyState>=3)) this._autoAt=performance.now();
     if(SEQ_OK()){
       this._autoAt=Infinity;
       const need=Math.round(SEQ_N*0.9), giveUp=performance.now()+20000;
