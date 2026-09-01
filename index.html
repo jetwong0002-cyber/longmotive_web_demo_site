@@ -38,16 +38,17 @@
     var conn=navigator.connection;
     if(conn&&(conn.saveData||/(^|-)2g$/.test(conn.effectiveType||''))) return;
     // Desktop drives the hero from the image sequence, so do NOT also pull the
-    // 6.5MB clip. Warm only the first four quality-2 master frames here; the
-    // priority scheduler fills a contiguous startup buffer after the app boots.
-    // Only the first four master frames load in <head>; the remaining 20-frame
-    // startup buffer is scheduled after React and layout are ready.
+    // 6.5MB clip -- warm the first tier of frames instead. Phones keep the
+    // 2.5MB video: 50MB of stills has no business on a mobile connection.
     // If the frames fail, the component's _seqFail() loads this same video.
     if(matchMedia('(min-width: 1025px)').matches
        && !matchMedia('(prefers-reduced-motion: reduce)').matches
        && !(conn && /(^|-)3g$/.test(conn.effectiveType||''))){
-      for(var i=0;i<4;i++){
-        fetch('assets/frames/frame-'+('000'+(i+1)).slice(-4)+'.jpg?v=q2-20260820',{priority:'high'})
+      // stride MUST equal SEQ_TIER in the page below: multiples of 12 are not
+      // multiples of 8, so the stride this replaces warmed frames the first pass
+      // never draws while missing the ones it does.
+      for(var i=0;i<271;i+=8){
+        fetch('uploads/hero-seq-1440/f'+('00'+(i+1)).slice(-3)+'.webp',{priority:'high'})
           .catch(function(){});
       }
       return;
@@ -74,7 +75,6 @@
      so GSAP has to be the earlier deferred script. -->
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
-<script defer src="sequence-priority.js"></script>
 <script defer src="campus-hero.js"></script>
 <script defer src="./support.js"></script>
 </head>
@@ -292,6 +292,17 @@
           <sc-if value="{{ isVideoScrub }}" hint-placeholder-val="{{ false }}"><video class="lm-hero-media" ref="{{ heroVideoRef }}" poster="uploads/campus-v2-merged16-poster-eae9bed7.jpg" muted="{{ true }}" playsinline="{{ true }}" preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video></sc-if><sc-if value="{{ isVideoScrub }}" hint-placeholder-val="{{ false }}"><canvas class="lm-hero-media" ref="{{ heroCanvasRef }}" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none"></canvas></sc-if>
           <sc-if value="{{ is3dHero }}" hint-placeholder-val="{{ true }}"><lm-campus-hero class="lm-hero-media" ref="{{ campusRef }}" style="position:absolute;inset:0"></lm-campus-hero></sc-if>
           <div ref="{{ heroTintRef }}" style="position:absolute;inset:0;background:rgba(7,36,72,.45);pointer-events:none"></div>
+          <!-- Preload gate. Desktop pulls 50.7MB of frames; on a slow line the hero
+               used to sit blank while they arrived and the scrub felt broken rather
+               than loading. This states what is happening and gets out of the way.
+               It only ever covers the hero stage, never the page. -->
+          <div ref="{{ heroLoadRef }}" style="position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:linear-gradient(180deg,#0a2038 0%,#061424 100%);transition:opacity .55s ease;pointer-events:none">
+            <div style="font:700 10px/1 var(--font-mono);letter-spacing:.22em;color:#53cefa;text-transform:uppercase">Campus growth</div>
+            <div style="width:min(260px,52vw);height:2px;background:rgba(255,255,255,.14);border-radius:2px;overflow:hidden">
+              <i ref="{{ heroLoadBarRef }}" style="display:block;height:100%;width:0;background:#53cefa;transition:width .25s linear"></i>
+            </div>
+            <div ref="{{ heroLoadPctRef }}" style="font:600 10px/1 var(--font-mono);letter-spacing:.18em;color:rgba(232,242,251,.55)">0%</div>
+          </div>
           <img class="lm-hero-media" ref="{{ heroPhotoRef }}" src="uploads/frames/f10-1920.jpg" srcset="uploads/frames/f10-960.webp 960w, uploads/frames/f10-1280.webp 1280w, uploads/frames/f10-1920.webp 1920w" sizes="100vw" alt="Aerial view of the completed DAY ONE data centre" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:opacity,transform"/>
           
           <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,36,72,.6) 0%,rgba(7,36,72,0) 15%,rgba(7,36,72,0) 85%,rgba(7,36,72,.6) 100%),linear-gradient(180deg,rgba(7,36,72,.6) 0%,rgba(7,36,72,0) 15%,rgba(7,36,72,0) 85%,rgba(7,36,72,.6) 100%);pointer-events:none"></div>
@@ -560,7 +571,7 @@
 
     <sc-if value="{{ isProjects }}">
     <div>
-      <section class="lm-projects-hero" style="background:var(--lm-gradient-deep);padding:clamp(24px,2.5vw,30px) var(--gutter)">
+      <section style="background:var(--lm-gradient-deep);padding:76px var(--gutter) 64px">
         <div data-reveal="0" style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;gap:12px;max-width:64ch">
           <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--lm-cyan-400)"><span style="width:28px;height:2px;background:currentColor"></span>Portfolio</span>
           <h1 style="margin:0;font-size:var(--fs-display-lg);color:#fff">Our Projects</h1>
@@ -846,15 +857,33 @@ const HOME_CURATED=['Rooftop Diesel Generators','Rooftop AC Outdoor Units','ECC 
 const IMG='assets/img/';
 // Must stay in step with the <head> preloader's own query, or the two disagree
 // about which file this screen wants and the phone pays for both.
-// Native JPEG sequence extracted one-for-one from campus-v2-merged16.mp4:
-// 136 frames, 1920x1080, FFmpeg q2, 70.33 MB. Each scroll position paints an
-// independently decoded image, avoiding inter-frame video seek artefacts.
-// The existing loader decodes before use, warms neighbouring frames, limits
-// concurrency and draws the nearest available frame if the target is not ready.
-// Keep this desktop-only: phones retain the compact scrub video and reduced
-// motion/data-saving users retain the static/video fallback.
-const SEQ_N=136, SEQ_DIR='assets/frames/', SEQ_VERSION='q2-20260820';
-const SEQ_STARTUP=20, SEQ_AHEAD=28, SEQ_BEHIND=3;
+// Hero image sequence. The scrubbed clip spends 48.8 KB per frame, a sharpness
+// ceiling no encoder setting can lift; stills cost more and buy it back.
+// FRAME COUNT BEATS PER-FRAME PIXELS on a scrubbed hero: 136 frames (every frame
+// the master holds) at 1600w beats 68 at 2560w, because motion hides pixel
+// detail and stepping never does.
+// FORMAT IS A DECODE DECISION, NOT JUST A SIZE ONE. A pass with AVIF at 1920w
+// was 37.1 MB and felt laggy. Bytes were not the problem -- decode was. 136
+// frames at 1920x1080 is 1.13 GB of decoded pixels, far past what any browser
+// keeps, so frames are certainly evicted and re-decoded mid-scroll, and AV1
+// intra decode is much heavier than WebP. WebP at 1600w is SMALLER (29.8 MB),
+// cheaper to decode, and drops the decoded footprint to 0.73 GB. 1600 still
+// exceeds the ~1425px the canvas is actually drawn at.
+// 271 frames = 59.5 MB, so this is DESKTOP ONLY -- phones keep the 2.5MB video
+// below, which is also the documented advice for anything above the fold. If the
+// frames fail to arrive (including a browser with no AVIF support) the video
+// path takes over.
+// THE TRACK LENGTH IS THE OTHER HALF OF SMOOTHNESS. Stepping is
+// (scrollable distance / frames). Shortening the track speeds the hero up and
+// smooths it at once, for no bytes -- but it was tried and walked back:
+//   500vh  3600px scroll  26.5 px/frame  caption 60vh each   <- here, original
+//   400vh  2700px         19.9           45vh                   still too fast
+//   300vh  1800px         13.2           30vh                   hurried
+// At 136 frames the stepping is fine at 500vh anyway, so the track is back where
+// it started. Everything downstream is proportional -- p is normalised over
+// (rect.height - innerHeight), and the 0..0.75 scrub window, the photo crossfade,
+// the ending hold and the auto-tour duration all derive from it.
+const SEQ_N=271, SEQ_DIR='uploads/hero-seq-1440/', SEQ_TIER=8;
 const SEQ_OK=()=>{
   if(typeof matchMedia==='undefined') return false;
   if(matchMedia('(max-width: 1024px)').matches) return false;
@@ -863,13 +892,55 @@ const SEQ_OK=()=>{
   if(c&&(c.saveData||/(^|-)(2g|3g)$/.test(c.effectiveType||''))) return false;
   return true;
 };
-const SEQ_URL=(i)=>globalThis.LMSequencePriority.frameUrl(SEQ_DIR,i,SEQ_VERSION);
-const SEQ_PREVIEW_URL=SEQ_URL;
-// The 271-frame sequence used two source samples per master frame. Sampling
-// every second point from its motion-weighted scroll map restores the exact
-// 136-frame master cadence while preserving extra scroll for low-motion shots
-// and less scroll for fast drone moves.
-const SEQ_CUM=[0,128,248,364,458,534,603,674,740,801,859,897,934,971,1008,1045,1090,1148,1203,1258,1306,1347,1385,1459,1521,1602,1730,1858,1965,2092,2220,2343,2412,2540,2668,2795,2923,3042,3150,3266,3378,3461,3531,3575,3643,3753,3800,3847,3907,3953,4004,4058,4119,4174,4243,4318,4368,4428,4514,4580,4620,4668,4729,4786,4846,4911,4983,5066,5153,5257,5308,5374,5441,5506,5572,5636,5735,5803,5858,5931,6016,6080,6175,6302,6415,6505,6569,6637,6706,6766,6815,6869,6952,7047,7130,7175,7237,7302,7374,7459,7549,7624,7691,7736,7774,7815,7869,7918,7981,8066,8160,8258,8370,8425,8477,8527,8570,8613,8661,8718,8771,8832,8889,8943,9007,9068,9124,9184,9254,9334,9429,9527,9631,9747,9872,10000];
+const SEQ_URL=(i)=>SEQ_DIR+'f'+('00'+(i+1)).slice(-3)+'.webp';
+// BUILT FROM THE SIX ORIGINAL CLIPS, USING THE MASTER AS THE EDIT MAP (2026-08-20).
+// The six clips are separate drone passes flown on DIFFERENT DAYS. Within each
+// the camera glides along a path; at a naive join it snaps back to the next
+// pass's start and the light changes. The merged master is the editor's answer
+// to exactly that: each clip trimmed (f7-f188 etc.), compressed uniformly
+// (1 master frame per 8 source frames), cut at five chosen points, dissolves
+// over the cuts. A previous rebuild sampled the clips full-range and cut at
+// f193->f1 -- discarding all of those decisions -- and looked worse than the
+// dissolve problem it fixed.
+// So the master is now the EDIT MAP and the clips are the PIXEL SOURCE. Every
+// master frame was matched to (clip, frame) by 48x27 thumbnail MAD -- the map
+// came out perfectly monotonic, uniform step 8, residual 0.5-2.0 -- and the
+// sequence takes every 4th source frame across exactly the master-used ranges,
+// ending each segment on the very frame the editor ended on. 271 frames at the
+// clips' NATIVE 1920x1080 (a 1440w frame is upscaled ~33% on a 1920 viewport,
+// which is where "not sharp" came from), q76, 59.5 MB. 2x the master density,
+// zero dissolve frames by construction.
+// THE FIVE CUTS ARE HARD CUTS AT THE MASTER'S OWN CUT POINTS. Measured MAD at
+// them: 4.9-17.3 against an in-clip median of 5.0. The largest (clip1->clip2,
+// now f038->f039) is near-identical camera position with the piles appearing --
+// it reads as a chapter turn, which is what the phase captions say it is. A
+// hard cut scrubs cleanly; a dissolve scrubbed is a double exposure.
+// Dissolve scan after rebuild: one flag (f023, 0.89 of neighbours), confirmed
+// clean motion by eye. Zero real dissolves.
+// SCROLL IS ALLOCATED BY MOTION, NOT EVENLY.
+// The master runs its 136 frames in 5.67s -- 24fps -- and looked fine as video.
+// Spread evenly over a 3600px track at 270px/s the hero plays those same frames
+// in 13.3s, i.e. 10.2fps: the footage is being slow-motioned to 43 per cent
+// speed with no intermediate frames to fill in. Slow-motioning a fast camera
+// move is exactly when the eye starts resolving individual frames, which is the
+// judder through the drone pull-back around f012-f017.
+// So fast passages now take LESS scroll (they pass nearer their native speed)
+// and calm passages take MORE (nothing is moving, low fps is invisible there).
+// Weight is 1/motion, clamped to the 10th..90th percentile so nothing is starved.
+// Total scroll and total duration are unchanged; only the distribution moves.
+//   fastest passage  10.1 -> 19.4 fps
+//   slowest passage  10.1 ->  5.7 fps   (near-static frames)
+// SEQ_CUM[k] is where frame k starts, in ten-thousandths of the scrub range.
+// REGENERATE if the frame set changes: 48x27 grey thumbnails, mean absolute
+// difference between consecutive frames, weight 1/m, clamp, cumulative sum.
+// THEN RESCALE THE TAIL. Phase 05 is an aerial drift over the finished campus:
+// real motion (8-12 per frame, above the 7.79 median), so 1/motion happily gave
+// it 16.1% of the sequence. Composed with _mapScrub -- which stretches the last
+// 14% of frames across 28% of the scrub window -- that put 22.4% of the hero
+// track on the closing fly-over, and the ending photo held for 18.5% more. Two
+// full screens of ending. Phase 05 is now scaled to 8.5% and the rest of the
+// sequence absorbs it proportionally; total scroll is unchanged.
+const SEQ_CUM=[0,70,140,208,270,333,397,450,500,543,582,621,658,697,735,771,807,840,874,906,937,958,978,998,1019,1038,1059,1080,1099,1120,1140,1161,1189,1222,1252,1285,1312,1343,1372,1398,1424,1448,1469,1490,1511,1530,1591,1612,1659,1702,1747,1817,1887,1957,2027,2096,2143,2213,2282,2352,2421,2491,2556,2600,2631,2701,2770,2840,2910,2979,3049,3118,3188,3258,3318,3378,3436,3500,3562,3631,3684,3734,3775,3821,3851,3879,3899,3930,3973,4024,4093,4124,4145,4165,4196,4229,4261,4292,4312,4332,4367,4399,4426,4458,4493,4522,4553,4592,4628,4674,4710,4739,4764,4797,4830,4877,4923,4962,4995,5015,5039,5064,5091,5127,5158,5194,5220,5255,5286,5322,5356,5392,5435,5481,5526,5565,5620,5664,5734,5754,5790,5822,5861,5901,5935,5966,6005,6044,6077,6110,6147,6200,6255,6301,6329,6359,6389,6428,6469,6520,6562,6588,6632,6668,6735,6804,6874,6934,6997,7061,7095,7116,7165,7219,7239,7282,7314,7346,7380,7407,7433,7471,7492,7542,7583,7630,7686,7733,7777,7801,7826,7873,7893,7920,7964,8004,8043,8090,8136,8178,8234,8279,8316,8356,8389,8417,8438,8460,8479,8502,8524,8551,8583,8605,8636,8668,8705,8750,8798,8848,8900,8954,9007,9069,9129,9150,9169,9184,9196,9210,9223,9236,9245,9257,9268,9280,9294,9308,9324,9337,9352,9367,9384,9399,9414,9429,9442,9459,9476,9493,9508,9523,9538,9553,9569,9588,9606,9627,9649,9673,9699,9725,9750,9777,9805,9834,9867,9899,9932,9966,10000];
 // frame index for a scrub position, by binary search over SEQ_CUM
 // PHASE CAPTIONS MUST LINE UP WITH THE CLIP BOUNDARIES.
 // Each clip is one build stage shot on one day, so a caption window that
@@ -879,7 +950,7 @@ const SEQ_CUM=[0,128,248,364,458,534,603,674,740,801,859,897,934,971,1008,1045,1
 // correct only while frames were spread evenly in it. SEQ_CUM deliberately is
 // not even, so the split has to be derived from it rather than assumed.
 // Last frame of each phase, 1-based: clip1 | clip2+clip3 | clip4 | clip5 | clip6
-const SEQ_PHASE_END=[24,70,91,113,136];
+const SEQ_PHASE_END=[47,139,182,225,271];
 // mp at the START of the next phase's first frame
 const PHASE_TH=SEQ_PHASE_END.slice(0,4).map(f=>SEQ_CUM[f]/10000);
 const SEQ_AT=(p)=>{
@@ -971,14 +1042,7 @@ class Component extends DCLogic {
     this._cvs=el;
     if(!el||!SEQ_OK()||this._seqStarted) return;
     this._seqStarted=true;
-    const plan=typeof window!=='undefined'&&window.LMSequencePriority;
-    if(!plan){ this._seqFail(); return; }
     this._seqImg=new Array(SEQ_N); this._seqOk=new Array(SEQ_N); this._seqDone=0;
-    this._seqPreviewOk=new Array(SEQ_N); this._seqFullOk=new Array(SEQ_N);
-    this._seqPreviewQ=new plan.SequencePriorityQueue(SEQ_N);
-    this._seqFullQ=new plan.SequencePriorityQueue(SEQ_N);
-    this._seqPlan=plan; this._seqPreviewActive=0; this._seqFullActive=0; this._seqFullLimit=1;
-    this._seqStartup=new Set(plan.startupIndices(SEQ_N,SEQ_STARTUP));
     this._seqCtx=el.getContext('2d',{alpha:false});
     this._seqResize();
     if(!this._seqResizeBound){ this._seqResizeBound=()=>this._seqResize(); addEventListener('resize',this._seqResizeBound); }
@@ -987,81 +1051,53 @@ class Component extends DCLogic {
     if(typeof ResizeObserver!=='undefined'&&!this._seqRO){
       this._seqRO=new ResizeObserver(()=>this._seqResize()); this._seqRO.observe(el);
     }
-    // Frames are <img>, never ImageBitmap: the browser owns the decoded cache and
-    // may evict under pressure. Direct URLs also let the four <head> requests be
-    // reused from HTTP cache; fetch(blob) created a second resource identity.
-    this._seqOne=(kind,i)=>new Promise((res,rej)=>{ const im=new Image();
-      im.decoding='async';
-      if('fetchPriority' in im) im.fetchPriority=kind==='full'?'low':i<SEQ_STARTUP?'high':'auto';
-      im.onload=()=>{
-        // Decode before marking a frame usable so canvas never pays that cost
-        // synchronously during autoplay or a user's first scrub.
-        let settled=false;
-        const visibleP=Math.min(1,Math.max(0,this._cur!=null?this._cur:(this._target||0)));
-        const visibleK=SEQ_AT(visibleP);
-        const beforeIndex=this._seqNearest(visibleK);
-        const beforeImage=beforeIndex>=0?this._seqImg[beforeIndex]:null;
-        const ready=()=>{ if(settled) return; settled=true;
-          if(kind==='full'){
-            this._seqFullOk[i]=true; this._seqImg[i]=im;
-          }else{
-            this._seqPreviewOk[i]=true; if(!this._seqFullOk[i]) this._seqImg[i]=im;
-          }
-          if(!this._seqOk[i]){ this._seqOk[i]=true; this._seqDone++; }
-          this._seqStartup.delete(i);
-          if(!this._seqStartup.size&&!this._seqReady){
-            this._seqReady=true;
-            if(this._cvs) this._cvs.style.display='block';
-            if(this._video) this._video.style.display='none';
-            this._seqResize();
-          }
-          const afterIndex=this._seqNearest(visibleK);
-          const afterImage=afterIndex>=0?this._seqImg[afterIndex]:null;
-          if(this._seqPlan.shouldRepaint(beforeIndex,beforeImage,afterIndex,afterImage)){
-            this._seqSig=''; this._seqDraw();
-          }
-          if(this._seqNativeRequested) this._seqEnableNative();
-          res(); };
-        if(im.decode){ im.decode().then(ready,ready); setTimeout(ready,400); } else ready();
-      };
-      im.onerror=rej; im.src=kind==='full'?SEQ_URL(i):SEQ_PREVIEW_URL(i);
-    });
-    // Six workers establish the 20-frame master-quality startup buffer; after the
-    // first paint, two workers maintain the rolling buffer without decode spikes.
-    this._seqPump=(kind)=>{
-      const preview=kind==='preview', q=preview?this._seqPreviewQ:this._seqFullQ;
-      const activeKey=preview?'_seqPreviewActive':'_seqFullActive';
-      const limit=preview?this._seqPlan.previewWorkerLimit(this._seqReady):this._seqFullLimit;
-      while(this[activeKey]<limit){
-        const i=q.next(); if(i==null) break;
-        this[activeKey]++;
-        this._seqOne(kind,i).catch(()=>{
-          // A failed master request must not strand autoplay: retry through the fallback queue.
-          if(preview){ this._seqFullQ.add([i],0); this._seqPump('full'); }
-        }).finally(()=>{
-          q.complete(i); this[activeKey]--;
-          this._seqPump(kind);
-        });
-      }
+    // Frames are <img>, never ImageBitmap: 68 decoded 2560x1440 bitmaps would pin
+    // ~960MB of pixels. As <img> the browser owns the cache and can evict.
+    const one=(i)=>fetch(SEQ_URL(i)).then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.blob(); })
+      .then(b=>new Promise((res,rej)=>{ const im=new Image();
+        im.onload=()=>{
+          // DECODE BEFORE MARKING THE FRAME USABLE. onload only means the bytes
+          // arrived; the first drawImage of each frame then decodes a 2560x1440
+          // WebP synchronously on the main thread. That is why the first pass
+          // down the hero stuttered and every pass after it was smooth -- the
+          // decodes were already paid for. decode() moves that cost off the
+          // scroll and into loading, where nobody is watching.
+          let settled=false;
+          const ready=()=>{ if(settled) return; settled=true;
+            this._seqImg[i]=im; this._seqOk[i]=true; this._seqDone++; this._seqDraw(); res(); };
+          // decode() can stay pending indefinitely when the document is not
+          // rendering. Never let that strand the hero -- the image is already
+          // usable, decode() is only an optimisation.
+          if(im.decode){ im.decode().then(ready,ready); setTimeout(ready,400); } else ready();
+        };
+        im.onerror=rej; im.src=URL.createObjectURL(b); }));
+    // Bounded concurrency, not a strict chain. Sequentially this pulled 33MB one
+    // frame at a time, so late frames were still missing on the first scroll and
+    // the nearest-loaded fallback jumped between distant frames.
+    const run=(list,par)=>{
+      let k=0;
+      const next=()=>k<list.length ? one(list[k++]).catch(()=>{}).then(next) : Promise.resolve();
+      return Promise.all(Array.from({length:Math.min(par||6,list.length)},next));
     };
-    const opening=plan.startupIndices(SEQ_N,SEQ_STARTUP);
-    this._seqPreviewQ.add(opening,0);
-    this._seqPreviewQ.add(Array.from({length:SEQ_N-SEQ_STARTUP},(_,i)=>i+SEQ_STARTUP),1000);
-    this._seqPump('preview');
-  };
-  _seqEnableNative=()=>{
-    this._seqNativeRequested=true;
-    if(!this._seqPlan||!this._seqPlan.nativeUpgradeNeeded(SEQ_PREVIEW_URL(0),SEQ_URL(0))) return;
-    if(!this._seqReady||!this._seqFullQ||this._seqNativeStarted) return;
-    this._seqNativeStarted=true; this._seqFullLimit=1;
-    const p=Math.min(1,Math.max(0,this._cur!=null?this._cur:(this._target||0)));
-    const k=SEQ_AT(p);
-    this._seqFullQ.add(this._seqPlan.rollingIndices(SEQ_N,k,4,2),0);
-    this._seqPump('full');
+    const t1=[],t2=[];
+    for(let i=0;i<SEQ_N;i++) (i%SEQ_TIER===0?t1:t2).push(i);
+    run(t1).then(()=>{
+      if(this._seqDone<t1.length) throw new Error('tier1 incomplete');
+      this._seqReady=true; this._loadHide();
+      if(this._cvs) this._cvs.style.display='block';
+      if(this._video) this._video.style.display='none';
+      // size it HERE, explicitly. Until this point the canvas was display:none,
+      // so it measured 0x0 and kept the default 300x150 backing store. Relying on
+      // the ResizeObserver to catch the 0 -> 1425 change is not safe: a document
+      // that is not compositing never delivers one, and the hero would then paint
+      // a 300x150 buffer stretched across the viewport.
+      this._seqResize();
+      return run(t2).catch(()=>{}); // fill-in failures are survivable: nearest frame is drawn
+    }).catch(()=>this._seqFail());
   };
   // If the frames cannot be had, put the original video path back exactly as it was.
   _seqFail=()=>{
-    this._seqReady=false; this._seqStarted=false;
+    this._seqReady=false; this._seqStarted=false; this._loadHide();  // video fallback: nothing left to wait for
     if(this._cvs) this._cvs.style.display='none';
     const el=this._video, src=this._seqVideoSrc;
     if(!el||!src) return;
@@ -1107,14 +1143,6 @@ class Component extends DCLogic {
     if(!this._seqCtx||!this._cvs) return;
     const p=Math.min(1,Math.max(0,this._cur!=null?this._cur:(this._target||0)));
     const k=SEQ_AT(p);
-    if(this._seqPlan&&this._seqPreviewQ){
-      this._seqPreviewQ.add(this._seqPlan.rollingIndices(SEQ_N,k,SEQ_AHEAD,SEQ_BEHIND),5);
-      this._seqPump('preview');
-      if(this._seqNativeStarted&&this._seqReady){
-        this._seqFullQ.add(this._seqPlan.rollingIndices(SEQ_N,k,3,1),0);
-        this._seqPump('full');
-      }
-    }
     const a=this._seqNearest(k); if(a<0) return;
     // DECODE-AHEAD. At 1920x1080 the browser will evict decoded frames under
     // memory pressure, and a mid-scrub re-decode is a synchronous stall on the
@@ -1142,6 +1170,43 @@ class Component extends DCLogic {
     if(Math.abs(this._cur-this._target)<0.0004) this._cur=this._target;
     else this._cur+=(this._target-this._cur)*0.18;
     this._seqDraw();
+  };
+  _heroLoadRef=(el)=>{
+    this._load=el;
+    // A re-render hands us a FRESH element in its visible initial state. Without
+    // this, _loadHide's _loadGone guard refuses to touch it and the gate stays on
+    // screen for good -- the bar that never goes away.
+    if(el&&this._loadGone){ this._loadGone=false; this._loadHide(); return; }
+    // Restoring from the back/forward cache re-shows whatever was on screen when
+    // the page froze. If that was mid-load, the gate comes back with it and no
+    // fetch is ever going to resolve again, so hide it on restore.
+    if(el&&!this._loadPageShow){ this._loadPageShow=()=>this._loadHide();
+      addEventListener('pageshow',this._loadPageShow); }
+    this._loadSync();
+    // Never let the gate outlive its reason. If the sequence never starts (3D
+    // hero mode, a browser that fails SEQ_OK, frames that never resolve) the
+    // page must still be usable -- a stuck loading bar is worse than no bar.
+    if(el&&!this._loadTimer) this._loadTimer=setTimeout(()=>this._loadHide(),6000);
+  };
+  _heroLoadBarRef=(el)=>{ this._loadBar=el; };
+  _heroLoadPctRef=(el)=>{ this._loadPct=el; };
+  // The gate reports TIER 1 only. Tier 2 keeps arriving behind the hero and the
+  // nearest-loaded fallback covers it, so holding the page for all 271 frames
+  // would be a much longer wait for no benefit.
+  _loadSync=()=>{
+    if(!this._load) return;
+    if(!SEQ_OK()){ this._loadHide(); return; }   // phones never see it: they get the 2.5MB video
+    const total=Math.ceil(SEQ_N/SEQ_TIER);
+    const pct=Math.max(0,Math.min(100,Math.round((this._seqDone||0)/total*100)));
+    if(this._loadBar) this._loadBar.style.width=pct+'%';
+    if(this._loadPct) this._loadPct.textContent=pct+'%';
+    if(pct>=100) this._loadHide();
+  };
+  _loadHide=()=>{
+    if(!this._load||this._loadGone) return;
+    this._loadGone=true;
+    this._load.style.opacity='0';
+    setTimeout(()=>{ if(this._load) this._load.style.display='none'; },600);
   };
   _heroCopyRef=(el)=>{ this._copy=el; };
   _campusRef=(el)=>{ this._campus=el; if(el) this._heroUpdate(); };
@@ -1451,7 +1516,7 @@ class Component extends DCLogic {
         const r=this._track.getBoundingClientRect();
         if(r.top<=0&&r.bottom>window.innerHeight+1){
           // a big jump means the user grabbed the scrollbar — hand over control
-          if(this._autoY!=null&&Math.abs(this._autoY-y)>40){ this._haltAuto(); this._seqEnableNative(); }
+          if(this._autoY!=null&&Math.abs(this._autoY-y)>40){ this._haltAuto(); }
           else{
             const range=r.height-window.innerHeight, top=y+r.top;
             const v=this._video, dur=(v&&v.readyState>=1&&Number.isFinite(v.duration)&&v.duration>0)?v.duration-0.05:0;
@@ -1507,19 +1572,7 @@ class Component extends DCLogic {
               if(this._autoV&&v){ v.pause(); this._autoV=false; }
               const dt=Math.min(50,performance.now()-(this._lastTick||performance.now()));
               const from=(this._autoY==null?y:this._autoY);
-              // Ease the tour down as its decoded look-ahead shrinks. This trades a
-              // barely perceptible speed change for continuous motion instead of
-              // running at full pace until the next frame is missing, then stopping.
-              let seqRate=1;
-              if(seqDrives&&this._seqPlan){
-                const pNow=Math.min(1,Math.max(0,(from-top)/range));
-                if(pNow<0.75){
-                  const kNow=SEQ_AT(this._mapScrub(Math.min(1,pNow/0.75)));
-                  const ahead=this._seqPlan.bufferedAhead(this._seqOk,kNow,SEQ_AHEAD);
-                  seqRate=this._seqPlan.playbackScale(ahead,SEQ_STARTUP,0.35);
-                }
-              }
-              let cand=from+window.innerHeight*HOME_AUTO_SCROLL_VH_PER_SEC*seqRate*dt/1000;
+              let cand=from+window.innerHeight*HOME_AUTO_SCROLL_VH_PER_SEC*dt/1000;
               // DO NOT LET THE TOUR OUTRUN THE FRAMES. It advances on a clock, which
               // knows nothing about loading; early on it would march past frames that
               // had not arrived and _seqNearest would substitute whatever was closest,
@@ -1610,7 +1663,9 @@ class Component extends DCLogic {
       this._photo.style.transform='none';
       this._photo.style.filter='none';
     }
-    if(p>=0.965) this._startLogoSeq();
+    // was .965 -- the still held from .78 to there, the longest single dwell in
+    // the hero and the other half of the ending that overstayed.
+    if(p>=0.92) this._startLogoSeq();
     const idx=mp<PHASE_TH[0]?0:(mp<PHASE_TH[1]?1:(mp<PHASE_TH[2]?2:(mp<PHASE_TH[3]?3:4)));
     // staggered handoff: outgoing snaps out fast, incoming fades in after it — the
     // captions share one slot, so they must never both be readable at once
@@ -1634,7 +1689,7 @@ class Component extends DCLogic {
     window.addEventListener('wheel',this._stepSectionWheel,{passive:false});
     // only real scroll input hands control to the user — clicks/taps don't end the tour
     this._auto=true; this._autoAt=performance.now()+2000;
-    this._stopAuto=(e)=>{ if(e.type==='keydown'&&['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].indexOf(e.key)===-1) return; this._haltAuto(); this._seqEnableNative(); };
+    this._stopAuto=(e)=>{ if(e.type==='keydown'&&['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].indexOf(e.key)===-1) return; this._haltAuto(); };
     ['wheel','touchmove','keydown'].forEach(t=>window.addEventListener(t,this._stopAuto,{passive:true}));
     this._startHeroLoop();
     this._heroUpdate();
@@ -1979,7 +2034,8 @@ class Component extends DCLogic {
       needTopPad: scr!=='Home'&&scr!=='About',
       showLogoOverlay: _ls===1||_ls===15||_ls===2,
       logoFlyStyle, logoRestA, logoMarkStyle, logoSheetStyle, flyRef: this._flyRef,
-      heroTrackRef: this._heroTrackRef, heroVideoRef: this._heroVideoRef, heroCanvasRef: this._heroCanvasRef,
+      heroTrackRef: this._heroTrackRef, heroVideoRef: this._heroVideoRef, heroCanvasRef: this._heroCanvasRef,
+      heroLoadRef: this._heroLoadRef, heroLoadBarRef: this._heroLoadBarRef, heroLoadPctRef: this._heroLoadPctRef,
       heroCopyRef: this._heroCopyRef, heroBarRef: this._heroBarRef,
       heroScrimRef: this._heroScrimRef, heroScrimBottomRef: this._heroScrimBottomRef, heroPatchRef: this._heroPatchRef,
       heroPhotoRef: this._heroPhotoRef, heroTintRef: this._heroTintRef,
