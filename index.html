@@ -1092,7 +1092,16 @@ const HERO_VIDEO=()=>HERO_VIDEO_LO();
 // a 0.75 tail rate. At .86 it was 0.50, and that was half of why the ending felt
 // long.
 const SCRUB_C=.72, SCRUB_V=.79;
-const HOME_AUTO_SCROLL_VH_PER_SEC=.3;
+// SPEED AND THE STUTTER ARE THE SAME NUMBER.
+// The tour sets playbackRate = clip duration / tour duration. At .3 viewport
+// heights a second the scrub ran ten seconds, so a 5.67s clip played at 0.57x --
+// 24fps footage arriving as 13.7 distinct pictures a second, each held for about
+// four and a half display frames. That reads as judder without a single video
+// frame being dropped, and it is why the hero felt slow AND rough at once.
+// At .68 the scrub is 4.4s, playbackRate 1.29, about 31 distinct frames a second
+// on screen -- and nobody is held in the hero for eleven seconds any more: about
+// five, plus the logo hand-off.
+const HOME_AUTO_SCROLL_VH_PER_SEC=.68;
 const HOME_HERO_SEEN_KEY='longmotive.hero-intro-seen.v1';
 const HOME_HERO_END_PROGRESS=.75;
 // Where a returning visitor is dropped back into the track. Separate from the
@@ -1745,7 +1754,25 @@ class Component extends DCLogic {
     const t=Math.min(0.999,Math.max(0,this._cur))*(v.duration-0.05);
     if(Math.abs(v.currentTime-t)>0.008){ try{ v.currentTime=t; }catch(e){} }
   }
-  _haltAuto(){ this._auto=false; this._autoY=null; const v=this._video;
+  // THE TOUR OWNS THE SCROLLER WHILE IT RUNS. html carries scroll-behavior:smooth
+  // AND scroll-snap-type:y (measured on the live page), and the tour writes a new
+  // scroll position every frame: smooth scrolls cancel each other, and the snap
+  // engine re-decides after every one of them. This used to be handled by
+  // reading, overwriting and restoring scrollBehavior INSIDE the loop -- two
+  // style writes and a read per frame -- and the snapping was never addressed at
+  // all. Set both once, put both back on the way out.
+  _tourStyle(on){
+    if(!!this._tourStyled===!!on) return;
+    const de=document.documentElement; if(!de) return;
+    if(on){
+      this._preTour={b:de.style.scrollBehavior,s:de.style.scrollSnapType};
+      de.style.scrollBehavior='auto'; de.style.scrollSnapType='none';
+    }else if(this._preTour){
+      de.style.scrollBehavior=this._preTour.b; de.style.scrollSnapType=this._preTour.s;
+    }
+    this._tourStyled=!!on;
+  }
+  _haltAuto(){ this._auto=false; this._autoY=null; this._tourStyle(false); const v=this._video;
     if(this._autoV&&v){ v.pause(); this._autoV=false; if(Number.isFinite(v.duration)&&v.duration>0) this._cur=v.currentTime/(v.duration-0.05); } }
   _startHeroLoop(){
     if(this._rafId) return;
@@ -1851,11 +1878,8 @@ class Component extends DCLogic {
               ny=cand;
             }
             this._autoY=ny; y=ny;
-            // bypass html{scroll-behavior:smooth} — per-frame smooth scrolls cancel each other
-            const de=document.documentElement, sb=de.style.scrollBehavior;
-            de.style.scrollBehavior='auto';
+            this._tourStyle(true);
             window.scrollTo(0,Math.round(y));
-            de.style.scrollBehavior=sb;
           }
         }
       }else if(this._autoY!=null){ const a=this._auto; this._haltAuto(); this._auto=a; }else this._autoY=null;
