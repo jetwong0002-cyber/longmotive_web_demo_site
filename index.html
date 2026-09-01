@@ -59,14 +59,14 @@
   try{
     var conn=navigator.connection;
     if(conn&&(conn.saveData||/(^|-)2g$/.test(conn.effectiveType||''))) return;
-    // TWO TIERS, and the order is the point. This host serves no ranges, so a
-    // clip must arrive WHOLE before a single frame can show. LO is 2.4MB and
-    // gets the hero moving in about a second and a half; HI is 8.6MB and takes
-    // over when it lands. Names must match HERO_VIDEO_LO/HI in the page below
-    // or the browser fetches clips nobody uses.
-    var src='uploads/merged16-scrub-mobile.mp4';
-    var hiSrc=matchMedia('(max-width: 760px)').matches
-      ? null                       // a phone keeps LO as its final picture
+    // ONE CLIP. The two-tier version is gone: it made the loading bar reach 100%
+    // at the small cut while the one that would actually play was still arriving,
+    // and its hand-over landing mid-tour stopped the video half way. This host
+    // serves no ranges, so whichever clip we choose has to arrive whole before a
+    // single frame can show -- the only thing worth controlling is whether the
+    // bar tells the truth about it. Must match HERO_VIDEO() in the page below.
+    var src=matchMedia('(max-width: 760px)').matches
+      ? 'uploads/merged16-scrub-mobile.mp4'
       : 'uploads/merged16-scrub-1600-g8.mp4';
     // Streamed against Content-Length so the hero's loading bar can show this
     // download -- it is the only thing between arriving and the tour starting,
@@ -93,12 +93,6 @@
     };
     window.__heroBlobUrl=load(1);
     window.__heroBlobUrl.catch(function(){}); // avoid unhandled-rejection noise
-    // HI starts only once LO is in hand: two large fetches racing each other
-    // just makes the one that matters arrive later.
-    if(hiSrc){ window.__heroBlobUrlHi=window.__heroBlobUrl.catch(function(){}).then(function(){
-      return fetch(hiSrc).then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.blob(); })
-        .then(function(b){ return URL.createObjectURL(b); });
-    }); window.__heroBlobUrlHi.catch(function(){}); }
   }catch(e){}
 })();
 </script>
@@ -1101,11 +1095,17 @@ const HERO_PCT=()=>Math.max(
 // compression noise -- so currentTime carries across the swap frame-accurately.
 // That equality is the whole reason this is safe; re-encode one and check it
 // again before trusting it.
-const HERO_VIDEO_LO=()=>'uploads/merged16-scrub-mobile.mp4';
-const HERO_VIDEO_HI=()=> (typeof matchMedia!=='undefined'&&matchMedia('(max-width: 760px)').matches)
-  ? null                       // a phone keeps the 2.4MB cut as its final picture
+// ONE CLIP. The two-tier version loaded the 2.4MB cut first and upgraded to the
+// 8.6MB one behind it, and it cost more than it bought: the bar reached 100% at
+// the small clip while the one that would actually play was still arriving, and
+// the upgrade landing mid-tour is what made the video stop half way. Both of
+// those were the same lie -- progress that did not mean the video was ready.
+// Now the bar measures the clip that plays, all of it, and reaching 100% means
+// exactly that. It costs about five seconds on this connection (measured: 9.07MB
+// in 5.03s), and the host serves no ranges so it has to arrive whole regardless.
+const HERO_VIDEO=()=> (typeof matchMedia!=='undefined'&&matchMedia('(max-width: 760px)').matches)
+  ? 'uploads/merged16-scrub-mobile.mp4'
   : 'uploads/merged16-scrub-1600-g8.mp4';
-const HERO_VIDEO=()=>HERO_VIDEO_LO();
 // THE SCRUB CURVE, in one place. _mapScrub maps track position to sequence
 // position and the auto-tour inverts it; they were two hand-written copies of the
 // same two numbers and they drifted the moment one was tuned.
@@ -1164,7 +1164,7 @@ class Component extends DCLogic {
     // ref quietly hand the hero back to the emptied A.
     if(this._videoA===el) return;
     this._videoA=el;
-    if(!this._heroSwapped) this._video=el;
+    this._video=el;
     if(el){
       // The template's playsinline="{{ true }}" never reaches the element — the
       // runtime drops it. iOS refuses to autoplay a video that isn't marked
@@ -1181,18 +1181,7 @@ class Component extends DCLogic {
       // The sequence owns the hero on desktop. Do not also pull 6.5MB of video;
       // _seqFail() below starts this same load if the frames never arrive.
       if(SEQ_OK()){ this._seqVideoSrc=src; return; }
-      // THE UPGRADE ELEMENT. Swapping src on one <video> resets it to readyState
-      // 0 and flashes the poster, which mid-scrub is worse than never upgrading.
-      // A second element loads and seeks out of sight, and the swap is one
-      // opacity flip once it is sitting on the same frame.
-      if(!this._videoB && HERO_VIDEO_HI() && el.parentNode){
-        const b=document.createElement('video');
-        b.className=el.className; b.style.cssText=el.style.cssText;
-        b.muted=true; b.playsInline=true; b.setAttribute('playsinline','');
-        b.preload='auto'; b.style.opacity='0';
-        el.parentNode.insertBefore(b,el.nextSibling);
-        this._videoB=b;
-      }
+
       if(!Component._heroBlobUrl){
         // Streamed, so the loading gate can show real progress instead of a
         // spinner over a 19MB download. Falls back to .blob() when the response
@@ -1219,18 +1208,7 @@ class Component extends DCLogic {
       }
       // the gate is showing this download; poll it while it runs
       if(!this._pctTimer) this._pctTimer=setInterval(()=>{ this._loadSync(); },200);
-      // HI runs behind LO and reports nothing: the gate is already down by then
-      // and the picture on screen is real, so this must never be something the
-      // visitor waits on.
-      const hi=HERO_VIDEO_HI();
-      if(hi && !Component._heroHiUrl){
-        const pre=typeof window!=='undefined'&&window.__heroBlobUrlHi;
-        Component._heroHiUrl = pre ? pre.catch(()=>fetch(hi).then(r=>r.blob()).then(b=>URL.createObjectURL(b)))
-                                   : fetch(hi).then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.blob(); })
-                                              .then(b=>URL.createObjectURL(b));
-        Component._heroHiUrl.catch(()=>{});
-      }
-      if(Component._heroHiUrl) Component._heroHiUrl.then(u=>this._upgradeHero(u)).catch(()=>{});
+
       // GUARD ON THE TEMPLATE ELEMENT. this._video points at B after an upgrade,
       // and on a warm load the upgrade can land BEFORE this resolves: LO and HI
       // are both in the HTTP cache, so HI no longer arrives five seconds later
@@ -1334,47 +1312,7 @@ class Component extends DCLogic {
       return run(t2,4,true).catch(()=>{}); // fill-in failures are survivable: nearest frame is drawn
     }).catch(()=>this._seqFail());
   };
-  // THE SWAP. B is already decoded and parked on the same frame, so this is an
-  // opacity flip and a repoint of this._video -- every other piece of hero code
-  // reads that property rather than holding its own reference, which is what
-  // makes a mid-flight swap safe at all.
-  _upgradeHero=(hiUrl)=>{
-    const A=this._videoA, B=this._videoB;
-    if(!A||!B||this._heroSwapped||!hiUrl) return;
-    this._heroSwapped='loading';
-    B.src=hiUrl; B.load();
-    const align=()=>{
-      // A is paused for the seek. Letting it run while B chases its currentTime
-      // is a race B cannot win, and it lands the swap one or two frames behind.
-      const playing=!A.paused;
-      // CARRY THE RATE. The tour sets playbackRate on whichever element it
-      // started -- 1.29x, so the clip finishes exactly as the scrub does -- and
-      // it runs that setup only once, guarded by _autoV. A fresh element starts
-      // at 1.0, so without this the video ran 29% slower than the scroll expected
-      // of it; the tour follows currentTime, and the whole thing appeared to
-      // stall half way through.
-      try{ B.playbackRate=A.playbackRate; B.defaultPlaybackRate=A.playbackRate; }catch(e){}
-      B.muted=true;
-      try{ A.pause(); }catch(e){}
-      const t=A.currentTime;
-      const reveal=()=>{
-        if(this._heroSwapped===true) return;
-        this._heroSwapped=true;
-        B.style.opacity='1'; A.style.opacity='0';
-        this._video=B;
-        // and the handover gap must not read as a stall: the tour treats a paused
-        // video as re-buffering and abandons the video path after 1500ms of it.
-        this._autoWaitAt=null; this._vtLast=-1; this._vtAt=performance.now();
-        if(playing) B.play().catch(()=>{});
-        // release the 2.4MB copy a moment later, once nothing can be mid-paint
-        setTimeout(()=>{ try{ A.removeAttribute('src'); A.load(); }catch(e){} },600);
-      };
-      B.addEventListener('seeked',reveal,{once:true});
-      setTimeout(reveal,900);          // never strand the upgrade on a missing seeked
-      try{ B.currentTime=t; }catch(e){ reveal(); }
-    };
-    if(B.readyState>=2) align(); else B.addEventListener('loadeddata',align,{once:true});
-  };
+
   // If the frames cannot be had, put the original video path back exactly as it was.
   _seqFail=()=>{
     this._seqReady=false; this._seqStarted=false; this._loadHide();  // video fallback: nothing left to wait for
@@ -1466,7 +1404,11 @@ class Component extends DCLogic {
     // Never let the gate outlive its reason. If the sequence never starts (3D
     // hero mode, a browser that fails SEQ_OK, frames that never resolve) the
     // page must still be usable -- a stuck loading bar is worse than no bar.
-    if(el&&!this._loadTimer) this._loadTimer=setTimeout(()=>this._loadHide(),6000);
+    // A BACKSTOP, NOT A DEADLINE. The bar is now tied to a download that takes
+    // about five seconds, so six was short enough to hide it mid-load and lie
+    // again. 25s only exists so a clip that never arrives cannot leave the page
+    // unusable behind a bar.
+    if(el&&!this._loadTimer) this._loadTimer=setTimeout(()=>this._loadHide(),25000);
   };
   _heroLoadBarRef=(el)=>{ this._loadBar=el; };
   _heroLoadPctRef=(el)=>{ this._loadPct=el; };
@@ -1485,13 +1427,12 @@ class Component extends DCLogic {
       // standing between arriving and the tour starting. It used to hide itself
       // here immediately, which meant the bar vanished and then nothing happened
       // for as long as the video took.
-      // B counts too. After an early upgrade the visible element is B, and
-      // holding the gate up until A -- which by then has had its src removed --
-      // reports ready is a bar that never goes away.
+      // 100% MEANS THE WHOLE CLIP IS IN, and both conditions are needed to say
+      // so: the blob resolving means every byte arrived, readyState>=3 means the
+      // element can actually play from it. Reporting done on either alone is how
+      // this bar came to mean nothing twice already.
       const ready=this._heroBlobReady
-        ||(this._video&&this._video.readyState>=3)
-        ||(this._videoB&&this._videoB.readyState>=3)
-        ||(this._videoA&&this._videoA.readyState>=3);
+        && this._video && this._video.readyState>=3;
       if(!ready){
         pct=Math.round(HERO_PCT()*100);
         if(this._loadBar) this._loadBar.style.width=pct+'%';
@@ -2072,15 +2013,15 @@ class Component extends DCLogic {
       document.body.appendChild(dbg);
       const NL=String.fromCharCode(10);
       setInterval(()=>{
-        const v=this._video,A=this._videoA,B=this._videoB,n=performance.now();
+        const v=this._video,A=this._videoA,n=performance.now();
         dbg.textContent=[
           'auto '+(!!this._auto)+'  autoV '+(!!this._autoV)+'  noPlay '+(!!this._autoNoPlay),
           'autoAt '+(this._autoAt===Infinity?'Inf':Math.round((this._autoAt||0)-n)+'ms')
             +'  loop '+(this._loopAt?Math.round(n-this._loopAt)+'ms ago':'NEVER'),
           'gate '+(this._loadGone?'hidden':'SHOWING')+'  pct '+Math.round((HERO_PCT()||0)*100)+'%'
             +'  blobReady '+(!!this._heroBlobReady),
-          'swap '+String(this._heroSwapped)+'  showing '+(v===B?'B(hi)':v===A?'A(lo)':'?')
-            +'  rs '+(v?v.readyState:'-')+'  rate '+(v?v.playbackRate.toFixed(2):'-'),
+          'rs '+(v?v.readyState:'-')+'  rate '+(v?v.playbackRate.toFixed(2):'-')
+            +'  el '+(v===A?'A':'?'),
           'ct '+(v?v.currentTime.toFixed(2):'-')+'  paused '+(v?v.paused:'-')+'  y '+Math.round(scrollY),
           'free '+(!!this._heroFree)+'  locked '+(!!this._locked)+'  pin '+(!!this._pin)
             +'  logo '+(!!this._logoSeq)
