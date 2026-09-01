@@ -1102,7 +1102,10 @@ const SCRUB_C=.72, SCRUB_V=.79;
 // on screen -- and nobody is held in the hero for eleven seconds any more: about
 // five, plus the logo hand-off.
 const HOME_AUTO_SCROLL_VH_PER_SEC=.68;
+// Kept only so the retired sessionStorage key still has a name in one place;
+// nothing reads or writes it now. Hero-seen state lives for one page load.
 const HOME_HERO_SEEN_KEY='longmotive.hero-intro-seen.v1';
+let HERO_SEEN_THIS_LOAD=false;
 const HOME_HERO_END_PROGRESS=.75;
 // Where a returning visitor is dropped back into the track. Separate from the
 // threshold above, which decides whether the hero counts as watched at all and
@@ -1315,6 +1318,14 @@ class Component extends DCLogic {
       // A is paused for the seek. Letting it run while B chases its currentTime
       // is a race B cannot win, and it lands the swap one or two frames behind.
       const playing=!A.paused;
+      // CARRY THE RATE. The tour sets playbackRate on whichever element it
+      // started -- 1.29x, so the clip finishes exactly as the scrub does -- and
+      // it runs that setup only once, guarded by _autoV. A fresh element starts
+      // at 1.0, so without this the video ran 29% slower than the scroll expected
+      // of it; the tour follows currentTime, and the whole thing appeared to
+      // stall half way through.
+      try{ B.playbackRate=A.playbackRate; B.defaultPlaybackRate=A.playbackRate; }catch(e){}
+      B.muted=true;
       try{ A.pause(); }catch(e){}
       const t=A.currentTime;
       const reveal=()=>{
@@ -1322,6 +1333,9 @@ class Component extends DCLogic {
         this._heroSwapped=true;
         B.style.opacity='1'; A.style.opacity='0';
         this._video=B;
+        // and the handover gap must not read as a stall: the tour treats a paused
+        // video as re-buffering and abandons the video path after 1500ms of it.
+        this._autoWaitAt=null; this._vtLast=-1; this._vtAt=performance.now();
         if(playing) B.play().catch(()=>{});
         // release the 2.4MB copy a moment later, once nothing can be mid-paint
         setTimeout(()=>{ try{ A.removeAttribute('src'); A.load(); }catch(e){} },600);
@@ -1592,12 +1606,17 @@ class Component extends DCLogic {
     window.removeEventListener('touchmove',this._blockEv,{passive:false});
     window.removeEventListener('keydown',this._blockKey,{passive:false});
   }
+  // IN MEMORY, NOT sessionStorage, which survives a reload: once the hero had
+  // been watched, every later refresh in that tab dropped you at 94% of the track
+  // with the tour already dead. Held for one page load instead -- going
+  // Home -> Projects -> Home still skips the intro, which is what this was for,
+  // and a refresh is a new visit again.
   _heroSeen(){
-    try{ return window.sessionStorage.getItem(HOME_HERO_SEEN_KEY)==='1'; }catch(e){ return false; }
+    return !!HERO_SEEN_THIS_LOAD;
   }
   _rememberHeroSeen(p){
     if(p<HOME_HERO_END_PROGRESS) return;
-    try{ window.sessionStorage.setItem(HOME_HERO_SEEN_KEY,'1'); }catch(e){}
+    HERO_SEEN_THIS_LOAD=true;
   }
   _returnHomeToHeroEnd=()=>{
     const track=this._track;
@@ -1989,6 +2008,15 @@ class Component extends DCLogic {
     this._caps.forEach((c,i)=>{ if(c) c.style.opacity=(p>0.02&&i===idx)?'1':'0'; });
   }
   componentDidMount(){
+    // EVERY REFRESH IS A NEW VISIT. Browsers restore the scroll position on
+    // reload by default, which on this page means landing back inside a 500vh
+    // hero with the intro already behind you -- the other half of "it remembers
+    // where I was", and the half no flag of ours controls. A deep link still
+    // wins: #Projects and friends are an explicit destination.
+    try{
+      if('scrollRestoration' in history) history.scrollRestoration='manual';
+      if(!location.hash) window.scrollTo(0,0);
+    }catch(e){}
     // DIAGNOSTIC HOOK, off unless ?debug is in the URL. The hero's state lives in
     // private fields on this instance and the DC runtime does not hang it off a
     // React fiber stateNode, so there is otherwise no way to ask a running page
