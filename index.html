@@ -1078,7 +1078,8 @@ class Component extends DCLogic {
     }
     // Frames are <img>, never ImageBitmap: 68 decoded 2560x1440 bitmaps would pin
     // ~960MB of pixels. As <img> the browser owns the cache and can evict.
-    const one=(i)=>fetch(SEQ_URL(i)).then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.blob(); })
+    const one=(i,lo)=>fetch(SEQ_URL(i),lo?{priority:'low'}:undefined)
+      .then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.blob(); })
       .then(b=>new Promise((res,rej)=>{ const im=new Image();
         im.onload=()=>{
           // DECODE BEFORE MARKING THE FRAME USABLE. onload only means the bytes
@@ -1096,12 +1097,34 @@ class Component extends DCLogic {
           if(im.decode){ im.decode().then(ready,ready); setTimeout(ready,400); } else ready();
         };
         im.onerror=rej; im.src=URL.createObjectURL(b); }));
+    // TIER 2 MUST NOT RUN UNDER THE SCROLL. Tier 1 is 34 frames and about 6.4MB;
+    // the fill-in behind it is 237 frames and 44.4MB, and every one of them ends
+    // in a full-resolution decode() on the main thread. Fired the moment tier 1
+    // lands, that is 15 seconds of download and 237 decodes at 25 Mbps competing
+    // with the exact scroll the frames exist to serve -- which is why the hero
+    // came good "after one full pass" and stayed rough before it. By the second
+    // pass the fill-in had finished.
+    // So the fill-in yields: it waits for 500ms of no scrubbing before taking
+    // another frame. WITH A CEILING -- someone who never stops moving would
+    // otherwise never get the in-between frames at all, and the nearest-loaded
+    // fallback would keep stepping between distant ones. After 25s it stops
+    // yielding and just finishes.
+    const YIELD_MS=500, YIELD_UNTIL=performance.now()+25000;
+    const clear=()=>new Promise(res=>{
+      const t=()=>{
+        const q=performance.now();
+        if(q>YIELD_UNTIL || q-(this._scrubAt||0)>YIELD_MS) return res();
+        setTimeout(t,180);
+      };
+      t();
+    });
     // Bounded concurrency, not a strict chain. Sequentially this pulled 33MB one
     // frame at a time, so late frames were still missing on the first scroll and
     // the nearest-loaded fallback jumped between distant frames.
-    const run=(list,par)=>{
+    const run=(list,par,lo)=>{
       let k=0;
-      const next=()=>k<list.length ? one(list[k++]).catch(()=>{}).then(next) : Promise.resolve();
+      const step=()=>k<list.length ? one(list[k++],lo).catch(()=>{}).then(next) : Promise.resolve();
+      const next=()=>k<list.length ? (lo?clear().then(step):step()) : Promise.resolve();
       return Promise.all(Array.from({length:Math.min(par||6,list.length)},next));
     };
     const t1=[],t2=[];
@@ -1117,7 +1140,7 @@ class Component extends DCLogic {
       // that is not compositing never delivers one, and the hero would then paint
       // a 300x150 buffer stretched across the viewport.
       this._seqResize();
-      return run(t2).catch(()=>{}); // fill-in failures are survivable: nearest frame is drawn
+      return run(t2,4,true).catch(()=>{}); // fill-in failures are survivable: nearest frame is drawn
     }).catch(()=>this._seqFail());
   };
   // If the frames cannot be had, put the original video path back exactly as it was.
@@ -1649,6 +1672,7 @@ class Component extends DCLogic {
     }
     // phase windows across the track: video scrub 0..0.75, photo crossfade .75...,
     // ending photo holds until .965, then the logo hand-off sequence
+    this._scrubAt=performance.now();   // the tier-2 gate waits on this going quiet
     const pv=Math.min(1,p/0.75);
     const mp=this._mapScrub(pv);
     this._target=mp; // seek happens in the rAF loop (_seekStep), scrub-engine style
