@@ -31,6 +31,28 @@
 <link rel="preload" as="style" href="_ds/longmotive-design-system-8d1e5cc8-409c-43e1-9315-92313b8f450f/styles.css">
 <link rel="preload" as="image" href="uploads/campus-v2-merged16-poster-eae9bed7.jpg" fetchpriority="high">
 <script>
+// EVERY LOAD STARTS AT THE TOP, AND THIS HAS TO BE HERE RATHER THAN IN THE APP.
+// Browsers restore the previous scroll position during load, which on a page
+// whose first section is 500vh means being put back inside the hero with the
+// intro behind you -- a still picture, captions that answer to a scroll position
+// you did not choose, and the tour already over. Setting scrollRestoration from
+// componentDidMount was too late by about two thousand lines: measured on the
+// live page, history.scrollRestoration still read 'auto' well after mount.
+// A deep link still wins; #Projects and friends are an explicit destination.
+(function(){
+  try{
+    if('scrollRestoration' in history) history.scrollRestoration='manual';
+    var top0=function(){ if(!location.hash) window.scrollTo(0,0); };
+    top0();
+    // and again at each point the browser might still move us: some versions
+    // restore after DOMContentLoaded, and a bfcache restore fires only pageshow.
+    document.addEventListener('DOMContentLoaded',top0);
+    window.addEventListener('load',top0);
+    window.addEventListener('pageshow',top0);
+  }catch(e){}
+})();
+</script>
+<script>
 // Kick off the hero video download immediately (before the app boots) at high priority,
 // so it doesn't queue behind below-the-fold images. The component picks up this promise.
 (function(){
