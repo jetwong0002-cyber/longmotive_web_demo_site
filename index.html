@@ -1264,7 +1264,13 @@ class Component extends DCLogic {
   _campusRef=(el)=>{ this._campus=el; if(el) this._heroUpdate(); };
   // scroll→scrub remap: the last growth stage (video 0.86..1, the finished campus)
   // gets the final 28% of the track so it holds on screen longer before the logo hand-off
-  _mapScrub(p){ const c=.72,v=.86; return p<c?(p/c)*v:v+((p-c)/(1-c))*(1-v); }
+  // THE TAIL SLOW-DOWN WAS THE SECOND HALF OF THE LONG ENDING. This maps track
+  // position to sequence position, and at v=.86 it put the last 14% of frames
+  // across the last 28% of the window -- half rate, exactly where phase 05 sits,
+  // so 8.5% of the sequence became 12.7% of the track. At .79 the tail runs at
+  // 0.75 rate instead of 0.50. The head pays for it (1.19 -> 1.10), which means
+  // the BUILD gets the 22vh the ending gives up, and that is the right way round.
+  _mapScrub(p){ const c=.72,v=.79; return p<c?(p/c)*v:v+((p-c)/(1-c))*(1-v); }
   _principlesVideoRef=(el)=>{
     if(this._bgVideoObs){ this._bgVideoObs.disconnect(); this._bgVideoObs=null; }
     if(el){
@@ -1722,9 +1728,11 @@ class Component extends DCLogic {
       this._photo.style.transform='none';
       this._photo.style.filter='none';
     }
-    // was .965 -- the still held from .78 to there, the longest single dwell in
-    // the hero and the other half of the ending that overstayed.
-    if(p>=0.92) this._startLogoSeq();
+    // .965 -> .92 -> .84. The still fades in at .78, so this is how long it sits
+    // there: 70vh, then 40, now 30 -- a beat rather than a dwell. Moving it earlier
+    // is free: _startLogoSeq calls _lockScroll and runs on timers, so every bit of
+    // track past this point is never scrolled by anyone.
+    if(p>=0.84) this._startLogoSeq();
     const idx=mp<PHASE_TH[0]?0:(mp<PHASE_TH[1]?1:(mp<PHASE_TH[2]?2:(mp<PHASE_TH[3]?3:4)));
     // staggered handoff: outgoing snaps out fast, incoming fades in after it — the
     // captions share one slot, so they must never both be readable at once
