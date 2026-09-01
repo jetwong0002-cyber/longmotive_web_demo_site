@@ -39,13 +39,16 @@
     if(conn&&(conn.saveData||/(^|-)2g$/.test(conn.effectiveType||''))) return;
     // Desktop drives the hero from the image sequence, so do NOT also pull the
     // 6.5MB clip -- warm the first tier of frames instead. Phones keep the
-    // 2.5MB video: 33MB of stills has no business on a mobile connection.
+    // 2.5MB video: 50MB of stills has no business on a mobile connection.
     // If the frames fail, the component's _seqFail() loads this same video.
     if(matchMedia('(min-width: 1025px)').matches
        && !matchMedia('(prefers-reduced-motion: reduce)').matches
        && !(conn && /(^|-)3g$/.test(conn.effectiveType||''))){
-      for(var i=0;i<271;i+=12){
-        fetch('uploads/hero-seq/f'+('00'+(i+1)).slice(-3)+'.webp',{priority:'high'})
+      // stride MUST equal SEQ_TIER in the page below. At 12 it warmed multiples
+      // of 12 while tier 1 wanted multiples of 8, so two thirds of this was spent
+      // on frames the first pass never draws.
+      for(var i=0;i<271;i+=8){
+        fetch('uploads/hero-seq-1440/f'+('00'+(i+1)).slice(-3)+'.webp',{priority:'high'})
           .catch(function(){});
       }
       return;
@@ -289,6 +292,17 @@
           <sc-if value="{{ isVideoScrub }}" hint-placeholder-val="{{ false }}"><video class="lm-hero-media" ref="{{ heroVideoRef }}" poster="uploads/campus-v2-merged16-poster-eae9bed7.jpg" muted="{{ true }}" playsinline="{{ true }}" preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video></sc-if><sc-if value="{{ isVideoScrub }}" hint-placeholder-val="{{ false }}"><canvas class="lm-hero-media" ref="{{ heroCanvasRef }}" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none"></canvas></sc-if>
           <sc-if value="{{ is3dHero }}" hint-placeholder-val="{{ true }}"><lm-campus-hero class="lm-hero-media" ref="{{ campusRef }}" style="position:absolute;inset:0"></lm-campus-hero></sc-if>
           <div ref="{{ heroTintRef }}" style="position:absolute;inset:0;background:rgba(7,36,72,.45);pointer-events:none"></div>
+          <!-- Preload gate. Desktop pulls 50.7MB of frames; on a slow line the hero
+               used to sit blank while they arrived and the scrub felt broken rather
+               than loading. This states what is happening and gets out of the way.
+               It only ever covers the hero stage, never the page. -->
+          <div ref="{{ heroLoadRef }}" style="position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:linear-gradient(180deg,#0a2038 0%,#061424 100%);transition:opacity .55s ease;pointer-events:none">
+            <div style="font:700 10px/1 var(--font-mono);letter-spacing:.22em;color:#53cefa;text-transform:uppercase">Campus growth</div>
+            <div style="width:min(260px,52vw);height:2px;background:rgba(255,255,255,.14);border-radius:2px;overflow:hidden">
+              <i ref="{{ heroLoadBarRef }}" style="display:block;height:100%;width:0;background:#53cefa;transition:width .25s linear"></i>
+            </div>
+            <div ref="{{ heroLoadPctRef }}" style="font:600 10px/1 var(--font-mono);letter-spacing:.18em;color:rgba(232,242,251,.55)">0%</div>
+          </div>
           <img class="lm-hero-media" ref="{{ heroPhotoRef }}" src="uploads/frames/f10-1920.jpg" srcset="uploads/frames/f10-960.webp 960w, uploads/frames/f10-1280.webp 1280w, uploads/frames/f10-1920.webp 1920w" sizes="100vw" alt="Aerial view of the completed DAY ONE data centre" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:opacity,transform"/>
           
           <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,36,72,.6) 0%,rgba(7,36,72,0) 15%,rgba(7,36,72,0) 85%,rgba(7,36,72,.6) 100%),linear-gradient(180deg,rgba(7,36,72,.6) 0%,rgba(7,36,72,0) 15%,rgba(7,36,72,0) 85%,rgba(7,36,72,.6) 100%);pointer-events:none"></div>
@@ -869,7 +883,7 @@ const IMG='assets/img/';
 // it started. Everything downstream is proportional -- p is normalised over
 // (rect.height - innerHeight), and the 0..0.75 scrub window, the photo crossfade,
 // the ending hold and the auto-tour duration all derive from it.
-const SEQ_N=271, SEQ_DIR='uploads/hero-seq/', SEQ_TIER=8;
+const SEQ_N=271, SEQ_DIR='uploads/hero-seq-1440/', SEQ_TIER=8;
 const SEQ_OK=()=>{
   if(typeof matchMedia==='undefined') return false;
   if(matchMedia('(max-width: 1024px)').matches) return false;
@@ -919,7 +933,14 @@ const SEQ_URL=(i)=>SEQ_DIR+'f'+('00'+(i+1)).slice(-3)+'.webp';
 // SEQ_CUM[k] is where frame k starts, in ten-thousandths of the scrub range.
 // REGENERATE if the frame set changes: 48x27 grey thumbnails, mean absolute
 // difference between consecutive frames, weight 1/m, clamp, cumulative sum.
-const SEQ_CUM=[0,64,128,191,248,305,364,413,458,498,534,569,603,639,674,707,740,770,801,831,859,878,897,915,934,952,971,990,1008,1027,1045,1064,1090,1120,1148,1178,1203,1231,1258,1282,1306,1328,1347,1366,1385,1403,1459,1478,1521,1560,1602,1666,1730,1794,1858,1922,1965,2029,2092,2156,2220,2284,2343,2384,2412,2476,2540,2604,2668,2731,2795,2859,2923,2987,3042,3097,3150,3209,3266,3329,3378,3423,3461,3503,3531,3556,3575,3603,3643,3689,3753,3781,3800,3819,3847,3877,3907,3935,3953,3972,4004,4033,4058,4087,4119,4146,4174,4210,4243,4285,4318,4345,4368,4398,4428,4471,4514,4549,4580,4598,4620,4643,4668,4701,4729,4762,4786,4818,4846,4879,4911,4944,4983,5025,5066,5102,5153,5193,5257,5275,5308,5338,5374,5410,5441,5470,5506,5541,5572,5602,5636,5684,5735,5777,5803,5830,5858,5893,5931,5978,6016,6040,6080,6113,6175,6238,6302,6357,6415,6474,6505,6524,6569,6619,6637,6676,6706,6735,6766,6791,6815,6850,6869,6915,6952,6995,7047,7090,7130,7152,7175,7218,7237,7261,7302,7338,7374,7417,7459,7498,7549,7590,7624,7661,7691,7717,7736,7756,7774,7795,7815,7840,7869,7889,7918,7947,7981,8022,8066,8112,8160,8209,8258,8315,8370,8389,8425,8454,8477,8503,8527,8552,8570,8592,8613,8636,8661,8689,8718,8743,8771,8801,8832,8861,8889,8917,8943,8974,9007,9039,9068,9096,9124,9152,9184,9220,9254,9293,9334,9380,9429,9478,9527,9578,9631,9686,9747,9809,9872,9936,10000];
+// THEN RESCALE THE TAIL. Phase 05 is an aerial drift over the finished campus:
+// real motion (8-12 per frame, above the 7.79 median), so 1/motion happily gave
+// it 16.1% of the sequence. Composed with _mapScrub -- which stretches the last
+// 14% of frames across 28% of the scrub window -- that put 22.4% of the hero
+// track on the closing fly-over, and the ending photo held for 18.5% more. Two
+// full screens of ending. Phase 05 is now scaled to 8.5% and the rest of the
+// sequence absorbs it proportionally; total scroll is unchanged.
+const SEQ_CUM=[0,70,140,208,270,333,397,450,500,543,582,621,658,697,735,771,807,840,874,906,937,958,978,998,1019,1038,1059,1080,1099,1120,1140,1161,1189,1222,1252,1285,1312,1343,1372,1398,1424,1448,1469,1490,1511,1530,1591,1612,1659,1702,1747,1817,1887,1957,2027,2096,2143,2213,2282,2352,2421,2491,2556,2600,2631,2701,2770,2840,2910,2979,3049,3118,3188,3258,3318,3378,3436,3500,3562,3631,3684,3734,3775,3821,3851,3879,3899,3930,3973,4024,4093,4124,4145,4165,4196,4229,4261,4292,4312,4332,4367,4399,4426,4458,4493,4522,4553,4592,4628,4674,4710,4739,4764,4797,4830,4877,4923,4962,4995,5015,5039,5064,5091,5127,5158,5194,5220,5255,5286,5322,5356,5392,5435,5481,5526,5565,5620,5664,5734,5754,5790,5822,5861,5901,5935,5966,6005,6044,6077,6110,6147,6200,6255,6301,6329,6359,6389,6428,6469,6520,6562,6588,6632,6668,6735,6804,6874,6934,6997,7061,7095,7116,7165,7219,7239,7282,7314,7346,7380,7407,7433,7471,7492,7542,7583,7630,7686,7733,7777,7801,7826,7873,7893,7920,7964,8004,8043,8090,8136,8178,8234,8279,8316,8356,8389,8417,8438,8460,8479,8502,8524,8551,8583,8605,8636,8668,8705,8750,8798,8848,8900,8954,9007,9069,9129,9150,9169,9184,9196,9210,9223,9236,9245,9257,9268,9280,9294,9308,9324,9337,9352,9367,9384,9399,9414,9429,9442,9459,9476,9493,9508,9523,9538,9553,9569,9588,9606,9627,9649,9673,9699,9725,9750,9777,9805,9834,9867,9899,9932,9966,10000];
 // frame index for a scrub position, by binary search over SEQ_CUM
 // PHASE CAPTIONS MUST LINE UP WITH THE CLIP BOUNDARIES.
 // Each clip is one build stage shot on one day, so a caption window that
@@ -1062,7 +1083,7 @@ class Component extends DCLogic {
     for(let i=0;i<SEQ_N;i++) (i%SEQ_TIER===0?t1:t2).push(i);
     run(t1).then(()=>{
       if(this._seqDone<t1.length) throw new Error('tier1 incomplete');
-      this._seqReady=true;
+      this._seqReady=true; this._loadHide();
       if(this._cvs) this._cvs.style.display='block';
       if(this._video) this._video.style.display='none';
       // size it HERE, explicitly. Until this point the canvas was display:none,
@@ -1076,7 +1097,7 @@ class Component extends DCLogic {
   };
   // If the frames cannot be had, put the original video path back exactly as it was.
   _seqFail=()=>{
-    this._seqReady=false; this._seqStarted=false;
+    this._seqReady=false; this._seqStarted=false; this._loadHide();  // video fallback: nothing left to wait for
     if(this._cvs) this._cvs.style.display='none';
     const el=this._video, src=this._seqVideoSrc;
     if(!el||!src) return;
@@ -1149,6 +1170,43 @@ class Component extends DCLogic {
     if(Math.abs(this._cur-this._target)<0.0004) this._cur=this._target;
     else this._cur+=(this._target-this._cur)*0.18;
     this._seqDraw();
+  };
+  _heroLoadRef=(el)=>{
+    this._load=el;
+    // A re-render hands us a FRESH element in its visible initial state. Without
+    // this, _loadHide's _loadGone guard refuses to touch it and the gate stays on
+    // screen for good -- the bar that never goes away.
+    if(el&&this._loadGone){ this._loadGone=false; this._loadHide(); return; }
+    // Restoring from the back/forward cache re-shows whatever was on screen when
+    // the page froze. If that was mid-load, the gate comes back with it and no
+    // fetch is ever going to resolve again, so hide it on restore.
+    if(el&&!this._loadPageShow){ this._loadPageShow=()=>this._loadHide();
+      addEventListener('pageshow',this._loadPageShow); }
+    this._loadSync();
+    // Never let the gate outlive its reason. If the sequence never starts (3D
+    // hero mode, a browser that fails SEQ_OK, frames that never resolve) the
+    // page must still be usable -- a stuck loading bar is worse than no bar.
+    if(el&&!this._loadTimer) this._loadTimer=setTimeout(()=>this._loadHide(),6000);
+  };
+  _heroLoadBarRef=(el)=>{ this._loadBar=el; };
+  _heroLoadPctRef=(el)=>{ this._loadPct=el; };
+  // The gate reports TIER 1 only. Tier 2 keeps arriving behind the hero and the
+  // nearest-loaded fallback covers it, so holding the page for all 271 frames
+  // would be a much longer wait for no benefit.
+  _loadSync=()=>{
+    if(!this._load) return;
+    if(!SEQ_OK()){ this._loadHide(); return; }   // phones never see it: they get the 2.5MB video
+    const total=Math.ceil(SEQ_N/SEQ_TIER);
+    const pct=Math.max(0,Math.min(100,Math.round((this._seqDone||0)/total*100)));
+    if(this._loadBar) this._loadBar.style.width=pct+'%';
+    if(this._loadPct) this._loadPct.textContent=pct+'%';
+    if(pct>=100) this._loadHide();
+  };
+  _loadHide=()=>{
+    if(!this._load||this._loadGone) return;
+    this._loadGone=true;
+    this._load.style.opacity='0';
+    setTimeout(()=>{ if(this._load) this._load.style.display='none'; },600);
   };
   _heroCopyRef=(el)=>{ this._copy=el; };
   _campusRef=(el)=>{ this._campus=el; if(el) this._heroUpdate(); };
@@ -1605,7 +1663,9 @@ class Component extends DCLogic {
       this._photo.style.transform='none';
       this._photo.style.filter='none';
     }
-    if(p>=0.965) this._startLogoSeq();
+    // was .965 -- the still held from .78 to there, the longest single dwell in
+    // the hero and the other half of the ending that overstayed.
+    if(p>=0.92) this._startLogoSeq();
     const idx=mp<PHASE_TH[0]?0:(mp<PHASE_TH[1]?1:(mp<PHASE_TH[2]?2:(mp<PHASE_TH[3]?3:4)));
     // staggered handoff: outgoing snaps out fast, incoming fades in after it — the
     // captions share one slot, so they must never both be readable at once
@@ -1974,7 +2034,8 @@ class Component extends DCLogic {
       needTopPad: scr!=='Home'&&scr!=='About',
       showLogoOverlay: _ls===1||_ls===15||_ls===2,
       logoFlyStyle, logoRestA, logoMarkStyle, logoSheetStyle, flyRef: this._flyRef,
-      heroTrackRef: this._heroTrackRef, heroVideoRef: this._heroVideoRef, heroCanvasRef: this._heroCanvasRef,
+      heroTrackRef: this._heroTrackRef, heroVideoRef: this._heroVideoRef, heroCanvasRef: this._heroCanvasRef,
+      heroLoadRef: this._heroLoadRef, heroLoadBarRef: this._heroLoadBarRef, heroLoadPctRef: this._heroLoadPctRef,
       heroCopyRef: this._heroCopyRef, heroBarRef: this._heroBarRef,
       heroScrimRef: this._heroScrimRef, heroScrimBottomRef: this._heroScrimBottomRef, heroPatchRef: this._heroPatchRef,
       heroPhotoRef: this._heroPhotoRef, heroTintRef: this._heroTintRef,
