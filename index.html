@@ -42,7 +42,19 @@
 (function(){
   try{
     if('scrollRestoration' in history) history.scrollRestoration='manual';
-    var top0=function(){ if(!location.hash) window.scrollTo(0,0); };
+    // AND IT MUST STAND DOWN ONCE THE APP IS DRIVING. `load` waits for every
+    // subresource, so on a slow load it fires after the hero tour has started --
+    // and scrolling the window to 0 under a tour in flight looks to the tour
+    // exactly like somebody grabbing the scrollbar. It hands over, permanently,
+    // and the intro dies with the video parked at frame 0. Measured: the tour
+    // armed at 4248ms while load fired at 2804ms, a margin of 1.4 seconds.
+    // The component raises __lmScrollOwned at mount. By then scrollRestoration
+    // is already 'manual', so there is nothing here left to defend against.
+    window.__lmScrollOwned=false;
+    var top0=function(){
+      if(window.__lmScrollOwned) return;
+      if(!location.hash) window.scrollTo(0,0);
+    };
     top0();
     // and again at each point the browser might still move us: some versions
     // restore after DOMContentLoaded, and a bfcache restore fires only pageshow.
@@ -1802,8 +1814,19 @@ class Component extends DCLogic {
       if(this._auto&&!this._pin&&!this._logoSeq&&this._track&&this._track.isConnected&&performance.now()>(this._autoAt||0)){
         const r=this._track.getBoundingClientRect();
         if(r.top<=0&&r.bottom>window.innerHeight+1){
-          // a big jump means the user grabbed the scrollbar — hand over control
-          if(this._autoY!=null&&Math.abs(this._autoY-y)>40){ this._haltAuto(); }
+          // A BIG JUMP USED TO MEAN THE USER GRABBED THE SCROLLBAR. It does not:
+          // it means the page moved without the tour asking, and the visitor is
+          // only one of the things that can do that. Handing over is permanent,
+          // so paying for a stray programmatic scroll with the whole intro is
+          // the wrong trade -- and that is exactly how a head-script scroll
+          // reset killed it. A scrollbar drag has a pointer held down; a wheel
+          // or a key raises _gestAt. If neither happened, nobody asked for this,
+          // so re-sync to where the page actually is and keep going.
+          const _n=performance.now();
+          const _human=(_n-(this._ptrAt||0)<600)||(_n-(this._gestAt||0)<600);
+          if(this._autoY!=null&&Math.abs(this._autoY-y)>40){
+            if(_human) this._haltAuto(); else this._autoY=y;
+          }
           else{
             const range=r.height-window.innerHeight, top=y+r.top;
             const v=this._video, dur=(v&&v.readyState>=1&&Number.isFinite(v.duration)&&v.duration>0)?v.duration-0.05:0;
@@ -2076,6 +2099,17 @@ class Component extends DCLogic {
     window.addEventListener('wheel',this._stepSectionWheel,{passive:false});
     // only real scroll input hands control to the user — clicks/taps don't end the tour
     this._heroFree=true;   // nothing may hold the page hostage to the tour
+    // FROM HERE THE APP OWNS THE SCROLL POSITION. The deployed page carries a
+    // head script that forces the window back to the top on load and pageshow,
+    // to defeat the browser restoring a position inside a 500vh hero. `load`
+    // waits for every subresource, so on a slow load it fires AFTER the tour has
+    // started -- it then yanks the page to 0 under a tour that is mid-flight,
+    // the drift check below reads that as somebody grabbing the scrollbar, and
+    // the intro dies with the video parked at frame 0. Measured: the tour arms
+    // at 4248ms and load fired at 2804ms, a margin of 1.4s and nothing else.
+    // This latch tells that script to stand down once we are here; scroll
+    // restoration is already off, so it has nothing left to defend against.
+    try{ window.__lmScrollOwned=true; }catch(e){}
     this._auto=true;
     // WAIT FOR THE FRAMES, NOT FOR TWO SECONDS. The gate lifts at tier 1 -- 34 of
     // 271 frames -- which is enough for a person scrolling by hand, because they
@@ -2112,9 +2146,16 @@ class Component extends DCLogic {
       if(e.type==='keydown'&&['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].indexOf(e.key)===-1) return;
       if(e.type==='wheel'&&Math.abs(e.deltaY||0)<12&&Math.abs(e.deltaX||0)<12) return;
       if(this._autoY==null&&e.type!=='keydown') return;   // tour has not moved anything yet
+      this._gestAt=performance.now();
       this._haltAuto();
     };
     ['wheel','touchmove','keydown'].forEach(t=>window.addEventListener(t,this._stopAuto,{passive:true}));
+    // A SCROLLBAR DRAG RAISES NO WHEEL EVENT, which is the whole reason the
+    // drift check above exists. What it does raise is a pointer going down, so
+    // that is what tells the drift check a person is behind the movement.
+    this._ptrDown=()=>{ this._ptrAt=performance.now(); };
+    ['pointerdown','pointerup','mousedown','mouseup'].forEach(t=>
+      window.addEventListener(t,this._ptrDown,{passive:true}));
     this._startHeroLoop();
     this._heroUpdate();
     this._revealScan();
