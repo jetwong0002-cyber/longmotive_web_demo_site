@@ -37,15 +37,14 @@
   try{
     var conn=navigator.connection;
     if(conn&&(conn.saveData||/(^|-)2g$/.test(conn.effectiveType||''))) return;
-    // The hero is the VIDEO again (HERO_SOURCE in the page below). The frame
-    // sequence branch that used to sit here is gone with it.
-    // MUST NAME THE SAME FILE AS HERO_VIDEO() BELOW or the browser fetches two
-    // clips. Desktop takes the 1080p cut because it is the one encoded for
-    // scrubbing -- 23 keyframes across the clip against 6 in the 1600x900 cut,
-    // and seeking decodes forward from a keyframe, so a sparse GOP is paid for
-    // on every drag.
-    var src=matchMedia('(max-width: 760px)').matches
-      ? 'uploads/merged16-scrub-mobile.mp4'
+    // TWO TIERS, and the order is the point. This host serves no ranges, so a
+    // clip must arrive WHOLE before a single frame can show. LO is 2.4MB and
+    // gets the hero moving in about a second and a half; HI is 8.6MB and takes
+    // over when it lands. Names must match HERO_VIDEO_LO/HI in the page below
+    // or the browser fetches clips nobody uses.
+    var src='uploads/merged16-scrub-mobile.mp4';
+    var hiSrc=matchMedia('(max-width: 760px)').matches
+      ? null                       // a phone keeps LO as its final picture
       : 'uploads/merged16-scrub-1600-g8.mp4';
     // Streamed against Content-Length so the hero's loading bar can show this
     // download -- it is the only thing between arriving and the tour starting,
@@ -72,6 +71,12 @@
     };
     window.__heroBlobUrl=load(1);
     window.__heroBlobUrl.catch(function(){}); // avoid unhandled-rejection noise
+    // HI starts only once LO is in hand: two large fetches racing each other
+    // just makes the one that matters arrive later.
+    if(hiSrc){ window.__heroBlobUrlHi=window.__heroBlobUrl.catch(function(){}).then(function(){
+      return fetch(hiSrc).then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.blob(); })
+        .then(function(b){ return URL.createObjectURL(b); });
+    }); window.__heroBlobUrlHi.catch(function(){}); }
   }catch(e){}
 })();
 </script>
@@ -1064,9 +1069,21 @@ const SEQ_AT=(p)=>{
 const HERO_PCT=()=>Math.max(
   (typeof window!=='undefined'&&window.__heroPct)||0,
   Component._heroPct||0);
-const HERO_VIDEO=()=> (typeof matchMedia!=='undefined'&&matchMedia('(max-width: 760px)').matches)
-  ? 'uploads/merged16-scrub-mobile.mp4'
+// TWO TIERS, because the host will not serve ranges and the clip therefore has
+// to arrive whole before a single frame can show. 8.6MB is about five seconds of
+// nothing; 2.4MB is about one and a half.
+//   LO  merged16-scrub-mobile.mp4   960x540   2.4MB
+//   HI  merged16-scrub-1600-g8.mp4  1600x900  8.6MB
+// Both are 136 frames at 24fps with the same time_base and duration
+// (5.666667s), and sampled at four points their frames are identical to within
+// compression noise -- so currentTime carries across the swap frame-accurately.
+// That equality is the whole reason this is safe; re-encode one and check it
+// again before trusting it.
+const HERO_VIDEO_LO=()=>'uploads/merged16-scrub-mobile.mp4';
+const HERO_VIDEO_HI=()=> (typeof matchMedia!=='undefined'&&matchMedia('(max-width: 760px)').matches)
+  ? null                       // a phone keeps the 2.4MB cut as its final picture
   : 'uploads/merged16-scrub-1600-g8.mp4';
+const HERO_VIDEO=()=>HERO_VIDEO_LO();
 // THE SCRUB CURVE, in one place. _mapScrub maps track position to sequence
 // position and the auto-tour inverts it; they were two hand-written copies of the
 // same two numbers and they drifted the moment one was tuned.
@@ -1108,8 +1125,12 @@ class Component extends DCLogic {
   _target=null; _cur=null;
   _heroTrackRef=(el)=>{ this._track=el; if(el) this._updateHero(); };
   _heroVideoRef=(el)=>{
-    if(this._video===el) return;
-    this._video=el;
+    // Guard on the TEMPLATE element, not on this._video: after an upgrade
+    // this._video points at B, and guarding on it would let a re-fire of this
+    // ref quietly hand the hero back to the emptied A.
+    if(this._videoA===el) return;
+    this._videoA=el;
+    if(!this._heroSwapped) this._video=el;
     if(el){
       // The template's playsinline="{{ true }}" never reaches the element — the
       // runtime drops it. iOS refuses to autoplay a video that isn't marked
@@ -1126,6 +1147,18 @@ class Component extends DCLogic {
       // The sequence owns the hero on desktop. Do not also pull 6.5MB of video;
       // _seqFail() below starts this same load if the frames never arrive.
       if(SEQ_OK()){ this._seqVideoSrc=src; return; }
+      // THE UPGRADE ELEMENT. Swapping src on one <video> resets it to readyState
+      // 0 and flashes the poster, which mid-scrub is worse than never upgrading.
+      // A second element loads and seeks out of sight, and the swap is one
+      // opacity flip once it is sitting on the same frame.
+      if(!this._videoB && HERO_VIDEO_HI() && el.parentNode){
+        const b=document.createElement('video');
+        b.className=el.className; b.style.cssText=el.style.cssText;
+        b.muted=true; b.playsInline=true; b.setAttribute('playsinline','');
+        b.preload='auto'; b.style.opacity='0';
+        el.parentNode.insertBefore(b,el.nextSibling);
+        this._videoB=b;
+      }
       if(!Component._heroBlobUrl){
         // Streamed, so the loading gate can show real progress instead of a
         // spinner over a 19MB download. Falls back to .blob() when the response
@@ -1152,6 +1185,18 @@ class Component extends DCLogic {
       }
       // the gate is showing this download; poll it while it runs
       if(!this._pctTimer) this._pctTimer=setInterval(()=>{ this._loadSync(); },200);
+      // HI runs behind LO and reports nothing: the gate is already down by then
+      // and the picture on screen is real, so this must never be something the
+      // visitor waits on.
+      const hi=HERO_VIDEO_HI();
+      if(hi && !Component._heroHiUrl){
+        const pre=typeof window!=='undefined'&&window.__heroBlobUrlHi;
+        Component._heroHiUrl = pre ? pre.catch(()=>fetch(hi).then(r=>r.blob()).then(b=>URL.createObjectURL(b)))
+                                   : fetch(hi).then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.blob(); })
+                                              .then(b=>URL.createObjectURL(b));
+        Component._heroHiUrl.catch(()=>{});
+      }
+      if(Component._heroHiUrl) Component._heroHiUrl.then(u=>this._upgradeHero(u)).catch(()=>{});
       Component._heroBlobUrl.then(u=>{ if(this._video===el){
           el.src=u; el.load(); this._heroBlobReady=true; Component._heroPct=1;
           // READ THE BAR, THEN PLAY -- no fixed delay between the two. canplay is
@@ -1247,6 +1292,36 @@ class Component extends DCLogic {
       this._seqResize();
       return run(t2,4,true).catch(()=>{}); // fill-in failures are survivable: nearest frame is drawn
     }).catch(()=>this._seqFail());
+  };
+  // THE SWAP. B is already decoded and parked on the same frame, so this is an
+  // opacity flip and a repoint of this._video -- every other piece of hero code
+  // reads that property rather than holding its own reference, which is what
+  // makes a mid-flight swap safe at all.
+  _upgradeHero=(hiUrl)=>{
+    const A=this._videoA, B=this._videoB;
+    if(!A||!B||this._heroSwapped||!hiUrl) return;
+    this._heroSwapped='loading';
+    B.src=hiUrl; B.load();
+    const align=()=>{
+      // A is paused for the seek. Letting it run while B chases its currentTime
+      // is a race B cannot win, and it lands the swap one or two frames behind.
+      const playing=!A.paused;
+      try{ A.pause(); }catch(e){}
+      const t=A.currentTime;
+      const reveal=()=>{
+        if(this._heroSwapped===true) return;
+        this._heroSwapped=true;
+        B.style.opacity='1'; A.style.opacity='0';
+        this._video=B;
+        if(playing) B.play().catch(()=>{});
+        // release the 2.4MB copy a moment later, once nothing can be mid-paint
+        setTimeout(()=>{ try{ A.removeAttribute('src'); A.load(); }catch(e){} },600);
+      };
+      B.addEventListener('seeked',reveal,{once:true});
+      setTimeout(reveal,900);          // never strand the upgrade on a missing seeked
+      try{ B.currentTime=t; }catch(e){ reveal(); }
+    };
+    if(B.readyState>=2) align(); else B.addEventListener('loadeddata',align,{once:true});
   };
   // If the frames cannot be had, put the original video path back exactly as it was.
   _seqFail=()=>{
@@ -1676,6 +1751,7 @@ class Component extends DCLogic {
     if(this._rafId) return;
     const loop=()=>{
       this._rafId=requestAnimationFrame(loop);
+      this._loopAt=performance.now();   // the watchdog below reads this
       let y=window.scrollY;
       if(this._pin&&Math.abs(y-this._lockY)>0.5){ window.scrollTo(0,this._lockY); y=this._lockY; }
       // fling cap: while the hero scrub is pinned, limit downward scroll speed so a
@@ -1790,8 +1866,31 @@ class Component extends DCLogic {
     };
     this._lastTick=performance.now();
     this._rafId=requestAnimationFrame(loop);
+    // A LOOP THAT NEVER GOT ITS FIRST FRAME USED TO STAY DEAD FOREVER.
+    // _rafId is assigned HERE, outside loop(), so it is truthy the moment the
+    // frame is requested rather than when one is delivered -- and the guard at
+    // the top is `if(this._rafId) return`. A page that starts hidden, in a
+    // background tab or prerendered, never gets that first callback, so nothing
+    // stamps _loopAt, the tour never advances, and every later call to restart
+    // returns immediately because _rafId looks alive. Verified that the symptom
+    // is exactly this: with the window occluded, rAF never fires at all while
+    // _rafId reads as set.
+    if(!this._loopWatch) this._loopWatch=setInterval(()=>{
+      if(typeof document!=='undefined'&&document.visibilityState!=='visible') return;
+      if(this._loopAt&&performance.now()-this._loopAt<2000) return;   // ticking, leave it
+      if(this._rafId){ try{ cancelAnimationFrame(this._rafId); }catch(e){} }
+      this._rafId=requestAnimationFrame(loop);
+    },1500);
+    if(!this._loopVis){ this._loopVis=()=>{
+        if(document.visibilityState==='visible'&&(!this._loopAt||performance.now()-this._loopAt>500)){
+          if(this._rafId){ try{ cancelAnimationFrame(this._rafId); }catch(e){} }
+          this._rafId=requestAnimationFrame(loop);
+        } };
+      document.addEventListener('visibilitychange',this._loopVis);
+    }
   }
-  _stopHeroLoop(){ if(this._rafId){ cancelAnimationFrame(this._rafId); this._rafId=null; } }
+  _stopHeroLoop(){ if(this._rafId){ cancelAnimationFrame(this._rafId); this._rafId=null; }
+    if(this._loopWatch){ clearInterval(this._loopWatch); this._loopWatch=null; } }
   _heroUpdate(){
     const track=this._track;
     if(!track||!track.isConnected) return;
@@ -1866,6 +1965,12 @@ class Component extends DCLogic {
     this._caps.forEach((c,i)=>{ if(c) c.style.opacity=(p>0.02&&i===idx)?'1':'0'; });
   }
   componentDidMount(){
+    // DIAGNOSTIC HOOK, off unless ?debug is in the URL. The hero's state lives in
+    // private fields on this instance and the DC runtime does not hang it off a
+    // React fiber stateNode, so there is otherwise no way to ask a running page
+    // why the tour has not started. Costs one property assignment.
+    try{ if(location.search.indexOf('debug')>-1){ window.__hero=this;
+      window.__heroes=(window.__heroes||[]); window.__heroes.push(this); } }catch(e){}
     // deep link from viewer pages: index.html#Projects / #About / #Contact
     const h=decodeURIComponent((location.hash||'').slice(1));
     const deepLinked=['About','Projects','Contact'].indexOf(h)!==-1;
