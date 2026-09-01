@@ -1209,7 +1209,14 @@ class Component extends DCLogic {
         Component._heroHiUrl.catch(()=>{});
       }
       if(Component._heroHiUrl) Component._heroHiUrl.then(u=>this._upgradeHero(u)).catch(()=>{});
-      Component._heroBlobUrl.then(u=>{ if(this._video===el){
+      // GUARD ON THE TEMPLATE ELEMENT. this._video points at B after an upgrade,
+      // and on a warm load the upgrade can land BEFORE this resolves: LO and HI
+      // are both in the HTTP cache, so HI no longer arrives five seconds later
+      // the way it does on a first visit. Guarded on this._video, the whole
+      // handler was then skipped -- el never got its src, _heroBlobReady stayed
+      // false, so the loading gate never hid and the tour never armed. First
+      // visit fine, every refresh after it stuck behind a bar at "Preparing".
+      Component._heroBlobUrl.then(u=>{ if(this._videoA===el){
           el.src=u; el.load(); this._heroBlobReady=true; Component._heroPct=1;
           // READ THE BAR, THEN PLAY -- no fixed delay between the two. canplay is
           // the first moment the tour can actually run, so it is also the moment
@@ -1219,7 +1226,7 @@ class Component extends DCLogic {
           // and never strand it if canplay does not come
           setTimeout(go,4000);
         } })
-        .catch(()=>{ if(this._video===el&&!el.getAttribute('src')){ el.src=src; el.load(); } });
+        .catch(()=>{ if(this._videoA===el&&!el.getAttribute('src')){ el.src=src; el.load(); } });
     }
   };
   _heroCanvasRef=(el)=>{
@@ -1356,8 +1363,8 @@ class Component extends DCLogic {
     if(!Component._heroBlobUrl){
       Component._heroBlobUrl=fetch(src).then(r=>r.blob()).then(b=>URL.createObjectURL(b));
     }
-    Component._heroBlobUrl.then(u=>{ if(this._video===el){ el.src=u; el.load(); this._heroBlobReady=true; } })
-      .catch(()=>{ if(this._video===el&&!el.getAttribute('src')){ el.src=src; el.load(); } });
+    Component._heroBlobUrl.then(u=>{ if(this._videoA===el||this._video===el){ el.src=u; el.load(); this._heroBlobReady=true; } })
+      .catch(()=>{ if((this._videoA===el||this._video===el)&&!el.getAttribute('src')){ el.src=src; el.load(); } });
   };
   _seqResize=()=>{
     const el=this._cvs; if(!el) return;
@@ -1456,7 +1463,14 @@ class Component extends DCLogic {
       // standing between arriving and the tour starting. It used to hide itself
       // here immediately, which meant the bar vanished and then nothing happened
       // for as long as the video took.
-      if(!this._heroBlobReady && !(this._video&&this._video.readyState>=3)){
+      // B counts too. After an early upgrade the visible element is B, and
+      // holding the gate up until A -- which by then has had its src removed --
+      // reports ready is a bar that never goes away.
+      const ready=this._heroBlobReady
+        ||(this._video&&this._video.readyState>=3)
+        ||(this._videoB&&this._videoB.readyState>=3)
+        ||(this._videoA&&this._videoA.readyState>=3);
+      if(!ready){
         pct=Math.round(HERO_PCT()*100);
         if(this._loadBar) this._loadBar.style.width=pct+'%';
         if(this._loadPct) this._loadPct.textContent='Preparing '+pct+'%';
@@ -2022,7 +2036,35 @@ class Component extends DCLogic {
     // React fiber stateNode, so there is otherwise no way to ask a running page
     // why the tour has not started. Costs one property assignment.
     try{ if(location.search.indexOf('debug')>-1){ window.__hero=this;
-      window.__heroes=(window.__heroes||[]); window.__heroes.push(this); } }catch(e){}
+      window.__heroes=(window.__heroes||[]); window.__heroes.push(this);
+      // ON-PAGE READOUT. Every failure this hero has had looks identical from
+      // outside: a tour that never armed, one waiting on a download, and one
+      // that has already finished all present as a still picture. The state is
+      // in private fields, so with ?debug it goes on the screen instead -- then
+      // 'it is stuck' is answered by looking at it rather than by guessing.
+      const dbg=document.createElement('pre');
+      dbg.style.cssText='position:fixed;left:8px;bottom:8px;z-index:99999;margin:0;'
+        +'padding:8px 10px;background:rgba(2,10,20,.88);color:#7fe4ff;'
+        +'font:11px/1.5 ui-monospace,monospace;border:1px solid #2a5c80;'
+        +'border-radius:5px;pointer-events:none;white-space:pre;max-width:46ch';
+      document.body.appendChild(dbg);
+      const NL=String.fromCharCode(10);
+      setInterval(()=>{
+        const v=this._video,A=this._videoA,B=this._videoB,n=performance.now();
+        dbg.textContent=[
+          'auto '+(!!this._auto)+'  autoV '+(!!this._autoV)+'  noPlay '+(!!this._autoNoPlay),
+          'autoAt '+(this._autoAt===Infinity?'Inf':Math.round((this._autoAt||0)-n)+'ms')
+            +'  loop '+(this._loopAt?Math.round(n-this._loopAt)+'ms ago':'NEVER'),
+          'gate '+(this._loadGone?'hidden':'SHOWING')+'  pct '+Math.round((HERO_PCT()||0)*100)+'%'
+            +'  blobReady '+(!!this._heroBlobReady),
+          'swap '+String(this._heroSwapped)+'  showing '+(v===B?'B(hi)':v===A?'A(lo)':'?')
+            +'  rs '+(v?v.readyState:'-')+'  rate '+(v?v.playbackRate.toFixed(2):'-'),
+          'ct '+(v?v.currentTime.toFixed(2):'-')+'  paused '+(v?v.paused:'-')+'  y '+Math.round(scrollY),
+          'free '+(!!this._heroFree)+'  locked '+(!!this._locked)+'  pin '+(!!this._pin)
+            +'  logo '+(!!this._logoSeq)
+        ].join(NL);
+      },250);
+    } }catch(e){}
     // deep link from viewer pages: index.html#Projects / #About / #Contact
     const h=decodeURIComponent((location.hash||'').slice(1));
     const deepLinked=['About','Projects','Contact'].indexOf(h)!==-1;
