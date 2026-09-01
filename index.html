@@ -909,13 +909,38 @@ const IMG='assets/img/';
 // (rect.height - innerHeight), and the 0..0.75 scrub window, the photo crossfade,
 // the ending hold and the auto-tour duration all derive from it.
 const SEQ_N=271, SEQ_DIR='uploads/hero-seq-1440/', SEQ_TIER=8;
+// DECIDED ONCE PER LOAD, AND REMEMBERED FOR THE SESSION.
+//
+// This picks between two hero sources that do not look alike: 271 stills at
+// 1440x810 and 192KB each, or merged16-scrub-desktop.mp4, which is nominally
+// 1600x900 but spends 9.6 Mbps at 24fps -- about 50KB a frame, a quarter of the
+// stills. That gap is an encoding ceiling, not a setting.
+//
+// It used to be recomputed at all four call sites, and navigator.connection
+// .effectiveType is a LIVE MEASUREMENT that moves with the network. So the same
+// machine on the same URL got the sharp version on one load and the soft one on
+// the next, and -- worse -- the four sites could disagree inside a single load:
+// _heroVideoRef seeing true skips loading the video, _heroCanvasRef seeing false
+// declines to start the sequence, and the hero is then simply blank.
+//
+// Now: one verdict per load. And once the frames have actually worked here, a
+// later momentary 3g reading does not downgrade the session -- saveData and
+// reduced-motion are user PREFERENCES and are still honoured every time; only
+// the network guess is made sticky.
+const SEQ_PROVEN_KEY='longmotive.hero-frames.v1';
+let SEQ_OK_MEMO=null;
 const SEQ_OK=()=>{
-  if(typeof matchMedia==='undefined') return false;
-  if(matchMedia('(max-width: 1024px)').matches) return false;
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+  if(SEQ_OK_MEMO!==null) return SEQ_OK_MEMO;
+  const settle=(r)=>(SEQ_OK_MEMO=r);
+  if(typeof matchMedia==='undefined') return settle(false);
+  if(matchMedia('(max-width: 1024px)').matches) return settle(false);
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return settle(false);
   const c=typeof navigator!=='undefined'&&navigator.connection;
-  if(c&&(c.saveData||/(^|-)(2g|3g)$/.test(c.effectiveType||''))) return false;
-  return true;
+  if(c&&c.saveData) return settle(false);
+  let proven=false;
+  try{ proven=sessionStorage.getItem(SEQ_PROVEN_KEY)==='1'; }catch(e){}
+  if(!proven&&c&&/(^|-)(2g|3g)$/.test(c.effectiveType||'')) return settle(false);
+  return settle(true);
 };
 const SEQ_URL=(i)=>SEQ_DIR+'f'+('00'+(i+1)).slice(-3)+'.webp';
 // BUILT FROM THE SIX ORIGINAL CLIPS, USING THE MASTER AS THE EDIT MAP (2026-08-20).
@@ -1132,6 +1157,9 @@ class Component extends DCLogic {
     run(t1).then(()=>{
       if(this._seqDone<t1.length) throw new Error('tier1 incomplete');
       this._seqReady=true; this._loadHide();
+      // the frames work on this connection; a later dip in effectiveType must not
+      // drop the rest of the session onto the soft video
+      try{ sessionStorage.setItem(SEQ_PROVEN_KEY,'1'); }catch(e){}
       if(this._cvs) this._cvs.style.display='block';
       if(this._video) this._video.style.display='none';
       // size it HERE, explicitly. Until this point the canvas was display:none,
