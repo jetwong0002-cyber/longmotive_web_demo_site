@@ -1327,7 +1327,17 @@ class Component extends DCLogic {
 
   // If the frames cannot be had, put the original video path back exactly as it was.
   _seqFail=()=>{
-    this._seqReady=false; this._seqStarted=false; this._loadHide();  // video fallback: nothing left to wait for
+    this._seqReady=false; this._seqStarted=false;
+    // THIS CALLED _loadHide DIRECTLY, on the reasoning that falling back to the
+    // video leaves nothing to wait for. On the video path the video IS the thing
+    // to wait for, so that reasoning is inverted -- and _loadHide is the raw
+    // hide, which walks straight past the rule that the bar reaching 100% means
+    // the whole clip has arrived. Measured on a throttled load: the bar vanished
+    // at 1280ms while the clip was not down until 4080ms and not playable until
+    // 4141ms. Somebody was told the loading had finished and then watched a
+    // still frame for nearly three seconds.
+    // _loadSync applies the rule and hides the bar the moment it is honest to.
+    this._loadSync();
     if(this._cvs) this._cvs.style.display='none';
     const el=this._video, src=this._seqVideoSrc;
     if(!el||!src) return;
@@ -1410,7 +1420,15 @@ class Component extends DCLogic {
     // Restoring from the back/forward cache re-shows whatever was on screen when
     // the page froze. If that was mid-load, the gate comes back with it and no
     // fetch is ever going to resolve again, so hide it on restore.
-    if(el&&!this._loadPageShow){ this._loadPageShow=()=>this._loadHide();
+    // ...and ONLY a restore. pageshow also fires on every ordinary load, right
+    // after `load`, so this was hiding the gate the moment the page's images
+    // finished -- which says nothing at all about the clip. Measured on a
+    // throttled load: the bar vanished 4ms after load at 1160ms while the video
+    // was not playable until 3975ms. The bar reached the end and then the
+    // visitor watched a still frame for another 2.8 seconds, which is the
+    // opposite of what a progress bar is for. e.persisted is the case this was
+    // written for, and it is the only one it should act on.
+    if(el&&!this._loadPageShow){ this._loadPageShow=(e)=>{ if(e&&e.persisted) this._loadHide(); };
       addEventListener('pageshow',this._loadPageShow); }
     this._loadSync();
     // Never let the gate outlive its reason. If the sequence never starts (3D
@@ -1769,14 +1787,31 @@ class Component extends DCLogic {
   // reading, overwriting and restoring scrollBehavior INSIDE the loop -- two
   // style writes and a read per frame -- and the snapping was never addressed at
   // all. Set both once, put both back on the way out.
+  // ASSERT, DO NOT REMEMBER. This returned early whenever _tourStyled already
+  // matched, which trusts our own bookkeeping over the actual DOM -- and three
+  // places in this file save html's inline scrollBehavior at one moment and write
+  // it back at a later one (_sectionStep, its pending variant, and this
+  // function's own restore). Any of them landing after the tour has started puts
+  // scroll-behavior:smooth back on the scroller, and the flag says it is already
+  // handled, so it is never taken off again.
+  // Every scrollTo then animates instead of jumping, and the tour computes its
+  // next position from its own last target while the page crawls behind on a
+  // smooth animation. The two separate: measured on a live load, _autoY at 2812
+  // with the window still at 762 and the clip looping, because the scrub follows
+  // a scroll position that never arrives. From the sofa that is a hero that
+  // plays for a second and then sticks. It failed on 5 of 14 throttled loads.
+  // Reading an inline style property is a string read on the CSSOM -- no layout,
+  // no reflow -- so checking it on the frames the tour scrolls costs nothing.
   _tourStyle(on){
-    if(!!this._tourStyled===!!on) return;
     const de=document.documentElement; if(!de) return;
     if(on){
-      this._preTour={b:de.style.scrollBehavior,s:de.style.scrollSnapType};
-      de.style.scrollBehavior='auto'; de.style.scrollSnapType='none';
+      // capture once, and only what was there before we touched anything
+      if(!this._preTour) this._preTour={b:de.style.scrollBehavior,s:de.style.scrollSnapType};
+      if(de.style.scrollBehavior!=='auto') de.style.scrollBehavior='auto';
+      if(de.style.scrollSnapType!=='none') de.style.scrollSnapType='none';
     }else if(this._preTour){
       de.style.scrollBehavior=this._preTour.b; de.style.scrollSnapType=this._preTour.s;
+      this._preTour=null;
     }
     this._tourStyled=!!on;
   }
@@ -1811,6 +1846,19 @@ class Component extends DCLogic {
       }
       // auto-play: play the video natively (smooth decoded frames) and let the
       // scroll position follow the video; px/s advance covers the photo/logo phase
+      // THE CEILING IS A BACKSTOP, NOT A SCHEDULE. _autoAt is set to mount+6s so a
+      // clip that never reports ready cannot hold the tour forever, and the
+      // video-ready callback is meant to pull it in. It does not always: measured
+      // on ten live loads the bar finished at 3s and the tour still started at
+      // mount+6s, so a visitor watched a still picture for five seconds after
+      // being told the loading was done. Whatever that callback misses, the
+      // condition it was checking is true right here on every frame -- the gate
+      // is gone, which already means the whole clip arrived, and the element
+      // reports it can play -- so check it here instead of relying on a callback.
+      if(this._auto&&this._autoAt!==Infinity&&performance.now()<this._autoAt
+         &&this._loadGone&&this._video&&this._video.readyState>=3){
+        this._autoAt=performance.now();
+      }
       if(this._auto&&!this._pin&&!this._logoSeq&&this._track&&this._track.isConnected&&performance.now()>(this._autoAt||0)){
         const r=this._track.getBoundingClientRect();
         if(r.top<=0&&r.bottom>window.innerHeight+1){
@@ -1825,7 +1873,10 @@ class Component extends DCLogic {
           const _n=performance.now();
           const _human=(_n-(this._ptrAt||0)<600)||(_n-(this._gestAt||0)<600);
           if(this._autoY!=null&&Math.abs(this._autoY-y)>40){
-            if(_human) this._haltAuto(); else this._autoY=y;
+            // Nobody asked for this jump, so re-sync -- and re-assert the
+            // scroller, because a page that will not go where it is told is the
+            // shape smooth scrolling makes.
+            if(_human) this._haltAuto(); else { this._tourStyle(true); this._autoY=y; }
           }
           else{
             const range=r.height-window.innerHeight, top=y+r.top;
