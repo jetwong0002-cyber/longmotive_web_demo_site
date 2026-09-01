@@ -1772,8 +1772,19 @@ class Component extends DCLogic {
     if(this._autoV&&v){ v.pause(); this._autoV=false; if(Number.isFinite(v.duration)&&v.duration>0) this._cur=v.currentTime/(v.duration-0.05); } }
   _startHeroLoop(){
     if(this._rafId) return;
-    const loop=()=>{
-      this._rafId=requestAnimationFrame(loop);
+    // ONE CHAIN AT A TIME. Re-arming used to schedule a fresh rAF and overwrite
+    // _rafId -- which does not stop the chain already running, because by the
+    // time a re-arm happens the live callback has usually re-armed ITSELF and
+    // that id is the one being cancelled. Two chains then advance the tour every
+    // frame and it runs at double speed: measured 1212 px/s against the 615 the
+    // setting asks for. The first play() then computes its start position from a
+    // scroll that has already run away, seeks the clip to its end, and the video
+    // never plays at all -- a still last frame while the page scrolls past it.
+    // Each arm takes a token; a chain whose token is stale returns without
+    // re-arming, so the count can only ever go back to one.
+    const loop=(tok)=>{
+      if(tok!==this._loopTok) return;
+      this._rafId=requestAnimationFrame(()=>loop(tok));
       this._loopAt=performance.now();   // the watchdog below reads this
       let y=window.scrollY;
       if(this._pin&&Math.abs(y-this._lockY)>0.5){ window.scrollTo(0,this._lockY); y=this._lockY; }
@@ -1885,7 +1896,12 @@ class Component extends DCLogic {
       this._seqStep();
     };
     this._lastTick=performance.now();
-    this._rafId=requestAnimationFrame(loop);
+    const arm=()=>{
+      const tok=this._loopTok=(this._loopTok||0)+1;
+      if(this._rafId){ try{ cancelAnimationFrame(this._rafId); }catch(e){} }
+      this._rafId=requestAnimationFrame(()=>loop(tok));
+    };
+    arm();
     // A LOOP THAT NEVER GOT ITS FIRST FRAME USED TO STAY DEAD FOREVER.
     // _rafId is assigned HERE, outside loop(), so it is truthy the moment the
     // frame is requested rather than when one is delivered -- and the guard at
@@ -1898,18 +1914,16 @@ class Component extends DCLogic {
     if(!this._loopWatch) this._loopWatch=setInterval(()=>{
       if(typeof document!=='undefined'&&document.visibilityState!=='visible') return;
       if(this._loopAt&&performance.now()-this._loopAt<2000) return;   // ticking, leave it
-      if(this._rafId){ try{ cancelAnimationFrame(this._rafId); }catch(e){} }
-      this._rafId=requestAnimationFrame(loop);
+      arm();
     },1500);
     if(!this._loopVis){ this._loopVis=()=>{
-        if(document.visibilityState==='visible'&&(!this._loopAt||performance.now()-this._loopAt>500)){
-          if(this._rafId){ try{ cancelAnimationFrame(this._rafId); }catch(e){} }
-          this._rafId=requestAnimationFrame(loop);
-        } };
+        if(document.visibilityState==='visible'&&(!this._loopAt||performance.now()-this._loopAt>500)) arm();
+      };
       document.addEventListener('visibilitychange',this._loopVis);
     }
   }
-  _stopHeroLoop(){ if(this._rafId){ cancelAnimationFrame(this._rafId); this._rafId=null; }
+  _stopHeroLoop(){ this._loopTok=(this._loopTok||0)+1;   // orphans the live chain
+    if(this._rafId){ cancelAnimationFrame(this._rafId); this._rafId=null; }
     if(this._loopWatch){ clearInterval(this._loopWatch); this._loopWatch=null; } }
   _heroUpdate(){
     const track=this._track;
