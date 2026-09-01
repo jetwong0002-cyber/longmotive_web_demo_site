@@ -101,6 +101,11 @@
   /* responsive: fixed desktop grids collapse by class; snap sections release their
      100vh/hidden-overflow lock so content can never clip on small screens */
   @media(max-width:900px){.lm-g3,.lm-g4{grid-template-columns:repeat(2,1fr)!important}}
+  /* the globe is a figure on the page, never the page: a fixed ratio it cannot
+     grow out of, and a taller one on phones where 16:9 leaves a letterbox strip */
+  .lm-globeframe{display:block;width:100%;aspect-ratio:16/9;border:1px solid rgba(180,214,240,.20);
+    border-radius:10px;background:#02080f}
+  @media(max-width:820px){.lm-globeframe{aspect-ratio:4/5}}
   .lm-snapsec,.lm-project-section,.lm-scroll-stop{scroll-snap-stop:always}
   @media(max-width:760px){
     .lm-split2,.lm-foot{grid-template-columns:1fr!important}
@@ -578,6 +583,24 @@
           <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--lm-cyan-400)"><span style="width:28px;height:2px;background:currentColor"></span>Portfolio</span>
           <h1 style="margin:0;font-size:var(--fs-display-lg);color:#fff">Our Projects</h1>
           <p style="margin:0;font-size:18px;color:var(--lm-blue-100);line-height:1.6">Representative MEP works from the data-center projects we have delivered &#8212; plant rooms, power distribution, data halls and controls.</p>
+        </div>
+      </section>
+      <!-- WHERE WE BUILD. An iframe, not a port into this component: the globe
+           needs an import map for three.js's post-processing addons, and an import
+           map has to precede every module on the document -- on a page whose
+           production <head> lives in the DEPLOY repo and is preserved across
+           exports, that would be a second place to keep in step forever. This page
+           also carries scroll-snap and a scroll-scrubbed hero; a separate document
+           means the globe's rAF loop, ResizeObserver and pointer capture cannot
+           reach any of it. postMessage is the seam when a site click has to open
+           project material. Nothing below this block moved -- the MEP portfolio is
+           unchanged, it just starts lower. -->
+      <section style="background:var(--lm-gradient-deep);padding:0 var(--gutter) clamp(22px,3vw,36px)">
+        <div style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;gap:12px">
+          <iframe class="lm-globeframe" src="projects-globe-embed.html" loading="lazy"
+                  title="Where Longmotive builds — interactive site map"></iframe>
+          <p style="margin:0;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--lm-blue-100);opacity:.75">
+            Four countries, one delivery team · drag to turn · click a site</p>
         </div>
       </section>
       <section style="background:var(--surface-page);padding:44px var(--gutter) var(--section-y)">
