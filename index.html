@@ -46,7 +46,7 @@
     // on every drag.
     var src=matchMedia('(max-width: 760px)').matches
       ? 'uploads/merged16-scrub-mobile.mp4'
-      : 'uploads/merged16-scrub-1080p.mp4';
+      : 'uploads/merged16-scrub-1600-g8.mp4';
     // Streamed against Content-Length so the hero's loading bar can show this
     // download -- it is the only thing between arriving and the tour starting,
     // and this preloader, not the component, is what normally fetches it.
@@ -1040,10 +1040,23 @@ const SEQ_AT=(p)=>{
 // Seeking lands on a keyframe and then decodes forward to the target, so a sparse
 // GOP makes every drag pay for frames nobody sees. Measured over the whole 136
 // frame clip:
-//   merged16-scrub-1080p.mp4    1920x1080  19.1MB  23 keyframes  (GOP 6)
-//   merged16-scrub-desktop.mp4  1600x900    6.5MB   6 keyframes  (GOP ~23)
-// The 6.5MB cut is a third of the bytes and four times the seek cost. Desktop
-// takes the 1080p cut, which is the one that was encoded for this.
+// AND THE HOST DOES NOT SERVE RANGES, which makes size the only lever that
+// matters. Cloudflare Pages answers a Range request for these files with 200 and
+// the whole body, and no Accept-Ranges header -- measured. A plain <video src>
+// therefore gets nothing at all: 2.5s in, readyState 0, duration 0, seekable and
+// buffered both empty. That is why the clip is fetched as a blob, and it means
+// NOTHING moves on screen until the last byte lands.
+//
+//   merged16-scrub-desktop.mp4  1600x900    6.5MB   5 kf   sharpness 19.85
+//   merged16-scrub-1080p.mp4    1920x1080  19.1MB  22 kf   sharpness 20.48
+//   merged16-scrub-1600-g8.mp4  1600x900    8.6MB  16 kf   sharpness 20.42
+//
+// The 1080p cut was 19.1MB and measured over twenty seconds of dead poster on
+// this connection before the tour could start. The 1600 g8 cut holds its
+// sharpness to within 0.3% at 45% of the bytes -- 1600x900 at CRF 26 with a
+// fixed GOP of 8, which is what scroll-scrub-video prescribes for aerial
+// footage. Seek cost is not the constraint: measured on a bare page, every one
+// of these seeks in about 1ms.
 // The <head> preloader MUST name the same file or the browser fetches both.
 // Whoever is actually downloading reports here. Normally that is the <head>
 // preloader, which starts before this script parses; Component._heroPct only
@@ -1053,7 +1066,7 @@ const HERO_PCT=()=>Math.max(
   Component._heroPct||0);
 const HERO_VIDEO=()=> (typeof matchMedia!=='undefined'&&matchMedia('(max-width: 760px)').matches)
   ? 'uploads/merged16-scrub-mobile.mp4'
-  : 'uploads/merged16-scrub-1080p.mp4';
+  : 'uploads/merged16-scrub-1600-g8.mp4';
 // THE SCRUB CURVE, in one place. _mapScrub maps track position to sequence
 // position and the auto-tour inverts it; they were two hand-written copies of the
 // same two numbers and they drifted the moment one was tuned.
