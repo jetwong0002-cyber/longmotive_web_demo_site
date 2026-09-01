@@ -571,7 +571,9 @@
 
     <sc-if value="{{ isProjects }}">
     <div>
-      <section style="background:var(--lm-gradient-deep);padding:76px var(--gutter) 64px">
+      <!-- Tightened in the deploy repo, where a change cannot survive an export.
+           Ported here so it does. -->
+      <section class="lm-projects-hero" style="background:var(--lm-gradient-deep);padding:clamp(24px,2.5vw,30px) var(--gutter)">
         <div data-reveal="0" style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;gap:12px;max-width:64ch">
           <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--lm-cyan-400)"><span style="width:28px;height:2px;background:currentColor"></span>Portfolio</span>
           <h1 style="margin:0;font-size:var(--fs-display-lg);color:#fff">Our Projects</h1>
