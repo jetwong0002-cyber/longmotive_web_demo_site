@@ -241,6 +241,8 @@
   #tl .tl-lead{fill:none;stroke:#53CEFA;stroke-width:1;stroke-dasharray:3 3;opacity:0;
     transition:opacity .22s}
   #tl.prev .tl-lead{opacity:1}
+  /* a line drawn under the card it starts from says nothing; see position() */
+  #tl.prev.nolead .tl-lead{opacity:0}
   #tl .tl-halo circle{fill:none;stroke:#53CEFA;opacity:0;transition:opacity .22s}
   #tl.prev .tl-halo circle:nth-child(1){opacity:.55;animation:tlPulse 2s ease-in-out infinite}
   #tl.prev .tl-halo circle:nth-child(2){opacity:.26;animation:tlPulse 2s ease-in-out .25s infinite}
@@ -270,8 +272,6 @@
     font:600 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em}
   #tl .tl-close:hover{color:#E4ECF3}
 
-  /* Narrow: the labels go first, then the rail itself. A hairline of dots still
-     says "seven visits" without pretending there is room to read them. */
   /* THE RAIL TAKES THE LEFT EDGE, so the two things that already lived there
      have to move. The site card and the timeline are both panels of dark type
      on the same 22px margin, and stacked they read as one broken panel rather
@@ -283,14 +283,30 @@
   #tl.on ~ #rail{opacity:0;transition:opacity .22s}
   #tl.on ~ #hint{opacity:0}
 
-  @media (max-width:1100px){
+  /* THESE BREAKPOINTS MEASURE THE FRAME, NOT THE SCREEN, and the first version
+     forgot that. The rail lives in an iframe roughly 350px narrower than the
+     browser around it -- a 1240px page column, minus gutters, inside whatever
+     window is open. Cutting the labels and the preview below 1100px was drawn
+     against a 1440px reference viewport, and 1440 of browser is about 1200 of
+     frame; an ordinary 950px window is 884 of frame, so the whole feature
+     collapsed to a column of dots and nobody ever saw it.
+     The tiers now come from what the rail needs. Full layout wants the axis at
+     76, a date label out to about 206, and a 256 card from 212 -- 468px, with
+     the globe keeping the rest of a 1140 frame. Below that the card and its
+     offset come in together instead of the feature switching off. */
+  @media (max-width:1140px){
+    #tl .tl-prev{width:216px}
+    #tl .tl-nodes{width:200px}
+  }
+  /* Only here is there genuinely no room to read a date beside its dot. */
+  @media (max-width:640px){
     #tl .tl-scrim{background:linear-gradient(to right,rgba(4,14,26,.86) 0,transparent 180px)}
     #tl .tl-nodes{width:12px}
     #tl .tl-txt,#tl .tl-head,#tl .tl-divide i{display:none}
     #tl .tl-prev{display:none}
     #tl .tl-sets.on{width:min(392px,calc(100% - 96px))}
   }
-  @media (max-width:760px){ #tl{display:none} }
+  @media (max-width:460px){ #tl{display:none} }
 
   @media (prefers-reduced-motion: reduce){
     #tl .tl-prev{transition:opacity .01s}
@@ -1073,11 +1089,44 @@ const TL=(()=>{
 
   function position(btn){
     const st=stage.getBoundingClientRect(), r=btn.getBoundingClientRect();
+    // 212 clears the longest date label -- "14 DEC 2025" at 11px mono runs to
+    // about 196 from the axis at 76. Pulling the card in to 176 on a narrow
+    // frame bought 36px of globe and clipped that label with the card's own
+    // edge, which is the one thing the rail cannot afford to do: the date is
+    // what the picture is being attached to. The card narrows instead.
     elPrev.style.left='212px';
-    const h=elPrev.offsetHeight||210;
-    let top=(r.top-st.top)+r.height/2-h/2;
-    top=Math.max(88,Math.min(st.height-84-h,top));
+    const h=elPrev.offsetHeight||210, w=elPrev.offsetWidth||256;
+    const lo=88, hi=st.height-84-h;
+    let top=Math.max(lo,Math.min(hi,(r.top-st.top)+r.height/2-h/2));
+    /* AND IT MUST NOT SIT ON THE MARKER. Centring the card on its node is right
+       on a wide frame, where the globe has drifted the marker well clear of it.
+       On a narrower one the two collide: measured at 884x497, the card ran
+       212-428 and Johor sat at 414,327 -- inside it. The marker disappears
+       behind the card it is supposed to be tied to, and the leader line, whose
+       whole job is to say "this picture belongs to that place", is drawn
+       underneath and never seen.
+       So when they overlap, the card steps aside by the smaller of the two
+       moves, and only if there is room at the edge it steps toward. The globe
+       holds still while a site is selected, so doing this once on open is
+       enough -- the marker will not wander back underneath. */
+    if(marker && marker.sx>212-8 && marker.sx<212+w+8
+       && marker.sy>top && marker.sy<top+h){
+      const gap=26, above=marker.sy-gap-h, below=marker.sy+gap;
+      const okA=above>=lo, okB=below<=hi;
+      if(okA&&okB) top = (top+h-marker.sy) <= (marker.sy-top) ? above : below;
+      else if(okA) top=above;
+      else if(okB) top=below;
+    }
     elPrev.style.top=top+'px';
+    /* SOMETIMES THERE IS NOWHERE TO STEP. A 497px frame leaves the rail a 325px
+       band once the top and bottom margins are taken, and the card is 279 of it;
+       with Johor sitting near the vertical middle, neither above nor below fits.
+       When that happens the leader line is drawn underneath the card and never
+       seen, which is worse than not drawing it: it is a line that claims to
+       connect two things while connecting nothing. The card is adjacent to the
+       marker at that size anyway, so the relationship still reads. */
+    root.classList.toggle('nolead', !!(marker && marker.sx>212-8 && marker.sx<212+w+8
+      && marker.sy>top && marker.sy<top+h));
   }
 
   /* The globe drifts, so the marker moves under a preview that is standing
@@ -1085,7 +1134,7 @@ const TL=(()=>{
      markers already carry sx/sy for exactly this reason. */
   function frame(){
     if(!on||!active||!marker) return;
-    const x1=212+elPrev.offsetWidth, y1=elPrev.offsetTop+elPrev.offsetHeight/2;
+    const x1=elPrev.offsetLeft+elPrev.offsetWidth, y1=elPrev.offsetTop+elPrev.offsetHeight/2;
     const mx=marker.sx, my=marker.sy;
     if(!(mx>=0)||!(my>=0)) return;
     lead.setAttribute('d','M'+x1+' '+y1+' L'+mx+' '+y1+' L'+mx+' '+my);
