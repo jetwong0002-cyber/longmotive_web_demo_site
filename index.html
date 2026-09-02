@@ -533,38 +533,12 @@
             </div>
           </div>
         </div>
-      </section>
-
-      <!-- THE RECORD GETS ITS OWN SCREEN, because this page is built out of
-           them. Every panel here is height:100vh with overflow:hidden, which is
-           why every size inside one is written as a clamp against vh: the panel
-           has a fixed budget and the content is tuned to it. The four numbers
-           used to be a 13vh strip at the bottom of the screen above, at 44px --
-           caption size, in the place a reader passes on the way to the next
-           heading. Growing them inside that panel is not an option; it is what
-           broke the page the first time this was attempted, because 30vh of
-           numbers in a 100vh panel that was already full pushes everything else
-           out from under the clip.
-           A screen of its own costs the other panels nothing and gives the
-           numbers the whole budget: 11vh each, roughly a hundred pixels, with
-           the panel doing nothing else. The screen above gets its 13vh back,
-           which it needed. The count-up already on data-stat does the rest --
-           at 44px it was not worth watching and at this size it is. -->
-      <section class="lm-snapsec" style="height:100vh;overflow:hidden;display:flex;flex-direction:column;background:var(--lm-blue-900);scroll-snap-align:start">
-        <div style="height:72px;flex-shrink:0"></div>
-        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(20px,4.4vh,50px);padding:0 var(--gutter);min-height:0">
-          <div style="max-width:var(--container-max);margin:0 auto;width:100%">
-            <span data-reveal="0" style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--lm-cyan-400)"><span style="width:28px;height:2px;background:currentColor"></span>Track record</span>
-          </div>
-          <!-- auto-fit, not lm-g4: that class drops to a single column at 760px,
-               and four numbers this tall stacked single-file is a long scroll
-               past the same kind of fact four times. auto-fit gives two across
-               before it gives one. -->
-          <div style="max-width:var(--container-max);margin:0 auto;width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:clamp(22px,3vw,48px)" data-about-stats="true">
+        <div style="background:var(--lm-blue-900);padding:clamp(16px,3.4vh,34px) var(--gutter)">
+          <div class="lm-g4" style="max-width:var(--container-max);margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:24px" data-about-stats="true">
             <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
-              <div data-reveal="{{ $index }}" style="border-top:1px solid rgba(120,180,225,.22);padding-top:clamp(13px,2.3vh,26px)">
-                <div data-stat="1" style="font-family:var(--font-display);font-weight:800;font-size:clamp(50px,11vh,124px);line-height:.92;letter-spacing:-.025em;color:#fff">{{ s.value }}<span style="color:var(--lm-cyan-400)">{{ s.suffix }}</span></div>
-                <div style="font-size:clamp(11px,1.6vh,14px);letter-spacing:.14em;color:var(--lm-blue-200);margin-top:clamp(9px,1.9vh,20px);text-transform:uppercase;font-family:var(--font-mono)">{{ s.label }}</div>
+              <div data-reveal="{{ $index }}">
+                <div data-stat="1" style="font-family:var(--font-display);font-weight:800;font-size:clamp(28px,4.4vh,44px);line-height:1;color:#fff">{{ s.value }}<span style="color:var(--lm-cyan-400)">{{ s.suffix }}</span></div>
+                <div style="font-size:clamp(11px,1.5vh,13px);letter-spacing:.03em;color:var(--lm-blue-200);margin-top:clamp(4px,1vh,8px);text-transform:uppercase;font-family:var(--font-mono)">{{ s.label }}</div>
               </div>
             </sc-for>
           </div>
@@ -872,11 +846,7 @@ const SERVICES=[
 const STATS=[
   {value:'20',suffix:'+',label:'Years Experience'},
   {value:'50',suffix:'+',label:'Data-Center Projects'},
-  // ONE HEADCOUNT. The home hero said "500+ workforce" while this said "100+
-  // professionals" -- the same company at two sizes on the same site. 500 is
-  // the number, and workforce is the hero's word for it: professionals reads as
-  // staff engineers only, which would be a second claim rather than the same one.
-  {value:'500',suffix:'+',label:'Workforce'},
+  {value:'100',suffix:'+',label:'Professionals'},
   {value:'100',suffix:'%',label:'QA / QC Coverage'}
 ];
 const PROJECTS=[
@@ -2549,7 +2519,7 @@ class Component extends DCLogic {
       certs: CERTS.map(c=>({...c,alt:c.code+' — '+c.title+' certificate'})),
       strongPoints: [
         '20+ years of M&E engineering experience',
-        '500+ workforce across every MEP discipline',
+        '100+ professionals across every MEP discipline',
         '50+ data-center projects constructed',
         'A personnel organization ranked among the industry\'s best'
       ],
