@@ -221,11 +221,12 @@
     transform:scale(.96);transform-origin:left center;
     transition:opacity .22s cubic-bezier(.2,.7,.3,1),transform .22s cubic-bezier(.2,.7,.3,1)}
   #tl .tl-prev.on{opacity:1;transform:none}
-  #tl .tl-prev ktp-compare,#tl .tl-prev .tl-empty{display:block;width:100%;height:144px}
-  #tl .tl-prev .tl-empty{display:flex;align-items:center;justify-content:center;
-    text-align:center;padding:0 22px;background:#0E2739;color:#3F5A70;
-    font:600 9px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;
-    text-transform:uppercase}
+  /* No .tl-empty rule any more, and no element to hang it on: a node that had
+     nothing to show is not built at all, so nothing renders a caption where a
+     picture belongs. */
+  #tl .tl-prev ktp-compare,#tl .tl-prev .tl-shot{display:block;width:100%;height:144px}
+  #tl .tl-prev .tl-shot{object-fit:cover}
+  #tl .tl-set .tl-shot{display:block;width:100%;margin-top:9px;background:#06131F}
   #tl .tl-cap{padding:11px 13px 12px;border-top:1px solid #1E3E55}
   #tl .tl-cap b{display:block;font:600 11px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;
     letter-spacing:.12em;text-transform:uppercase;color:#E4ECF3;margin-bottom:5px}
@@ -936,23 +937,32 @@ const TL=(()=>{
      card would make the rail look complete and be a lie. */
   function nodeModel(sh){
     const cmps=data.comparisons.filter(c=>c.after.date===sh.date);
+    const frames=data.frames.filter(f=>f.date===sh.date && f.media && (f.media.jpg||f.media.webp));
     const asBefore=data.comparisons.filter(c=>c.before.date===sh.date).length;
-    let empty=null;
-    if(!cmps.length){
-      empty = sh.kind==='orthomosaic' ? 'Orthomosaic &middot; no obliques'
-            : asBefore ? 'Baseline &middot; the start of '+asBefore+' pair'+(asBefore>1?'s':'')
-            : sh.frames===1 ? '1 frame &middot; no pair'
-            : 'No paired imagery';
-    }
     const mixed=cmps.some(c=>(data.sets.find(x=>x.id===c.set)||{}).confidence==='mixed');
-    return {sh, cmps, empty, mixed,
+    return {sh, cmps, frames, asBefore, mixed,
       date:label(sh.date), archive:sh.date<'2025',
       meta: sh.frames ? sh.frames+(sh.frames===1?' frame':' frames') : sh.kind};
   }
 
   function build(){
-    const models=data.shoots.map(nodeModel);
-    elCount.textContent=models.length+' visits';
+    /* EVERY NODE HAS A PICTURE BEHIND IT. Seven visits are in the manifest and
+       two of them -- the November and December 2024 orthomosaics -- carry no
+       frames and no pairs, so they used to render a card with a sentence where
+       an image goes. A rail of dates that opens onto nothing is worse than a
+       shorter rail: it makes the survey look thinner than it is by drawing
+       attention to the gaps rather than to the material.
+       So a visit earns a node by having imagery -- a comparison to sweep, or
+       failing that its own frames. The count still says how many of the seven
+       that is, because dropping two dates quietly is its own kind of lie. */
+    const all=data.shoots.map(nodeModel);
+    const models=all.filter(n=>n.cmps.length||n.frames.length);
+    const gone=all.filter(n=>!n.cmps.length&&!n.frames.length);
+    elCount.textContent=gone.length
+      ? models.length+' of '+all.length+' visits'
+      : models.length+' visits';
+    if(gone.length) elCount.title=gone.map(n=>n.date+' — '+n.sh.kind
+      +', not in this pack').join('; ');
     elNodes.innerHTML='';
     let dividerPlaced=false;
     models.forEach((n,i)=>{
@@ -997,8 +1007,18 @@ const TL=(()=>{
     }
     const c=n.cmps[0];
     if(!c){
-      elPrev.innerHTML='<div class="tl-empty">'+n.empty+'</div>'
-        +'<div class="tl-cap"><b>'+n.date+'</b><p>'+n.meta+'</p></div>';
+      // No pair, but there are frames -- show one rather than a caption in an
+      // empty box. It says what the stage is and why there is nothing to sweep.
+      const f=n.frames[0], m=f.media;
+      const note = n.asBefore
+        ? 'The baseline '+n.asBefore+' later comparison'+(n.asBefore>1?'s are':' is')
+          +' measured from. '+n.frames.length+(n.frames.length===1?' frame':' frames')
+          +' this visit, none of them paired against an earlier one.'
+        : n.frames.length+(n.frames.length===1?' frame':' frames')
+          +' this visit, with nothing earlier to compare against.';
+      elPrev.innerHTML='<img class="tl-shot" src="'+BASE+m.jpg+'" alt="" '
+        +(m.webp?'srcset="'+BASE+m.webp+'"':'')+'>'
+        +'<div class="tl-cap"><b>'+(f.stage||n.date)+'</b><p>'+note+'</p></div>';
     }else{
       const m=c.media, u=(o,k,e)=>BASE+o[k][e];
       elPrev.innerHTML='<ktp-compare '
@@ -1067,7 +1087,14 @@ const TL=(()=>{
     let html='<h4>'+n.date+'</h4><p class="tl-sub">'+n.meta
       +(sets.length?' &middot; '+sets.length+' set'+(sets.length>1?'s':''):'')+'</p>';
     if(!sets.length){
-      html+='<div class="tl-set"><em>'+decode(n.empty||'No paired imagery from this visit.')+'</em></div>';
+      // the frames themselves, each named by its stage and the set it belongs to
+      for(const f of n.frames){
+        const st=data.sets.find(x=>x.id===f.set);
+        html+='<div class="tl-set"><b>'+(f.stage||'Frame '+f.id)+'</b>'
+          +(st?'<em>'+st.title+(st.subtitle?' &middot; '+decode(st.subtitle):'')+'</em>':'')
+          +'<img class="tl-shot" loading="lazy" src="'+BASE+f.media.jpg+'" alt="" '
+          +(f.media.webp?'srcset="'+BASE+f.media.webp+'"':'')+'></div>';
+      }
     }
     for(const s of sets){
       const v=data.videos.find(x=>x.set===s.set.id);
