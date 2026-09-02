@@ -586,6 +586,39 @@ fetch('uploads/city-lights.json').then(r=>r.json()).then(rows=>{
   })));
 }).catch(()=>{/* lights are texture; the map is complete without them */});
 
+/* GLIMMER, NOT A GLOW. The gold said "this route exists"; it did not say the
+   route is used. A crest of light runs each arc outward from Johor while the
+   whole band breathes under it, and the colour travels with the brightness --
+   deep amber in the trough, gold at rest, almost white at the crest. Locking it
+   to one gold would have been simpler and would have looked like a printed line.
+   Written into a per-vertex colour attribute rather than a shader: 65 vertices
+   times three layers times three arcs is 585 numbers a frame, which is nothing,
+   and it keeps the arcs ordinary THREE.Line objects that the bloom pass and the
+   depth buffer already know what to do with.
+   Both ?still and prefers-reduced-motion hold it at its resting value, so a
+   screenshot is deterministic and nobody who asked for stillness gets a pulse. */
+const arcGlow=[];
+const G_LOW=new THREE.Color(0xE08A3C), G_MID=new THREE.Color(0xFFC24A),
+      G_HI =new THREE.Color(0xFFEFC0), _gc=new THREE.Color();
+function breatheArcs(now){
+  const t=now/1000, hold=STILL||REDUCE;
+  for(const a of arcGlow){
+    const arr=a.attr.array;
+    const head=hold ? -1 : ((t/4.6)+a.phase)%1;
+    const breath=hold ? 0.5 : 0.5+0.5*Math.sin((t/6.8+a.phase)*Math.PI*2);
+    for(let i=0;i<a.n;i++){
+      let k=0.42+0.18*breath;
+      if(head>=0){ const d=(i/(a.n-1))-head; k+=0.58*Math.exp(-(d*d)/0.0055); }
+      k=Math.min(1,k)*a.amp;
+      if(k<=0.5) _gc.copy(G_LOW).lerp(G_MID,k/0.5);
+      else       _gc.copy(G_MID).lerp(G_HI,(k-0.5)/0.5);
+      const s=0.28+0.72*k;
+      arr[i*3]=_gc.r*s; arr[i*3+1]=_gc.g*s; arr[i*3+2]=_gc.b*s;
+    }
+    a.attr.needsUpdate=true;
+  }
+}
+
 /* ---- markers + arcs are added once the coastline is in, so the first paint is
    never a half-built globe ---- */
 const labelHost=document.getElementById('labels');
@@ -651,12 +684,22 @@ function addSites(){
            as something lit. Three copies at slightly different radii cover a
            band instead of a line -- the flanks are dim enough to be a halo and
            the core sits on top of both, and additive blending sums them, which
-           is what finally gives the bloom pass enough above 0.50 to work with. */
-        for(const [dr,op] of [[-0.005,0.30],[0.005,0.30],[0,0.95]]){
+           is what gives the bloom pass enough above 0.50 to work with.
+           AND THE COLOUR IS NOT FIXED. Each vertex carries its own, rewritten
+           every frame, so a crest of light can travel the arc and the whole
+           thing can breathe underneath it -- see breatheArcs. A flat gold line
+           is a drawn object; one that moves is the route being used. */
+        for(const [dr,amp] of [[-0.005,0.44],[0.005,0.44],[0,1]]){
           const q=dr ? pts.map(p=>p.clone().multiplyScalar(1+dr)) : pts;
-          scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(q),
-            new THREE.LineBasicMaterial({color:0xffc24a,transparent:true,opacity:op,
-              blending:THREE.AdditiveBlending,depthWrite:false})));
+          const g=new THREE.BufferGeometry().setFromPoints(q);
+          g.setAttribute('color',new THREE.BufferAttribute(new Float32Array((N+1)*3),3));
+          scene.add(new THREE.Line(g,new THREE.LineBasicMaterial({vertexColors:true,
+            transparent:true,opacity:0.95,
+            blending:THREE.AdditiveBlending,depthWrite:false})));
+          // hub-to-site, so the crest runs outward from Johor; each arc offset
+          // in phase so three of them never pulse as one blinking indicator
+          arcGlow.push({attr:g.getAttribute('color'),n:N+1,amp,
+                        phase:(arcGlow.length%3)*0.31+Math.floor(arcGlow.length/3)*0.17});
         }
       }
     }
@@ -698,6 +741,7 @@ fetch('uploads/world-coast-50m.json').then(r=>r.json()).then(lines=>{
 const SPIN_MAX=3.0;          // deg/s -- a full turn in two minutes
 const SPIN_DELAY=3200;       // ms without contact before it eases back in
 const STILL=/(^|[?&])still(=|&|$)/.test(location.search);
+const REDUCE=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let spin=0, idleAt=performance.now(), last=performance.now();
 function touch(){ idleAt=performance.now(); }
 
@@ -928,6 +972,7 @@ function tick(){
     m.pin.classList.toggle('sel', m===selected);
   }
   TL.frame();
+  breatheArcs(now);
   grade.uniforms.uTime.value=(now%10000)/1000;
   composer.render();
 }
