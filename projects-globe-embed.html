@@ -147,6 +147,12 @@
   #card .c-power{position:absolute;right:19px;top:15px;text-align:right;line-height:1}
   #card .c-power b{display:block;color:#FFC24A;letter-spacing:-.01em;
     font:700 26px/1 ui-monospace,monospace}
+  /* THE UNIT IS PART OF THE NUMBER. 891.6 on its own is not a fact about
+     anything -- megawatts is what makes it one, so it sits on the same line, in
+     the same colour, and it is on screen from the first frame of the count
+     rather than arriving at the end of it. */
+  #card .c-power b u{text-decoration:none;margin-left:5px;font-size:15px;
+    letter-spacing:.02em;opacity:.85}
   #card .c-power i{display:block;margin-top:5px;font-style:normal;color:#8FA0AD;
     font:600 9px/1 ui-monospace,monospace;letter-spacing:.13em;text-transform:uppercase}
   #card h2{margin:9px 0 2px;font-size:19px;letter-spacing:-.01em;padding-right:98px}
@@ -370,7 +376,7 @@
     </div>
 
     <div id="card">
-      <div class="c-power" id="cPower" style="display:none"><b>—</b><i>—</i></div>
+      <div class="c-power" id="cPower" style="display:none"><b>—<u>MW</u></b><i>—</i></div>
       <div class="c-eyebrow" id="cEye">Active</div>
       <h2 id="cTitle">—</h2>
       <div class="c-sub" id="cSub">—</div>
@@ -413,7 +419,7 @@ import {SMAAPass}        from 'three/addons/postprocessing/SMAAPass.js';
 const SITES=[
   {id:'my', country:'Malaysia',  name:'Johor',      sub:'Nusajaya & Kempas Tech Park',
    lat:1.48,  lon:103.66, status:'active',  sites:'6 (A–E, Kempas A)', year:'2022',
-   dy:-21, power:'891.6', powerUnit:'MW delivered'},
+   dy:-21, power:'891.6', powerUnit:'delivered'},
   {id:'id', country:'Indonesia', name:'Batam',      sub:'NDP-A · power, generator, cooling modules',
    lat:1.08,  lon:104.03, status:'active',  sites:'1', year:'2024', dy:21},
   {id:'th', country:'Thailand',  name:'Thailand',   sub:'Data centre scope',
@@ -826,7 +832,25 @@ function nearest(e,radius){
   }
   return best;
 }
-cvs.addEventListener('click',e=>select(nearest(e,44)));
+/* CLICKING A SITE GOES THERE. Selecting used to change the panel and nothing
+   else, which left the reader to find the marker they had just chosen among five
+   others at a distance where a data centre is four pixels. The camera now flies
+   in and stops: `selected` already holds the idle drift off, so what it settles
+   into is a fixed frame rather than a slow pan somebody has to fight.
+   Johor is aimed off-centre on purpose. The capture rail owns the left of the
+   frame, so the site the rail belongs to is framed right of it rather than
+   underneath the preview card. */
+const SITE_D=1.55;
+function flyTo(m){
+  if(!m) return;
+  touch();
+  want.lat=m.s.lat;
+  want.lon=m.s.lon-(m.s.id===HUB?9:0);
+  want.d=SITE_D;
+  // a framed view is no longer what you are looking at
+  for(const b of document.querySelectorAll('#views button')) b.classList.remove('on');
+}
+cvs.addEventListener('click',e=>{ const m=nearest(e,44); select(m); flyTo(m); });
 
 /* HOVERING JOHOR IS ENOUGH TO OPEN THE RAIL. Requiring a click meant the
    material was behind two guesses rather than one: you had to work out that the
@@ -840,6 +864,39 @@ cvs.addEventListener('mousemove',e=>{
   const m=nearest(e,40);
   if(m && m.s.id===HUB) TL.setMarker(m);
 },{passive:true});
+
+/* THE NUMBER ARRIVES, IT IS NOT JUST PRINTED. 891.6 MW is the largest claim on
+   this page and a figure that size is easier to disbelieve than to read; running
+   it up from zero makes the reader watch it accumulate, which is a different
+   thing from being told it.
+   It overshoots by about 1.5% and settles back, because a number that stops
+   dead on its value reads as a counter finishing rather than as a quantity
+   coming to rest. The overshoot is in the ANIMATION only -- it is never held,
+   never rounded from, and the last frame is written from the exact figure in
+   SITES rather than from wherever the easing landed, so what stays on screen is
+   the number and not a near miss of it.
+   The unit does not animate. It is on screen from the first frame. */
+const numEl=()=>document.getElementById('cPower').querySelector('b');
+let countRaf=0;
+function countTo(target){
+  cancelAnimationFrame(countRaf);
+  const write=v=>{ numEl().firstChild.nodeValue=v.toFixed(1); };
+  if(REDUCE){ write(target); return; }
+  const t0=performance.now(), DUR=1450;
+  const step=(now)=>{
+    const k=Math.min(1,(now-t0)/DUR);
+    if(k>=1){ write(target); return; }          // exact, from the data
+    // Ease-out-back: fast out of zero, past the value, then back onto it. c1
+    // sets how far past. The textbook 1.70158 overshoots by 8%, which on this
+    // figure is 965MW -- a different claim flashing on screen, not a bounce.
+    // 0.8 peaks around 912 and settles: visible as a spring, never as a number
+    // anybody could read as the answer.
+    const c1=0.8, c3=c1+1, u=k-1;
+    write(target*(1+c3*u*u*u+c1*u*u));
+    countRaf=requestAnimationFrame(step);
+  };
+  countRaf=requestAnimationFrame(step);
+}
 
 const card=document.getElementById('card');
 function select(m){
@@ -860,8 +917,7 @@ function select(m){
      empty field invites the reader to wonder what it would have said. */
   const pw=document.getElementById('cPower');
   pw.style.display = s.power ? '' : 'none';
-  if(s.power){ pw.querySelector('b').textContent=s.power;
-               pw.querySelector('i').textContent=s.powerUnit||''; }
+  if(s.power){ pw.querySelector('i').textContent=s.powerUnit||''; countTo(+s.power); }
   document.getElementById('cYear').textContent=s.year;
   document.getElementById('cSoon').textContent=m.active
     // Batam gets its own line. It sits 59km from Johor and used to share a
