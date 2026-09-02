@@ -121,7 +121,7 @@
     left:-3px;top:-3px;width:6px;height:6px}
   .pin.planned .rg{border-color:#8FA0AD;opacity:.3}
   .pin.sel .rg{left:-15px;top:-15px;width:30px;height:30px;opacity:.9}
-  .lb{position:absolute;transform:translate(16px,-50%);white-space:nowrap;
+  .lb{position:absolute;transform:translate(16px,calc(-50% + var(--dy,0px)));white-space:nowrap;
     font:600 11px/1.35 ui-monospace,monospace;letter-spacing:.13em;
     text-transform:uppercase;transition:opacity .18s}
   .lb{text-shadow:0 1px 3px rgba(2,8,15,.95),0 0 10px rgba(2,8,15,.85)}
@@ -141,7 +141,15 @@
   #card.on{opacity:1;transform:none}
   #card .c-eyebrow{color:var(--cyan);font:700 10px/1 ui-monospace,monospace;
     letter-spacing:.16em;text-transform:uppercase}
-  #card h2{margin:9px 0 2px;font-size:19px;letter-spacing:-.01em}
+  /* Delivered load, right-aligned at the head of the panel so it is the first
+     number read. Gold on purpose: on this map gold is what has been built, and
+     this is the load actually arriving at the end of one of those routes. */
+  #card .c-power{position:absolute;right:19px;top:15px;text-align:right;line-height:1}
+  #card .c-power b{display:block;color:#FFC24A;letter-spacing:-.01em;
+    font:700 26px/1 ui-monospace,monospace}
+  #card .c-power i{display:block;margin-top:5px;font-style:normal;color:#8FA0AD;
+    font:600 9px/1 ui-monospace,monospace;letter-spacing:.13em;text-transform:uppercase}
+  #card h2{margin:9px 0 2px;font-size:19px;letter-spacing:-.01em;padding-right:98px}
   #card .c-sub{color:var(--dim);font-size:12px;margin-bottom:12px}
   #card dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:5px 16px;
     font-size:12px;border-top:1px solid var(--line);padding-top:11px}
@@ -362,6 +370,7 @@
     </div>
 
     <div id="card">
+      <div class="c-power" id="cPower" style="display:none"><b>—</b><i>—</i></div>
       <div class="c-eyebrow" id="cEye">Active</div>
       <h2 id="cTitle">—</h2>
       <div class="c-sub" id="cSub">—</div>
@@ -396,11 +405,17 @@ import {SMAAPass}        from 'three/addons/postprocessing/SMAAPass.js';
    and Kempas) are ~10 km apart and are one marker at every sane zoom -- the
    building count carries what the second pin would have said.
 --------------------------------------------------------------------------- */
+/* `dy` nudges a label off the pin. Johor and Batam are 59km apart -- about 12
+   screen pixels at the region view -- so without it the two labels sit on top of
+   each other. One goes up and one goes down, by the same amount at every zoom,
+   which is enough because the gap between the pins only ever grows from there.
+   `power` is delivered load, and only Johor has a figure. */
 const SITES=[
   {id:'my', country:'Malaysia',  name:'Johor',      sub:'Nusajaya & Kempas Tech Park',
-   lat:1.48,  lon:103.66, status:'active',  sites:'6 (A–E, Kempas A)', year:'2022'},
+   lat:1.48,  lon:103.66, status:'active',  sites:'6 (A–E, Kempas A)', year:'2022',
+   dy:-21, power:'891.6', powerUnit:'MW delivered'},
   {id:'id', country:'Indonesia', name:'Batam',      sub:'NDP-A · power, generator, cooling modules',
-   lat:1.08,  lon:104.03, status:'active',  sites:'1', year:'2024'},
+   lat:1.08,  lon:104.03, status:'active',  sites:'1', year:'2024', dy:21},
   {id:'th', country:'Thailand',  name:'Thailand',   sub:'Data centre scope',
    lat:13.75, lon:100.50, status:'active',  sites:'—', year:'—'},
   {id:'hk', country:'Hong Kong', name:'Hong Kong',  sub:'Data centre scope',
@@ -412,17 +427,17 @@ const SITES=[
 ];
 const HUB='my';   // arcs originate at Johor: the company is registered there
 
-/* Johor and Batam are 59 km apart -- one pixel until you are very close. Two
-   pins there is not a map, it is two labels fighting. Above the zoom threshold
-   they collapse into a single marker that states the real number; below it they
-   separate. This is the whole reason the Johor view exists. */
-const CLUSTER=['my','id'];
-const CLUSTER_SPLIT_D=1.45;      // camera distance (globe radii) below which they split
-/* 1.45 is not a taste call. Screen separation of a 0.53 deg pair is
-   ang / (2*(d-1)*tan(fov/2)) * viewportHeight:
-     d 2.05 -> 12px   d 1.62 -> 20px   d 1.45 -> 28px   d 1.28 -> 43px
-   Below ~28px the two labels touch, so that is where they are allowed to split. */
-const CLUSTER_LABEL={name:'Johor · Batam', sub:'2 sites · 7 buildings'};
+/* JOHOR AND BATAM ARE TWO PLACES, AND THE MAP SAYS SO AT EVERY ZOOM.
+   They used to collapse into one marker reading "Johor · Batam · 2 sites"
+   whenever the camera was further out than 1.45 globe radii. The reasoning was
+   about pixels and it was correct -- 59km is about 12 screen pixels at the
+   region view, and two labels that close are not a map, they are two labels
+   fighting. The conclusion was wrong. They are a Malaysian campus and an
+   Indonesian one, different countries, different years, different scope, and
+   merging them made the map say otherwise everywhere you had not zoomed in.
+   The pixels are solved by nudging one label up and one down (`dy` in SITES),
+   which costs nothing and claims nothing. The Johor view survives as a close
+   crop on the pair rather than as the only way to learn there are two. */
 
 /* Solved camera positions. Same idea as every viewer on this site: a composed
    frame you can return to, not a free orbit you can get lost in.
@@ -638,13 +653,15 @@ function addSites(){
 
     const el=document.createElement('div');
     el.className='lb'+(active?'':' planned');
+    // the pair that shares a pixel is pushed apart here, once, at every zoom
+    if(s.dy) el.style.setProperty('--dy', s.dy+'px');
     // second line is the country -- except where the name IS the country, which
     // is every site we cannot yet name a city for. Repeating it read as a bug.
     const sub2 = active ? (s.name===s.country ? '' : s.country) : 'Planned';
     el.innerHTML='<b>'+s.name+'</b>'+(sub2?'<i>'+sub2+'</i>':'');
     labelHost.appendChild(el);
 
-    markers.push({s,v,el,pin,active,cluster:CLUSTER.includes(s.id)});
+    markers.push({s,v,el,pin,active});
 
     // great-circle arc from the Johor hub -- "cross-border" is the company's own
     // phrase for what it does, and the arcs are the only thing on the map that
@@ -799,17 +816,30 @@ cvs.addEventListener('wheel',e=>{
 /* click-to-select: pick the nearest marker in screen space that is on the near
    side of the globe. Raycasting a 32px plane on a sphere is fiddly and misses
    more often than it hits. */
-cvs.addEventListener('click',e=>{
+function nearest(e,radius){
   const r=cvs.getBoundingClientRect();
-  let best=null,bd=44;
+  let best=null,bd=radius;
   for(const m of markers){
     if(!m.clickable) continue;
-    const dx=m.sx-(e.clientX-r.left), dy=m.sy-(e.clientY-r.top);
-    const d=Math.hypot(dx,dy);
+    const d=Math.hypot(m.sx-(e.clientX-r.left), m.sy-(e.clientY-r.top));
     if(d<bd){bd=d;best=m;}
   }
-  select(best);
-});
+  return best;
+}
+cvs.addEventListener('click',e=>select(nearest(e,44)));
+
+/* HOVERING JOHOR IS ENOUGH TO OPEN THE RAIL. Requiring a click meant the
+   material was behind two guesses rather than one: you had to work out that the
+   dates were the way in, and before that that the marker was worth clicking at
+   all. Passing over it is a thing people do without deciding to.
+   Only opening, never closing. A rail that vanished when the pointer drifted off
+   would flicker every time somebody crossed the globe on the way to something
+   else; it comes down when another site is actually selected, which is a
+   decision rather than an accident. */
+cvs.addEventListener('mousemove',e=>{
+  const m=nearest(e,40);
+  if(m && m.s.id===HUB) TL.setMarker(m);
+},{passive:true});
 
 const card=document.getElementById('card');
 function select(m){
@@ -818,24 +848,33 @@ function select(m){
   for(const k of markers) k.el.classList.toggle('sel',k===m);
   if(!m){ card.classList.remove('on'); return; }
   const s=m.s;
-  const merged=cam.d>CLUSTER_SPLIT_D && m.cluster && s.id===HUB;
   document.getElementById('cEye').textContent=m.active?'Active':'Planned';
-  document.getElementById('cTitle').textContent=merged?CLUSTER_LABEL.name:s.name;
-  document.getElementById('cSub').textContent=merged
-    ? 'Nusajaya & Kempas Tech Park · Batam NDP-A'
-    : s.sub;
-  document.getElementById('cCountry').textContent=merged?'Malaysia · Indonesia':s.country;
-  document.getElementById('cSites').textContent=merged?'7 (6 Johor, 1 Batam)':s.sites;
+  document.getElementById('cTitle').textContent=s.name;
+  document.getElementById('cSub').textContent=s.sub;
+  document.getElementById('cCountry').textContent=s.country;
+  document.getElementById('cSites').textContent=s.sites;
+  /* DELIVERED LOAD, and only where there is a figure for it. Gold, because gold
+     already means "built" on this map -- the arcs that carry it are the routes
+     that exist, and this is the load actually being delivered at the end of one
+     of them. A site without a number shows no number rather than a dash: an
+     empty field invites the reader to wonder what it would have said. */
+  const pw=document.getElementById('cPower');
+  pw.style.display = s.power ? '' : 'none';
+  if(s.power){ pw.querySelector('b').textContent=s.power;
+               pw.querySelector('i').textContent=s.powerUnit||''; }
   document.getElementById('cYear').textContent=s.year;
   document.getElementById('cSoon').textContent=m.active
-    ? (merged
-        ? 'Johor and Batam are 59 km apart — one marker at this zoom. Open the Johor · Batam view to separate them.'
-        // Say it about Batam specifically. The progression rail hangs off this
-        // same marker while they are merged, and every frame in it was taken
-        // over Johor; leaving Batam with the generic line would let somebody
-        // read the rail as covering both.
+    // Batam gets its own line. It sits 59km from Johor and used to share a
+    // marker with it; now that it has its own, the thing worth saying is that
+    // the capture timeline is not about it. Every frame in that pack was taken
+    // over the Johor campus.
+    // Johor is no longer one of the sites waiting to be wired up -- it is the
+    // one that has been. Saying otherwise on the card while its timeline is
+    // open beside it would be the map contradicting itself.
+    ? (s.id===HUB
+        ? 'The capture timeline beside this marker holds the campus’s aerial record — hover a date to see that visit.'
         : s.id==='id'
-          ? 'No survey imagery for Batam. The capture timeline on the merged marker is the Johor campus only.'
+          ? 'No survey imagery for Batam — the capture timeline belongs to the Johor campus, 59 km north.'
           : 'Project material for this site is not wired into the map yet — this round is the map itself.')
     : 'No site yet. Shown so the map reflects where the business is heading.';
   card.classList.add('on');
@@ -942,33 +981,24 @@ function tick(){
   // read through the planet
   const w=cvs.clientWidth,h=cvs.clientHeight;
   const camDir=camera.position.clone().normalize();
-  const merged=cam.d>CLUSTER_SPLIT_D;      // Johor + Batam share one marker until you close in
-
   for(const m of markers){
     const facing=m.v.clone().normalize().dot(camDir);
     pv.copy(m.v).project(camera);
     m.sx=(pv.x*0.5+0.5)*w; m.sy=(-pv.y*0.5+0.5)*h;
     m.onScreen=facing>0.06;
 
-    // in merged mode only the hub of the cluster is drawn, and it speaks for both
-    const hidden = merged && m.cluster && m.s.id!==HUB;
-    // and cull anything whose pin has left the block. The stage clips overflow,
+    // cull anything whose pin has left the block. The stage clips overflow,
     // so without this a marker just outside the frame leaves half a glyph of its
     // label stuck to the border, which reads as a rendering fault rather than as
     // a site that is off-screen.
     const inFrame = m.sx>4 && m.sx<w-4 && m.sy>4 && m.sy<h-4;
-    const vis = m.onScreen && !hidden && inFrame;
+    const vis = m.onScreen && inFrame;
     const fade = vis ? String(Math.min(1,(facing-0.06)*6)) : '0';
 
     m.pin.style.left=m.sx+'px'; m.pin.style.top=m.sy+'px'; m.pin.style.opacity=fade;
     m.el.style.left=m.sx+'px';  m.el.style.top=m.sy+'px';  m.el.style.opacity=fade;
     m.clickable = vis;
 
-    if(m.cluster && m.s.id===HUB){
-      const b=m.el.querySelector('b'), i=m.el.querySelector('i');
-      b.textContent = merged ? CLUSTER_LABEL.name : m.s.name;
-      i.textContent = merged ? CLUSTER_LABEL.sub  : m.s.country;
-    }
     m.pin.classList.toggle('sel', m===selected);
   }
   TL.frame();
@@ -985,11 +1015,12 @@ function tick(){
 
    THE MANIFEST IS THE ONLY SOURCE OF TRUTH. No date, count or path is written
    into this file -- they are read out of ktp-progression.json, so a re-survey
-   changes the rail by changing the data. The one number that stays hardcoded is
-   "7 buildings" in CLUSTER_LABEL, and deliberately: the manifest holds 12 sets
-   which do not map one-to-one onto buildings, and computing 7 out of them would
-   be a coincidence dressed as a fact. It stays where it is until sets[] carries
-   a building id.
+   changes the rail by changing the data. There used to be one exception, a
+   hardcoded "7 buildings" on the merged Johor-Batam marker, kept hardcoded
+   because the manifest holds 12 sets that do not map one-to-one onto buildings
+   and deriving 7 from them would have been a coincidence dressed as a fact.
+   That marker is gone and the number with it; each site now states its own
+   count, which is the honest version of what that label was reaching for.
 
    Nothing here runs until somebody selects Johor: the manifest, the compare
    element and every image are fetched on that first selection, so the globe's
@@ -1268,9 +1299,9 @@ const TL=(()=>{
   return {
     /* Called from select(). The rail exists for Johor and for nothing else --
        Batam included, which shares the marker at low zoom but has no survey
-       imagery of its own, so the merged marker still resolves to KTP/Johor and
-       the rail titles itself accordingly. */
-    setMarker(m,merged){
+       imagery of its own, and now its own marker, so nothing about it reaches
+       this rail. */
+    setMarker(m){
       const isJohor = !!m && m.s.id===HUB;
       if(!isJohor){ if(on){ on=false; marker=null; root.classList.remove('on','prev');
         root.setAttribute('aria-hidden','true'); collapse(); close(); } return; }
