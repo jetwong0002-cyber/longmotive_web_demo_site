@@ -762,7 +762,7 @@ fetch('uploads/world-coast-50m.json').then(r=>r.json()).then(lines=>{
    it. Nothing here touches want.lat or want.d, so the clamps that keep the
    portfolio on screen still hold while it drifts. ---- */
 const SPIN_MAX=3.0;          // deg/s -- a full turn in two minutes
-const SPIN_DELAY=3200;       // ms without contact before it eases back in
+const SPIN_DELAY=5000;       // ms of genuine stillness before it eases back in
 const STILL=/(^|[?&])still(=|&|$)/.test(location.search);
 const REDUCE=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let spin=0, idleAt=performance.now(), last=performance.now();
@@ -861,6 +861,10 @@ cvs.addEventListener('click',e=>{ const m=nearest(e,44); select(m); flyTo(m); })
    else; it comes down when another site is actually selected, which is a
    decision rather than an accident. */
 cvs.addEventListener('mousemove',e=>{
+  // MOVING THE POINTER OVER THE GLOBE IS AN ACTION. It was not counted as one,
+  // so the idle clock ran out while somebody was plainly using the map and the
+  // ball started turning under their cursor.
+  touch();
   const m=nearest(e,40);
   if(m && m.s.id===HUB) TL.setMarker(m);
 },{passive:true});
@@ -1023,7 +1027,15 @@ function tick(){
   const now=performance.now();
   const dt=Math.min(0.05,(now-last)/1000); last=now;
 
-  const idle = !STILL && !drag && !selected && (now-idleAt)>SPIN_DELAY;
+  /* NOTHING TURNS WHILE SOMETHING IS OPEN IN THE RAIL. A preview is a sweep
+     that takes 2.6 seconds and a caption that takes longer to read than that,
+     and the leader line ties it to a marker -- if the globe drifts underneath,
+     the thing the card is pointing at walks out from under the line while you
+     are reading. An idle timer cannot cover this: watching is not moving, so
+     the clock runs out exactly when somebody is paying the most attention.
+     So it is not a timer here, it is a hold. The rail only opens on Johor, and
+     it releases when another site is selected. */
+  const idle = !STILL && !drag && !selected && !TL.busy() && (now-idleAt)>SPIN_DELAY;
   spin += ((idle?SPIN_MAX:0)-spin)*(idle?0.012:0.14);
   want.lon -= spin*dt;
   stars.rotation.y += 0.0035*dt;   // barely -- just enough that it is not a decal
@@ -1157,9 +1169,9 @@ const TL=(()=>{
         +'<span class="tl-date">'+n.date+'</span>'
         +'<span class="tl-meta">'+n.meta+(n.mixed?'<span class="tl-mix" title="One set in this visit is mixed confidence"></span>':'')+'</span>'
         +'</span>';
-      b.addEventListener('mouseenter',()=>open(n,b));
-      b.addEventListener('focus',()=>open(n,b));
-      b.addEventListener('click',()=>expand(n));
+      b.addEventListener('mouseenter',()=>{ touch(); open(n,b); });
+      b.addEventListener('focus',()=>{ touch(); open(n,b); });
+      b.addEventListener('click',()=>{ touch(); expand(n); });
       b.addEventListener('keydown',(e)=>{
         if(e.key==='ArrowDown'||e.key==='ArrowUp'){
           e.preventDefault();
@@ -1367,6 +1379,8 @@ const TL=(()=>{
       load().then(()=>{ if(!built) build(); openDefault(); }).catch(()=>{});
     },
     frame,
+    // open preview or open set list -- either means somebody is reading
+    busy(){ return on && (elPrev.classList.contains('on') || elSets.classList.contains('on')); },
     close(){ collapse(); close(); }
   };
 })();
