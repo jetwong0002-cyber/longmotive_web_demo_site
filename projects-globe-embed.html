@@ -115,9 +115,11 @@
     background:var(--cyan);box-shadow:0 0 0 1px rgba(4,18,31,.9)}
   .pin .rg{position:absolute;left:-11px;top:-11px;width:22px;height:22px;
     border:1px solid var(--cyan);border-radius:50%;opacity:.5}
-  .pin.planned .dot{background:transparent;border:1px solid #7f9bb4;
+  /* planned is grey, not a bluer blue -- it has to read as a different kind of
+     thing from across the room, the same way its arc does */
+  .pin.planned .dot{background:transparent;border:1px solid #8FA0AD;
     left:-3px;top:-3px;width:6px;height:6px}
-  .pin.planned .rg{border-color:#7f9bb4;opacity:.3}
+  .pin.planned .rg{border-color:#8FA0AD;opacity:.3}
   .pin.sel .rg{left:-15px;top:-15px;width:30px;height:30px;opacity:.9}
   .lb{position:absolute;transform:translate(16px,-50%);white-space:nowrap;
     font:600 11px/1.35 ui-monospace,monospace;letter-spacing:.13em;
@@ -624,9 +626,39 @@ function addSites(){
           .multiplyScalar(R*(1+lift*Math.sin(Math.PI*t)));
         pts.push(p);
       }
-      scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),
-        new THREE.LineBasicMaterial({color:active?0x53cefa:0x51708c,
-          transparent:true,opacity:active?0.46:0.24})));
+      /* GOLD FOR BUILT, GREY FOR PLANNED, and the built ones glow.
+         These were cyan at 0.46 over a cyan coastline at 0.62 on a blue ball --
+         the same hue as everything they crossed, and dimmer than most of it, so
+         the one thing on this map that says the sites are one business rather
+         than six unrelated dots was the thing you could not see.
+         Gold is not decoration, it is the only hue on the globe that is not
+         already spoken for, and WebGL cannot draw a thick line -- a line on this
+         map glows by being ADDED to a body dark enough to sit above, exactly as
+         the coastline does. Above the bloom threshold of 0.50 it also picks up
+         the pass, which is what makes it read as lit rather than merely bright.
+         Planned stays flat and grey on purpose. Not dimmer gold, not dimmer
+         anything: a different material entirely, because the difference between
+         a route that exists and one that is intended should not be a matter of
+         degree. */
+      if(!active){
+        scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),
+          new THREE.LineBasicMaterial({color:0x8fa0ad,transparent:true,opacity:0.32})));
+      }else{
+        /* A GLOW HAS TO BE BUILT OUT OF LINES, because WebGL will not draw a
+           thick one. A single 1px additive arc is bright but it is still one
+           pixel: too little of it clears the bloom threshold for the pass to
+           make anything of it, so it reads as a thin orange scratch rather than
+           as something lit. Three copies at slightly different radii cover a
+           band instead of a line -- the flanks are dim enough to be a halo and
+           the core sits on top of both, and additive blending sums them, which
+           is what finally gives the bloom pass enough above 0.50 to work with. */
+        for(const [dr,op] of [[-0.005,0.30],[0.005,0.30],[0,0.95]]){
+          const q=dr ? pts.map(p=>p.clone().multiplyScalar(1+dr)) : pts;
+          scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(q),
+            new THREE.LineBasicMaterial({color:0xffc24a,transparent:true,opacity:op,
+              blending:THREE.AdditiveBlending,depthWrite:false})));
+        }
+      }
     }
   }
 }
