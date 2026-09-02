@@ -1,0 +1,2637 @@
+{
+ "$schema": "https://ktp-progression.local/manifest.schema.json",
+ "id": "ktp-progression",
+ "name": "KTP Progression",
+ "version": "1.0.0",
+ "generated": "2026-09-01",
+ "description": "Aerial construction-progress record of the KTP data-centre campus: 50 drone frames from five visits, matched into 12 before/after sets and registered into 14 drag-to-compare pairs and 13 transition clips.",
+ "site": {
+  "label": "KTP campus",
+  "approx_bounds": {
+   "lat": [
+    1.5586,
+    1.5618
+   ],
+   "lon": [
+    103.7149,
+    103.7248
+   ]
+  }
+ },
+ "camera": {
+  "make": "DJI",
+  "model": "FC9113",
+  "product": "Air 3S"
+ },
+ "shoots": [
+  {
+   "date": "2024-11-28",
+   "kind": "orthomosaic",
+   "frames": 0
+  },
+  {
+   "date": "2024-12-13",
+   "kind": "orthomosaic",
+   "frames": 0
+  },
+  {
+   "date": "2024-12-31",
+   "kind": "oblique",
+   "frames": 1
+  },
+  {
+   "date": "2025-08-11",
+   "kind": "mixed",
+   "frames": 6
+  },
+  {
+   "date": "2025-08-26",
+   "kind": "mixed",
+   "frames": 14
+  },
+  {
+   "date": "2025-10-08",
+   "kind": "mixed",
+   "frames": 15
+  },
+  {
+   "date": "2025-12-14",
+   "kind": "mixed",
+   "frames": 12
+  }
+ ],
+ "method": [
+  "DJI XMP gives GPS, relative altitude, gimbal yaw and pitch for 32 of 48 obliques; 16 lost it to compression",
+  "slant distance = relative_altitude / tan(|pitch|); projected along yaw to a ground target point",
+  "single-link clustering of ground targets at 55 m separates the frames into plots",
+  "consecutive-frame SIFT + mutual nearest neighbour + MAGSAC homography, composed along each chain",
+  "frames ordered by construction stage from the imagery alone, then checked against capture dates",
+  "no interpolation or generative synthesis: every pixel is a photograph"
+ ],
+ "sets": [
+  {
+   "id": "hall-a",
+   "title": "Hall A",
+   "subtitle": "the DAYONE-branded hall",
+   "confidence": "high",
+   "approx_location": {
+    "lat": 1.5592,
+    "lon": 103.719
+   },
+   "before": [
+    4
+   ],
+   "between": [
+    18,
+    9,
+    32,
+    29,
+    31
+   ],
+   "after": [
+    44,
+    47
+   ]
+  },
+  {
+   "id": "hall-b",
+   "title": "Hall B",
+   "subtitle": "the fastest mover on site",
+   "confidence": "high",
+   "approx_location": {
+    "lat": 1.5595,
+    "lon": 103.7176
+   },
+   "before": [
+    5
+   ],
+   "between": [
+    19,
+    7,
+    33,
+    30,
+    35
+   ],
+   "after": [
+    41,
+    46
+   ]
+  },
+  {
+   "id": "halls-ab",
+   "title": "Halls A + B",
+   "subtitle": "wide nadirs",
+   "confidence": "high",
+   "approx_location": {
+    "lat": 1.5594,
+    "lon": 103.7184
+   },
+   "before": [
+    8
+   ],
+   "between": [],
+   "after": [
+    26
+   ]
+  },
+  {
+   "id": "west-hall-plot",
+   "title": "West hall",
+   "subtitle": "and the plot next door",
+   "confidence": "high",
+   "approx_location": {
+    "lat": 1.5603,
+    "lon": 103.7163
+   },
+   "before": [
+    6
+   ],
+   "between": [
+    20,
+    34
+   ],
+   "after": [
+    45
+   ]
+  },
+  {
+   "id": "north-plot",
+   "title": "North plot",
+   "subtitle": "bare earth to standing structure",
+   "confidence": "high",
+   "approx_location": {
+    "lat": 1.5613,
+    "lon": 103.7198
+   },
+   "before": [
+    17
+   ],
+   "between": [
+    27
+   ],
+   "after": [
+    43
+   ]
+  },
+  {
+   "id": "twin-pads",
+   "title": "Twin pads",
+   "subtitle": "north-central",
+   "confidence": "high",
+   "approx_location": {
+    "lat": 1.5605,
+    "lon": 103.7202
+   },
+   "before": [
+    28,
+    21
+   ],
+   "between": [],
+   "after": [
+    36,
+    42
+   ]
+  },
+  {
+   "id": "mid-plot",
+   "title": "Mid plot",
+   "subtitle": "opposite the finished halls",
+   "confidence": "mixed",
+   "approx_location": {
+    "lat": 1.5604,
+    "lon": 103.7222
+   },
+   "before": [
+    13
+   ],
+   "between": [
+    25
+   ],
+   "after": [
+    39
+   ]
+  },
+  {
+   "id": "east-canal",
+   "title": "East plot",
+   "subtitle": "canal-side block",
+   "confidence": "high",
+   "approx_location": {
+    "lat": 1.5601,
+    "lon": 103.7235
+   },
+   "before": [
+    11,
+    12
+   ],
+   "between": [
+    24
+   ],
+   "after": [
+    37
+   ]
+  },
+  {
+   "id": "east-second",
+   "title": "East plot",
+   "subtitle": "second block",
+   "confidence": "high",
+   "approx_location": {
+    "lat": 1.56,
+    "lon": 103.724
+   },
+   "before": [
+    23
+   ],
+   "between": [],
+   "after": [
+    38
+   ]
+  },
+  {
+   "id": "east-both",
+   "title": "East plot",
+   "subtitle": "both blocks from above",
+   "confidence": "high",
+   "approx_location": {
+    "lat": 1.5598,
+    "lon": 103.7229
+   },
+   "before": [
+    22
+   ],
+   "between": [],
+   "after": [
+    40
+   ]
+  },
+  {
+   "id": "admin-control",
+   "title": "Control pair",
+   "subtitle": "the admin building",
+   "confidence": "high",
+   "approx_location": null,
+   "before": [
+    3
+   ],
+   "between": [],
+   "after": [
+    15
+   ]
+  },
+  {
+   "id": "east-halls-control",
+   "title": "Control pair",
+   "subtitle": "the east halls in service",
+   "confidence": "high",
+   "approx_location": {
+    "lat": 1.5597,
+    "lon": 103.7215
+   },
+   "before": [
+    1,
+    2
+   ],
+   "between": [],
+   "after": [
+    10,
+    14
+   ]
+  }
+ ],
+ "frames": [
+  {
+   "id": 0,
+   "ref": "frame-00",
+   "source_file": "图片_20241231101734.jpg",
+   "date": "2024-12-31",
+   "date_label": "31 Dec 2024",
+   "stage": "Site overview",
+   "set": null,
+   "media": {
+    "jpg": "media/frames/frame-00.jpg",
+    "webp": "media/frames/frame-00.webp"
+   },
+   "metadata": "stripped",
+   "note": "site-wide overview predating the 2025 sequence; intentionally outside the set matching"
+  },
+  {
+   "id": 1,
+   "ref": "frame-01",
+   "source_file": "图片_20250811104437_944_47.jpg",
+   "date": "2025-08-11",
+   "date_label": "11 Aug 2025",
+   "stage": "In service",
+   "set": "east-halls-control",
+   "media": {
+    "jpg": "media/frames/frame-01.jpg",
+    "webp": "media/frames/frame-01.webp"
+   },
+   "camera": {
+    "lat": 1.559591116,
+    "lon": 103.722329577,
+    "rel_altitude_m": 77.4,
+    "gimbal_yaw_deg": -83.4,
+    "gimbal_pitch_deg": -38.1,
+    "captured": "2025-08-11T08:48:23+08:00"
+   },
+   "ground_target": {
+    "lat": 1.559693,
+    "lon": 103.721448,
+    "slant_distance_m": 99
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 2,
+   "ref": "frame-02",
+   "source_file": "图片_20250811104456_950_47.jpg",
+   "date": "2025-08-11",
+   "date_label": "11 Aug 2025",
+   "stage": "In service",
+   "set": "east-halls-control",
+   "media": {
+    "jpg": "media/frames/frame-02.jpg",
+    "webp": "media/frames/frame-02.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 3,
+   "ref": "frame-03",
+   "source_file": "图片_20250811104459_951_47.jpg",
+   "date": "2025-08-11",
+   "date_label": "11 Aug 2025",
+   "stage": "Complete",
+   "set": "admin-control",
+   "media": {
+    "jpg": "media/frames/frame-03.jpg",
+    "webp": "media/frames/frame-03.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 4,
+   "ref": "frame-04",
+   "source_file": "图片_20250811104504_952_47.jpg",
+   "date": "2025-08-11",
+   "date_label": "11 Aug 2025",
+   "stage": "Roof slab",
+   "set": "hall-a",
+   "media": {
+    "jpg": "media/frames/frame-04.jpg",
+    "webp": "media/frames/frame-04.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 5,
+   "ref": "frame-05",
+   "source_file": "图片_20250811104508_953_47.jpg",
+   "date": "2025-08-11",
+   "date_label": "11 Aug 2025",
+   "stage": "Frame",
+   "set": "hall-b",
+   "media": {
+    "jpg": "media/frames/frame-05.jpg",
+    "webp": "media/frames/frame-05.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 6,
+   "ref": "frame-06",
+   "source_file": "图片_20250811104527_955_47.jpg",
+   "date": "2025-08-11",
+   "date_label": "11 Aug 2025",
+   "stage": "Plot vacant",
+   "set": "west-hall-plot",
+   "media": {
+    "jpg": "media/frames/frame-06.jpg",
+    "webp": "media/frames/frame-06.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 7,
+   "ref": "frame-07",
+   "source_file": "图片_20250826201459_1242_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Roof slab",
+   "set": "hall-b",
+   "media": {
+    "jpg": "media/frames/frame-07.jpg",
+    "webp": "media/frames/frame-07.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 8,
+   "ref": "frame-08",
+   "source_file": "图片_20250826201500_1243_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "A envelope / B slab",
+   "set": "halls-ab",
+   "media": {
+    "jpg": "media/frames/frame-08.jpg",
+    "webp": "media/frames/frame-08.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 9,
+   "ref": "frame-09",
+   "source_file": "图片_20250826201502_1244_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Envelope",
+   "set": "hall-a",
+   "media": {
+    "jpg": "media/frames/frame-09.jpg",
+    "webp": "media/frames/frame-09.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 10,
+   "ref": "frame-10",
+   "source_file": "图片_20250826201520_1245_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "In service",
+   "set": "east-halls-control",
+   "media": {
+    "jpg": "media/frames/frame-10.jpg",
+    "webp": "media/frames/frame-10.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 11,
+   "ref": "frame-11",
+   "source_file": "图片_20250826201524_1246_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "First-floor slabs",
+   "set": "east-canal",
+   "media": {
+    "jpg": "media/frames/frame-11.jpg",
+    "webp": "media/frames/frame-11.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 12,
+   "ref": "frame-12",
+   "source_file": "图片_20250826201528_1247_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "First-floor slabs",
+   "set": "east-canal",
+   "media": {
+    "jpg": "media/frames/frame-12.jpg",
+    "webp": "media/frames/frame-12.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 13,
+   "ref": "frame-13",
+   "source_file": "图片_20250826201532_1248_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Ground slab",
+   "set": "mid-plot",
+   "media": {
+    "jpg": "media/frames/frame-13.jpg",
+    "webp": "media/frames/frame-13.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 14,
+   "ref": "frame-14",
+   "source_file": "图片_20250826201536_1249_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "In service",
+   "set": "east-halls-control",
+   "media": {
+    "jpg": "media/frames/frame-14.jpg",
+    "webp": "media/frames/frame-14.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 15,
+   "ref": "frame-15",
+   "source_file": "图片_20250826201540_1250_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Complete",
+   "set": "admin-control",
+   "media": {
+    "jpg": "media/frames/frame-15.jpg",
+    "webp": "media/frames/frame-15.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 16,
+   "ref": "frame-16",
+   "source_file": "图片_20250826201543_1251_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Unmatched",
+   "set": null,
+   "media": {
+    "jpg": "media/frames/frame-16.jpg",
+    "webp": "media/frames/frame-16.webp"
+   },
+   "metadata": "stripped",
+   "note": "no counterpart found in any later visit; intentionally unassigned"
+  },
+  {
+   "id": 17,
+   "ref": "frame-17",
+   "source_file": "图片_20250826201546_1252_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Earthworks",
+   "set": "north-plot",
+   "media": {
+    "jpg": "media/frames/frame-17.jpg",
+    "webp": "media/frames/frame-17.webp"
+   },
+   "camera": {
+    "lat": 1.561798707,
+    "lon": 103.718538006,
+    "rel_altitude_m": 115.7,
+    "gimbal_yaw_deg": 106.4,
+    "gimbal_pitch_deg": -39.9,
+    "captured": "2025-08-26T18:09:49+08:00"
+   },
+   "ground_target": {
+    "lat": 1.561448,
+    "lon": 103.719731,
+    "slant_distance_m": 138
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 18,
+   "ref": "frame-18",
+   "source_file": "图片_20250826201548_1253_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Envelope",
+   "set": "hall-a",
+   "media": {
+    "jpg": "media/frames/frame-18.jpg",
+    "webp": "media/frames/frame-18.webp"
+   },
+   "camera": {
+    "lat": 1.560597355,
+    "lon": 103.718747199,
+    "rel_altitude_m": 48.1,
+    "gimbal_yaw_deg": 147.3,
+    "gimbal_pitch_deg": -28.4,
+    "captured": "2025-08-26T18:10:11+08:00"
+   },
+   "ground_target": {
+    "lat": 1.559925,
+    "lon": 103.719179,
+    "slant_distance_m": 89
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 19,
+   "ref": "frame-19",
+   "source_file": "图片_20250826201549_1254_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Roof slab",
+   "set": "hall-b",
+   "media": {
+    "jpg": "media/frames/frame-19.jpg",
+    "webp": "media/frames/frame-19.webp"
+   },
+   "camera": {
+    "lat": 1.560597806,
+    "lon": 103.718745862,
+    "rel_altitude_m": 48.3,
+    "gimbal_yaw_deg": -151.1,
+    "gimbal_pitch_deg": -28.4,
+    "captured": "2025-08-26T18:10:17+08:00"
+   },
+   "ground_target": {
+    "lat": 1.559895,
+    "lon": 103.718358,
+    "slant_distance_m": 89
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 20,
+   "ref": "frame-20",
+   "source_file": "图片_20250826201552_1255_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Plot vacant",
+   "set": "west-hall-plot",
+   "media": {
+    "jpg": "media/frames/frame-20.jpg",
+    "webp": "media/frames/frame-20.webp"
+   },
+   "camera": {
+    "lat": 1.560596265,
+    "lon": 103.714893148,
+    "rel_altitude_m": 67.1,
+    "gimbal_yaw_deg": 108.2,
+    "gimbal_pitch_deg": -28.4,
+    "captured": "2025-08-26T18:10:55+08:00"
+   },
+   "ground_target": {
+    "lat": 1.560248,
+    "lon": 103.715953,
+    "slant_distance_m": 124
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 21,
+   "ref": "frame-21",
+   "source_file": "图片_20251008211205_699_11.jpg",
+   "date": "2025-10-08",
+   "date_label": "8 Oct 2025",
+   "stage": "Pile caps",
+   "set": "twin-pads",
+   "media": {
+    "jpg": "media/frames/frame-21.jpg",
+    "webp": "media/frames/frame-21.webp"
+   },
+   "camera": {
+    "lat": 1.56122468,
+    "lon": 103.721751921,
+    "rel_altitude_m": 49.7,
+    "gimbal_yaw_deg": -124.9,
+    "gimbal_pitch_deg": -31.8,
+    "captured": "2025-10-08T10:50:12+08:00"
+   },
+   "ground_target": {
+    "lat": 1.560813,
+    "lon": 103.721161,
+    "slant_distance_m": 80
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 22,
+   "ref": "frame-22",
+   "source_file": "图片_20251008211209_700_11.jpg",
+   "date": "2025-10-08",
+   "date_label": "8 Oct 2025",
+   "stage": "Roof in progress",
+   "set": "east-both",
+   "media": {
+    "jpg": "media/frames/frame-22.jpg",
+    "webp": "media/frames/frame-22.webp"
+   },
+   "camera": {
+    "lat": 1.559696778,
+    "lon": 103.722848823,
+    "rel_altitude_m": 216.4,
+    "gimbal_yaw_deg": 24.1,
+    "gimbal_pitch_deg": -89.9,
+    "captured": "2025-10-08T10:48:17+08:00"
+   },
+   "ground_target": {
+    "lat": 1.5597,
+    "lon": 103.72285,
+    "slant_distance_m": 0
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 23,
+   "ref": "frame-23",
+   "source_file": "图片_20251008211212_701_11.jpg",
+   "date": "2025-10-08",
+   "date_label": "8 Oct 2025",
+   "stage": "Roof planks",
+   "set": "east-second",
+   "media": {
+    "jpg": "media/frames/frame-23.jpg",
+    "webp": "media/frames/frame-23.webp"
+   },
+   "camera": {
+    "lat": 1.56001545,
+    "lon": 103.724608683,
+    "rel_altitude_m": 36.4,
+    "gimbal_yaw_deg": -103.2,
+    "gimbal_pitch_deg": -28.3,
+    "captured": "2025-10-08T10:49:00+08:00"
+   },
+   "ground_target": {
+    "lat": 1.559877,
+    "lon": 103.724017,
+    "slant_distance_m": 68
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 24,
+   "ref": "frame-24",
+   "source_file": "图片_20251008211217_702_11.jpg",
+   "date": "2025-10-08",
+   "date_label": "8 Oct 2025",
+   "stage": "Roof deck",
+   "set": "east-canal",
+   "media": {
+    "jpg": "media/frames/frame-24.jpg",
+    "webp": "media/frames/frame-24.webp"
+   },
+   "camera": {
+    "lat": 1.560742235,
+    "lon": 103.723851467,
+    "rel_altitude_m": 49.1,
+    "gimbal_yaw_deg": -156.4,
+    "gimbal_pitch_deg": -31.8,
+    "captured": "2025-10-08T10:49:36+08:00"
+   },
+   "ground_target": {
+    "lat": 1.56009,
+    "lon": 103.723567,
+    "slant_distance_m": 79
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 25,
+   "ref": "frame-25",
+   "source_file": "图片_20251008211219_703_11.jpg",
+   "date": "2025-10-08",
+   "date_label": "8 Oct 2025",
+   "stage": "Podium and floor",
+   "set": "mid-plot",
+   "media": {
+    "jpg": "media/frames/frame-25.jpg",
+    "webp": "media/frames/frame-25.webp"
+   },
+   "camera": {
+    "lat": 1.561081916,
+    "lon": 103.722514678,
+    "rel_altitude_m": 49.6,
+    "gimbal_yaw_deg": -156.4,
+    "gimbal_pitch_deg": -31.8,
+    "captured": "2025-10-08T10:49:53+08:00"
+   },
+   "ground_target": {
+    "lat": 1.560423,
+    "lon": 103.722227,
+    "slant_distance_m": 80
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 26,
+   "ref": "frame-26",
+   "source_file": "图片_20251008211222_704_11.jpg",
+   "date": "2025-10-08",
+   "date_label": "8 Oct 2025",
+   "stage": "A waterproofing / B envelope",
+   "set": "halls-ab",
+   "media": {
+    "jpg": "media/frames/frame-26.jpg",
+    "webp": "media/frames/frame-26.webp"
+   },
+   "camera": {
+    "lat": 1.55935644,
+    "lon": 103.71836112,
+    "rel_altitude_m": 244.8,
+    "gimbal_yaw_deg": -153.4,
+    "gimbal_pitch_deg": -90.0,
+    "captured": "2025-10-08T10:52:12+08:00"
+   },
+   "ground_target": {
+    "lat": 1.559356,
+    "lon": 103.718361,
+    "slant_distance_m": 0
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 27,
+   "ref": "frame-27",
+   "source_file": "图片_20251008211226_705_11.jpg",
+   "date": "2025-10-08",
+   "date_label": "8 Oct 2025",
+   "stage": "Pile caps",
+   "set": "north-plot",
+   "media": {
+    "jpg": "media/frames/frame-27.jpg",
+    "webp": "media/frames/frame-27.webp"
+   },
+   "camera": {
+    "lat": 1.56158173,
+    "lon": 103.720465112,
+    "rel_altitude_m": 49.1,
+    "gimbal_yaw_deg": -123.2,
+    "gimbal_pitch_deg": -31.8,
+    "captured": "2025-10-08T10:50:30+08:00"
+   },
+   "ground_target": {
+    "lat": 1.561192,
+    "lon": 103.71987,
+    "slant_distance_m": 79
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 28,
+   "ref": "frame-28",
+   "source_file": "图片_20251008211228_706_11.jpg",
+   "date": "2025-10-08",
+   "date_label": "8 Oct 2025",
+   "stage": "Earthworks",
+   "set": "twin-pads",
+   "media": {
+    "jpg": "media/frames/frame-28.jpg",
+    "webp": "media/frames/frame-28.webp"
+   },
+   "camera": {
+    "lat": 1.560490515,
+    "lon": 103.720162985,
+    "rel_altitude_m": 221.5,
+    "gimbal_yaw_deg": -153.5,
+    "gimbal_pitch_deg": -89.9,
+    "captured": "2025-10-08T10:50:59+08:00"
+   },
+   "ground_target": {
+    "lat": 1.560487,
+    "lon": 103.720161,
+    "slant_distance_m": 0
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 29,
+   "ref": "frame-29",
+   "source_file": "图片_20251008211230_707_11.jpg",
+   "date": "2025-10-08",
+   "date_label": "8 Oct 2025",
+   "stage": "Waterproofing",
+   "set": "hall-a",
+   "media": {
+    "jpg": "media/frames/frame-29.jpg",
+    "webp": "media/frames/frame-29.webp"
+   },
+   "camera": {
+    "lat": 1.559207347,
+    "lon": 103.718986494,
+    "rel_altitude_m": 196.5,
+    "gimbal_yaw_deg": -65.5,
+    "gimbal_pitch_deg": -90.0,
+    "captured": "2025-10-08T10:51:29+08:00"
+   },
+   "ground_target": {
+    "lat": 1.559207,
+    "lon": 103.718986,
+    "slant_distance_m": 0
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 30,
+   "ref": "frame-30",
+   "source_file": "图片_20251008211232_708_11.jpg",
+   "date": "2025-10-08",
+   "date_label": "8 Oct 2025",
+   "stage": "Envelope",
+   "set": "hall-b",
+   "media": {
+    "jpg": "media/frames/frame-30.jpg",
+    "webp": "media/frames/frame-30.webp"
+   },
+   "camera": {
+    "lat": 1.559546399,
+    "lon": 103.717659449,
+    "rel_altitude_m": 196.2,
+    "gimbal_yaw_deg": -65.5,
+    "gimbal_pitch_deg": -90.0,
+    "captured": "2025-10-08T10:51:47+08:00"
+   },
+   "ground_target": {
+    "lat": 1.559546,
+    "lon": 103.717659,
+    "slant_distance_m": 0
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 31,
+   "ref": "frame-31",
+   "source_file": "图片_20251008211236_709_11.jpg",
+   "date": "2025-10-08",
+   "date_label": "8 Oct 2025",
+   "stage": "Facade",
+   "set": "hall-a",
+   "media": {
+    "jpg": "media/frames/frame-31.jpg",
+    "webp": "media/frames/frame-31.webp"
+   },
+   "camera": {
+    "lat": 1.557278252,
+    "lon": 103.718425301,
+    "rel_altitude_m": 122.4,
+    "gimbal_yaw_deg": 25.2,
+    "gimbal_pitch_deg": -36.8,
+    "captured": "2025-10-08T10:54:51+08:00"
+   },
+   "ground_target": {
+    "lat": 1.558608,
+    "lon": 103.719051,
+    "slant_distance_m": 164
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 32,
+   "ref": "frame-32",
+   "source_file": "图片_20251008211239_710_11.jpg",
+   "date": "2025-10-08",
+   "date_label": "8 Oct 2025",
+   "stage": "Waterproofing",
+   "set": "hall-a",
+   "media": {
+    "jpg": "media/frames/frame-32.jpg",
+    "webp": "media/frames/frame-32.webp"
+   },
+   "camera": {
+    "lat": 1.560270419,
+    "lon": 103.719313623,
+    "rel_altitude_m": 62.8,
+    "gimbal_yaw_deg": -149.4,
+    "gimbal_pitch_deg": -33.8,
+    "captured": "2025-10-08T10:53:12+08:00"
+   },
+   "ground_target": {
+    "lat": 1.559545,
+    "lon": 103.718884,
+    "slant_distance_m": 94
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 33,
+   "ref": "frame-33",
+   "source_file": "图片_20251008211242_711_11.jpg",
+   "date": "2025-10-08",
+   "date_label": "8 Oct 2025",
+   "stage": "Envelope",
+   "set": "hall-b",
+   "media": {
+    "jpg": "media/frames/frame-33.jpg",
+    "webp": "media/frames/frame-33.webp"
+   },
+   "camera": {
+    "lat": 1.560615472,
+    "lon": 103.717966078,
+    "rel_altitude_m": 64.3,
+    "gimbal_yaw_deg": -151.1,
+    "gimbal_pitch_deg": -33.8,
+    "captured": "2025-10-08T10:53:34+08:00"
+   },
+   "ground_target": {
+    "lat": 1.55986,
+    "lon": 103.717549,
+    "slant_distance_m": 96
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 34,
+   "ref": "frame-34",
+   "source_file": "图片_20251008211245_712_11.jpg",
+   "date": "2025-10-08",
+   "date_label": "8 Oct 2025",
+   "stage": "Crane mobilised",
+   "set": "west-hall-plot",
+   "media": {
+    "jpg": "media/frames/frame-34.jpg",
+    "webp": "media/frames/frame-34.webp"
+   },
+   "camera": {
+    "lat": 1.560521022,
+    "lon": 103.717363818,
+    "rel_altitude_m": 64.1,
+    "gimbal_yaw_deg": -104.2,
+    "gimbal_pitch_deg": -40.3,
+    "captured": "2025-10-08T10:53:47+08:00"
+   },
+   "ground_target": {
+    "lat": 1.560354,
+    "lon": 103.716705,
+    "slant_distance_m": 76
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 35,
+   "ref": "frame-35",
+   "source_file": "图片_20251008211247_713_11.jpg",
+   "date": "2025-10-08",
+   "date_label": "8 Oct 2025",
+   "stage": "Envelope",
+   "set": "hall-b",
+   "media": {
+    "jpg": "media/frames/frame-35.jpg",
+    "webp": "media/frames/frame-35.webp"
+   },
+   "camera": {
+    "lat": 1.557586799,
+    "lon": 103.717137585,
+    "rel_altitude_m": 122.4,
+    "gimbal_yaw_deg": 24.2,
+    "gimbal_pitch_deg": -35.5,
+    "captured": "2025-10-08T10:54:36+08:00"
+   },
+   "ground_target": {
+    "lat": 1.558993,
+    "lon": 103.71777,
+    "slant_distance_m": 172
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 36,
+   "ref": "frame-36",
+   "source_file": "图片_20251214121244_1828_11.jpg",
+   "date": "2025-12-14",
+   "date_label": "14 Dec 2025",
+   "stage": "Foundations",
+   "set": "twin-pads",
+   "media": {
+    "jpg": "media/frames/frame-36.jpg",
+    "webp": "media/frames/frame-36.webp"
+   },
+   "camera": {
+    "lat": 1.560448628,
+    "lon": 103.720341536,
+    "rel_altitude_m": 255.2,
+    "gimbal_yaw_deg": -144.6,
+    "gimbal_pitch_deg": -90.0,
+    "captured": "2025-12-14T08:52:58+08:00"
+   },
+   "ground_target": {
+    "lat": 1.560449,
+    "lon": 103.720342,
+    "slant_distance_m": 0
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 37,
+   "ref": "frame-37",
+   "source_file": "图片_20251214121254_1829_11.jpg",
+   "date": "2025-12-14",
+   "date_label": "14 Dec 2025",
+   "stage": "Roof topped",
+   "set": "east-canal",
+   "media": {
+    "jpg": "media/frames/frame-37.jpg",
+    "webp": "media/frames/frame-37.webp"
+   },
+   "camera": {
+    "lat": 1.560655736,
+    "lon": 103.723848417,
+    "rel_altitude_m": 56.2,
+    "gimbal_yaw_deg": -140.4,
+    "gimbal_pitch_deg": -35.0,
+    "captured": "2025-12-14T08:50:22+08:00"
+   },
+   "ground_target": {
+    "lat": 1.5601,
+    "lon": 103.723389,
+    "slant_distance_m": 80
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 38,
+   "ref": "frame-38",
+   "source_file": "图片_20251214121307_1830_11.jpg",
+   "date": "2025-12-14",
+   "date_label": "14 Dec 2025",
+   "stage": "Roof topped",
+   "set": "east-second",
+   "media": {
+    "jpg": "media/frames/frame-38.jpg",
+    "webp": "media/frames/frame-38.webp"
+   },
+   "camera": {
+    "lat": 1.559991115,
+    "lon": 103.724760562,
+    "rel_altitude_m": 56.7,
+    "gimbal_yaw_deg": -87.6,
+    "gimbal_pitch_deg": -31.2,
+    "captured": "2025-12-14T08:50:55+08:00"
+   },
+   "ground_target": {
+    "lat": 1.560026,
+    "lon": 103.72392,
+    "slant_distance_m": 94
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 39,
+   "ref": "frame-39",
+   "source_file": "图片_20251214121320_1831_11.jpg",
+   "date": "2025-12-14",
+   "date_label": "14 Dec 2025",
+   "stage": "Roof deck",
+   "set": "mid-plot",
+   "media": {
+    "jpg": "media/frames/frame-39.jpg",
+    "webp": "media/frames/frame-39.webp"
+   },
+   "camera": {
+    "lat": 1.561056715,
+    "lon": 103.722572568,
+    "rel_altitude_m": 60.0,
+    "gimbal_yaw_deg": -146.5,
+    "gimbal_pitch_deg": -32.9,
+    "captured": "2025-12-14T08:51:39+08:00"
+   },
+   "ground_target": {
+    "lat": 1.560362,
+    "lon": 103.722113,
+    "slant_distance_m": 93
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 40,
+   "ref": "frame-40",
+   "source_file": "图片_20251214121325_1832_11.jpg",
+   "date": "2025-12-14",
+   "date_label": "14 Dec 2025",
+   "stage": "Roof topped",
+   "set": "east-both",
+   "media": {
+    "jpg": "media/frames/frame-40.jpg",
+    "webp": "media/frames/frame-40.webp"
+   },
+   "camera": {
+    "lat": 1.559816352,
+    "lon": 103.722999134,
+    "rel_altitude_m": 232.5,
+    "gimbal_yaw_deg": -144.7,
+    "gimbal_pitch_deg": -89.9,
+    "captured": "2025-12-14T08:52:23+08:00"
+   },
+   "ground_target": {
+    "lat": 1.559813,
+    "lon": 103.722997,
+    "slant_distance_m": 0
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 41,
+   "ref": "frame-41",
+   "source_file": "图片_20251214121329_1833_11.jpg",
+   "date": "2025-12-14",
+   "date_label": "14 Dec 2025",
+   "stage": "Rooftop plant",
+   "set": "hall-b",
+   "media": {
+    "jpg": "media/frames/frame-41.jpg",
+    "webp": "media/frames/frame-41.webp"
+   },
+   "camera": {
+    "lat": 1.560521456,
+    "lon": 103.717947025,
+    "rel_altitude_m": 70.9,
+    "gimbal_yaw_deg": -141.5,
+    "gimbal_pitch_deg": -38.6,
+    "captured": "2025-12-14T08:55:19+08:00"
+   },
+   "ground_target": {
+    "lat": 1.559897,
+    "lon": 103.71745,
+    "slant_distance_m": 89
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 42,
+   "ref": "frame-42",
+   "source_file": "图片_20251214121335_1834_11.jpg",
+   "date": "2025-12-14",
+   "date_label": "14 Dec 2025",
+   "stage": "First bays",
+   "set": "twin-pads",
+   "media": {
+    "jpg": "media/frames/frame-42.jpg",
+    "webp": "media/frames/frame-42.webp"
+   },
+   "camera": {
+    "lat": 1.561394691,
+    "lon": 103.720655009,
+    "rel_altitude_m": 61.2,
+    "gimbal_yaw_deg": -161.7,
+    "gimbal_pitch_deg": -38.4,
+    "captured": "2025-12-14T08:53:53+08:00"
+   },
+   "ground_target": {
+    "lat": 1.560736,
+    "lon": 103.720437,
+    "slant_distance_m": 77
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 43,
+   "ref": "frame-43",
+   "source_file": "图片_20251214121340_1835_11.jpg",
+   "date": "2025-12-14",
+   "date_label": "14 Dec 2025",
+   "stage": "Ground frame",
+   "set": "north-plot",
+   "media": {
+    "jpg": "media/frames/frame-43.jpg",
+    "webp": "media/frames/frame-43.webp"
+   },
+   "camera": {
+    "lat": 1.561394898,
+    "lon": 103.720654149,
+    "rel_altitude_m": 61.2,
+    "gimbal_yaw_deg": -98.0,
+    "gimbal_pitch_deg": -35.4,
+    "captured": "2025-12-14T08:53:58+08:00"
+   },
+   "ground_target": {
+    "lat": 1.561287,
+    "lon": 103.719888,
+    "slant_distance_m": 86
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 44,
+   "ref": "frame-44",
+   "source_file": "图片_20251214121344_1836_11.jpg",
+   "date": "2025-12-14",
+   "date_label": "14 Dec 2025",
+   "stage": "Complete",
+   "set": "hall-a",
+   "media": {
+    "jpg": "media/frames/frame-44.jpg",
+    "webp": "media/frames/frame-44.webp"
+   },
+   "camera": {
+    "lat": 1.560308974,
+    "lon": 103.719269183,
+    "rel_altitude_m": 52.5,
+    "gimbal_yaw_deg": -144.2,
+    "gimbal_pitch_deg": -30.4,
+    "captured": "2025-12-14T08:54:46+08:00"
+   },
+   "ground_target": {
+    "lat": 1.559657,
+    "lon": 103.718799,
+    "slant_distance_m": 89
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 45,
+   "ref": "frame-45",
+   "source_file": "图片_20251214121349_1837_11.jpg",
+   "date": "2025-12-14",
+   "date_label": "14 Dec 2025",
+   "stage": "Ground slabs",
+   "set": "west-hall-plot",
+   "media": {
+    "jpg": "media/frames/frame-45.jpg",
+    "webp": "media/frames/frame-45.webp"
+   },
+   "camera": {
+    "lat": 1.560809282,
+    "lon": 103.716597093,
+    "rel_altitude_m": 52.9,
+    "gimbal_yaw_deg": -141.9,
+    "gimbal_pitch_deg": -39.8,
+    "captured": "2025-12-14T08:57:14+08:00"
+   },
+   "ground_target": {
+    "lat": 1.56036,
+    "lon": 103.716245,
+    "slant_distance_m": 63
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 46,
+   "ref": "frame-46",
+   "source_file": "图片_20251214121353_1838_11.jpg",
+   "date": "2025-12-14",
+   "date_label": "14 Dec 2025",
+   "stage": "Rooftop plant",
+   "set": "hall-b",
+   "media": {
+    "jpg": "media/frames/frame-46.jpg",
+    "webp": "media/frames/frame-46.webp"
+   },
+   "camera": {
+    "lat": 1.559511142,
+    "lon": 103.717617809,
+    "rel_altitude_m": 172.7,
+    "gimbal_yaw_deg": 131.7,
+    "gimbal_pitch_deg": -90.0,
+    "captured": "2025-12-14T08:55:52+08:00"
+   },
+   "ground_target": {
+    "lat": 1.559511,
+    "lon": 103.717618,
+    "slant_distance_m": 0
+   },
+   "metadata": "dji-xmp"
+  },
+  {
+   "id": 47,
+   "ref": "frame-47",
+   "source_file": "图片_20251214121400_1839_11.jpg",
+   "date": "2025-12-14",
+   "date_label": "14 Dec 2025",
+   "stage": "Complete",
+   "set": "hall-a",
+   "media": {
+    "jpg": "media/frames/frame-47.jpg",
+    "webp": "media/frames/frame-47.webp"
+   },
+   "camera": {
+    "lat": 1.559050647,
+    "lon": 103.718905746,
+    "rel_altitude_m": 177.1,
+    "gimbal_yaw_deg": 131.9,
+    "gimbal_pitch_deg": -90.0,
+    "captured": "2025-12-14T08:56:12+08:00"
+   },
+   "ground_target": {
+    "lat": 1.559051,
+    "lon": 103.718906,
+    "slant_distance_m": 0
+   },
+   "metadata": "dji-xmp"
+  }
+ ],
+ "comparisons": [
+  {
+   "id": "hallA-roof",
+   "set": "hall-a",
+   "title": "The roof fills up",
+   "view": "straight down",
+   "registered": true,
+   "registration": {
+    "method": "SIFT + mutual NN + MAGSAC homography",
+    "inliers_per_step": [
+     82,
+     142
+    ],
+    "homography_last_to_first": [
+     [
+      0.8471195303695493,
+      0.032287215588110714,
+      271.18759954708116
+     ],
+     [
+      -0.011423615230759753,
+      0.8525899981697079,
+      63.98976714859532
+     ],
+     [
+      9.149215569677926e-06,
+      1.435569224949609e-05,
+      0.9773145410915515
+     ]
+    ],
+    "note": null
+   },
+   "before": {
+    "frame": 9,
+    "date": "2025-08-26",
+    "date_label": "26 Aug 2025",
+    "stage": "Envelope"
+   },
+   "after": {
+    "frame": 47,
+    "date": "2025-12-14",
+    "date_label": "14 Dec 2025",
+    "stage": "Complete"
+   },
+   "caption": "Registered through the 8 October frame in two steps. The red earth and the perimeter road hold perfectly still; everything that moves is plant going onto the roof.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/hallA-roof-before-1600.jpg",
+      "webp": "media/compare/hallA-roof-before-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/hallA-roof-before-800.jpg",
+      "webp": "media/compare/hallA-roof-before-800.webp"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/hallA-roof-after-1600.jpg",
+      "webp": "media/compare/hallA-roof-after-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/hallA-roof-after-800.jpg",
+      "webp": "media/compare/hallA-roof-after-800.webp"
+     }
+    }
+   }
+  },
+  {
+   "id": "hallA-south",
+   "set": "hall-a",
+   "title": "South elevation",
+   "view": "oblique, from the south",
+   "registered": true,
+   "registration": {
+    "method": "SIFT + mutual NN + MAGSAC homography",
+    "inliers_per_step": [
+     82
+    ],
+    "homography_last_to_first": [
+     [
+      1.0739678662164092,
+      0.2592776642617311,
+      -92.86046370333152
+     ],
+     [
+      -0.01772882835567849,
+      1.2832230232032407,
+      -25.810865116933705
+     ],
+     [
+      3.225457215208002e-05,
+      0.00011373056277568692,
+      1.0
+     ]
+    ],
+    "note": null
+   },
+   "before": {
+    "frame": 32,
+    "date": "2025-10-08",
+    "date_label": "8 Oct 2025",
+    "stage": "Waterproofing"
+   },
+   "after": {
+    "frame": 44,
+    "date": "2025-12-14",
+    "date_label": "14 Dec 2025",
+    "stage": "Complete"
+   },
+   "caption": "The dark facade panels were already hung in October. What changes is the roof filling in and the signage going up.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/hallA-south-before-1600.jpg",
+      "webp": "media/compare/hallA-south-before-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/hallA-south-before-800.jpg",
+      "webp": "media/compare/hallA-south-before-800.webp"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/hallA-south-after-1600.jpg",
+      "webp": "media/compare/hallA-south-after-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/hallA-south-after-800.jpg",
+      "webp": "media/compare/hallA-south-after-800.webp"
+     }
+    }
+   }
+  },
+  {
+   "id": "hallB-roof",
+   "set": "hall-b",
+   "title": "Bare slab to full plant",
+   "view": "straight down",
+   "registered": true,
+   "registration": {
+    "method": "SIFT + mutual NN + MAGSAC homography",
+    "inliers_per_step": [
+     74,
+     112
+    ],
+    "homography_last_to_first": [
+     [
+      0.8132973395498377,
+      0.021458884767587314,
+      267.1858509998449
+     ],
+     [
+      0.0006697974102219565,
+      0.82455314648979,
+      71.046120510209
+     ],
+     [
+      -1.144381699740445e-06,
+      2.1102468941614173e-05,
+      0.973576158302314
+     ]
+    ],
+    "note": null
+   },
+   "before": {
+    "frame": 7,
+    "date": "2025-08-26",
+    "date_label": "26 Aug 2025",
+    "stage": "Roof slab"
+   },
+   "after": {
+    "frame": 46,
+    "date": "2025-12-14",
+    "date_label": "14 Dec 2025",
+    "stage": "Rooftop plant"
+   },
+   "caption": "The two straight-down camera positions land six metres apart on the ground &mdash; the tightest registration in the whole set.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/hallB-roof-before-1600.jpg",
+      "webp": "media/compare/hallB-roof-before-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/hallB-roof-before-800.jpg",
+      "webp": "media/compare/hallB-roof-before-800.webp"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/hallB-roof-after-1600.jpg",
+      "webp": "media/compare/hallB-roof-after-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/hallB-roof-after-800.jpg",
+      "webp": "media/compare/hallB-roof-after-800.webp"
+     }
+    }
+   }
+  },
+  {
+   "id": "hallB-north",
+   "set": "hall-b",
+   "title": "Roof deck to full plant",
+   "view": "oblique, from the north",
+   "registered": true,
+   "registration": {
+    "method": "SIFT + mutual NN + MAGSAC homography",
+    "inliers_per_step": [
+     48
+    ],
+    "homography_last_to_first": [
+     [
+      0.9938516087342444,
+      0.007030734418913408,
+      -26.21891670482034
+     ],
+     [
+      -0.007177798728285119,
+      0.818604227455483,
+      71.36414195003029
+     ],
+     [
+      2.2067062853219463e-05,
+      -6.8932906136431575e-06,
+      0.9999999999999999
+     ]
+    ],
+    "note": null
+   },
+   "before": {
+    "frame": 33,
+    "date": "2025-10-08",
+    "date_label": "8 Oct 2025",
+    "stage": "Envelope"
+   },
+   "after": {
+    "frame": 41,
+    "date": "2025-12-14",
+    "date_label": "14 Dec 2025",
+    "stage": "Rooftop plant"
+   },
+   "caption": "Sixty-seven days. Bare deck and precast walls on the left, complete rooftop plant and entrance canopy on the right.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/hallB-north-before-1600.jpg",
+      "webp": "media/compare/hallB-north-before-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/hallB-north-before-800.jpg",
+      "webp": "media/compare/hallB-north-before-800.webp"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/hallB-north-after-1600.jpg",
+      "webp": "media/compare/hallB-north-after-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/hallB-north-after-800.jpg",
+      "webp": "media/compare/hallB-north-after-800.webp"
+     }
+    }
+   }
+  },
+  {
+   "id": "hallsAB",
+   "set": "halls-ab",
+   "title": "Both halls at once",
+   "view": "straight down",
+   "registered": true,
+   "registration": {
+    "method": "SIFT + mutual NN + MAGSAC homography",
+    "inliers_per_step": [
+     56
+    ],
+    "homography_last_to_first": [
+     [
+      0.9196309514896917,
+      0.039026557527090736,
+      104.38804737472564
+     ],
+     [
+      -0.03794302361128326,
+      0.9144512183693458,
+      71.85144119507152
+     ],
+     [
+      5.406930829181596e-06,
+      -3.8444493274425367e-07,
+      1.0
+     ]
+    ],
+    "note": null
+   },
+   "before": {
+    "frame": 8,
+    "date": "2025-08-26",
+    "date_label": "26 Aug 2025",
+    "stage": "A envelope / B slab"
+   },
+   "after": {
+    "frame": 26,
+    "date": "2025-10-08",
+    "date_label": "8 Oct 2025",
+    "stage": "A waterproofing / B envelope"
+   },
+   "caption": "The frame that would not cluster with either hall, because it sits centred between them.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/hallsAB-before-1600.jpg",
+      "webp": "media/compare/hallsAB-before-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/hallsAB-before-800.jpg",
+      "webp": "media/compare/hallsAB-before-800.webp"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/hallsAB-after-1600.jpg",
+      "webp": "media/compare/hallsAB-after-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/hallsAB-after-800.jpg",
+      "webp": "media/compare/hallsAB-after-800.webp"
+     }
+    }
+   }
+  },
+  {
+   "id": "westplot",
+   "set": "west-hall-plot",
+   "title": "The plot next door",
+   "view": "viewpoints differ",
+   "registered": false,
+   "registration": {
+    "method": null,
+    "inliers_per_step": null,
+    "homography_last_to_first": null,
+    "note": "below inlier threshold; presented as a wipe, both frames unmodified"
+   },
+   "before": {
+    "frame": 34,
+    "date": "2025-10-08",
+    "date_label": "8 Oct 2025",
+    "stage": "Crane mobilised"
+   },
+   "after": {
+    "frame": 45,
+    "date": "2025-12-14",
+    "date_label": "14 Dec 2025",
+    "stage": "Ground slabs"
+   },
+   "caption": "Bearings 38&deg; apart and a plot that changed completely &mdash; only 8 inlier matches, below the threshold. An honest wipe between two unmodified frames.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/westplot-before-1600.jpg",
+      "webp": "media/compare/westplot-before-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/westplot-before-800.jpg",
+      "webp": "media/compare/westplot-before-800.webp"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/westplot-after-1600.jpg",
+      "webp": "media/compare/westplot-after-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/westplot-after-800.jpg",
+      "webp": "media/compare/westplot-after-800.webp"
+     }
+    }
+   }
+  },
+  {
+   "id": "northplot",
+   "set": "north-plot",
+   "title": "Pile caps to standing frame",
+   "view": "viewpoints differ",
+   "registered": false,
+   "registration": {
+    "method": null,
+    "inliers_per_step": null,
+    "homography_last_to_first": null,
+    "note": "below inlier threshold; presented as a wipe, both frames unmodified"
+   },
+   "before": {
+    "frame": 27,
+    "date": "2025-10-08",
+    "date_label": "8 Oct 2025",
+    "stage": "Pile caps"
+   },
+   "after": {
+    "frame": 43,
+    "date": "2025-12-14",
+    "date_label": "14 Dec 2025",
+    "stage": "Ground frame"
+   },
+   "caption": "13 inliers, not enough to trust a homography when almost every feature in the frame was built between the two visits.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/northplot-before-1600.jpg",
+      "webp": "media/compare/northplot-before-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/northplot-before-800.jpg",
+      "webp": "media/compare/northplot-before-800.webp"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/northplot-after-1600.jpg",
+      "webp": "media/compare/northplot-after-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/northplot-after-800.jpg",
+      "webp": "media/compare/northplot-after-800.webp"
+     }
+    }
+   }
+  },
+  {
+   "id": "twinpads",
+   "set": "twin-pads",
+   "title": "Earthworks to foundations",
+   "view": "straight down",
+   "registered": true,
+   "registration": {
+    "method": "SIFT + mutual NN + MAGSAC homography",
+    "inliers_per_step": [
+     15
+    ],
+    "homography_last_to_first": [
+     [
+      1.1726067353488125,
+      0.11718686739910981,
+      -268.41141691545755
+     ],
+     [
+      -0.03069491092200788,
+      1.0905804662467564,
+      -19.03587449862106
+     ],
+     [
+      8.073300561316733e-05,
+      -0.0002180597293867712,
+      1.0
+     ]
+    ],
+    "note": null
+   },
+   "before": {
+    "frame": 28,
+    "date": "2025-10-08",
+    "date_label": "8 Oct 2025",
+    "stage": "Earthworks"
+   },
+   "after": {
+    "frame": 36,
+    "date": "2025-12-14",
+    "date_label": "14 Dec 2025",
+    "stage": "Foundations"
+   },
+   "caption": "The weakest registration that still passed. Near-featureless bare earth gives the matcher very little to hold on to, but the boundary roads pinned it.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/twinpads-before-1600.jpg",
+      "webp": "media/compare/twinpads-before-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/twinpads-before-800.jpg",
+      "webp": "media/compare/twinpads-before-800.webp"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/twinpads-after-1600.jpg",
+      "webp": "media/compare/twinpads-after-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/twinpads-after-800.jpg",
+      "webp": "media/compare/twinpads-after-800.webp"
+     }
+    }
+   }
+  },
+  {
+   "id": "midplot",
+   "set": "mid-plot",
+   "title": "Podium to roof deck",
+   "view": "oblique, from the north-west",
+   "registered": true,
+   "registration": {
+    "method": "SIFT + mutual NN + MAGSAC homography",
+    "inliers_per_step": [
+     45
+    ],
+    "homography_last_to_first": [
+     [
+      1.0208740261038103,
+      -0.04477148909839413,
+      -89.40946048079869
+     ],
+     [
+      -0.01738808396378248,
+      1.036583163386168,
+      -22.199806313021696
+     ],
+     [
+      1.1774029817976887e-05,
+      -7.712511470621217e-05,
+      1.0
+     ]
+    ],
+    "note": null
+   },
+   "before": {
+    "frame": 25,
+    "date": "2025-10-08",
+    "date_label": "8 Oct 2025",
+    "stage": "Podium and floor"
+   },
+   "after": {
+    "frame": 39,
+    "date": "2025-12-14",
+    "date_label": "14 Dec 2025",
+    "stage": "Roof deck"
+   },
+   "caption": "The two finished halls across the road stay locked in place while the frame in front of them grows a roof.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/midplot-before-1600.jpg",
+      "webp": "media/compare/midplot-before-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/midplot-before-800.jpg",
+      "webp": "media/compare/midplot-before-800.webp"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/midplot-after-1600.jpg",
+      "webp": "media/compare/midplot-after-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/midplot-after-800.jpg",
+      "webp": "media/compare/midplot-after-800.webp"
+     }
+    }
+   }
+  },
+  {
+   "id": "eastcanal",
+   "set": "east-canal",
+   "title": "Canal-side block",
+   "view": "oblique, from the north-west",
+   "registered": true,
+   "registration": {
+    "method": "SIFT + mutual NN + MAGSAC homography",
+    "inliers_per_step": [
+     52
+    ],
+    "homography_last_to_first": [
+     [
+      1.139676564469436,
+      0.10880291563875673,
+      -146.5819396319612
+     ],
+     [
+      0.037772680637845134,
+      0.8972131732220089,
+      -29.835695758737106
+     ],
+     [
+      5.875213016487255e-05,
+      0.00011398397225618386,
+      0.9999999999999999
+     ]
+    ],
+    "note": null
+   },
+   "before": {
+    "frame": 24,
+    "date": "2025-10-08",
+    "date_label": "8 Oct 2025",
+    "stage": "Roof deck"
+   },
+   "after": {
+    "frame": 37,
+    "date": "2025-12-14",
+    "date_label": "14 Dec 2025",
+    "stage": "Roof topped"
+   },
+   "caption": "The canal at the left edge is what identified this block, and it is also what anchors the registration.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/eastcanal-before-1600.jpg",
+      "webp": "media/compare/eastcanal-before-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/eastcanal-before-800.jpg",
+      "webp": "media/compare/eastcanal-before-800.webp"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/eastcanal-after-1600.jpg",
+      "webp": "media/compare/eastcanal-after-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/eastcanal-after-800.jpg",
+      "webp": "media/compare/eastcanal-after-800.webp"
+     }
+    }
+   }
+  },
+  {
+   "id": "eastsecond",
+   "set": "east-second",
+   "title": "Second block",
+   "view": "oblique, from the west",
+   "registered": true,
+   "registration": {
+    "method": "SIFT + mutual NN + MAGSAC homography",
+    "inliers_per_step": [
+     55
+    ],
+    "homography_last_to_first": [
+     [
+      1.0795508925667956,
+      -0.20169126874919988,
+      36.6846816050717
+     ],
+     [
+      0.06433955097284755,
+      0.9581078179499141,
+      -59.85308660399033
+     ],
+     [
+      4.510431873688924e-06,
+      -0.00016689498431302064,
+      1.0
+     ]
+    ],
+    "note": null
+   },
+   "before": {
+    "frame": 23,
+    "date": "2025-10-08",
+    "date_label": "8 Oct 2025",
+    "stage": "Roof planks"
+   },
+   "after": {
+    "frame": 38,
+    "date": "2025-12-14",
+    "date_label": "14 Dec 2025",
+    "stage": "Roof topped"
+   },
+   "caption": "Precast planks across an open frame become a topped deck carrying plant steel.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/eastsecond-before-1600.jpg",
+      "webp": "media/compare/eastsecond-before-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/eastsecond-before-800.jpg",
+      "webp": "media/compare/eastsecond-before-800.webp"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/eastsecond-after-1600.jpg",
+      "webp": "media/compare/eastsecond-after-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/eastsecond-after-800.jpg",
+      "webp": "media/compare/eastsecond-after-800.webp"
+     }
+    }
+   }
+  },
+  {
+   "id": "eastboth",
+   "set": "east-both",
+   "title": "Both blocks from above",
+   "view": "straight down",
+   "registered": true,
+   "registration": {
+    "method": "SIFT + mutual NN + MAGSAC homography",
+    "inliers_per_step": [
+     39
+    ],
+    "homography_last_to_first": [
+     [
+      -1.0597847730187602,
+      0.02934272010066015,
+      2057.5565407539457
+     ],
+     [
+      -0.017717972175763493,
+      -1.0375026754100958,
+      1123.8827291126986
+     ],
+     [
+      -1.9650822320946864e-05,
+      1.8160957916723417e-05,
+      1.0
+     ]
+    ],
+    "note": null
+   },
+   "before": {
+    "frame": 22,
+    "date": "2025-10-08",
+    "date_label": "8 Oct 2025",
+    "stage": "Roof in progress"
+   },
+   "after": {
+    "frame": 40,
+    "date": "2025-12-14",
+    "date_label": "14 Dec 2025",
+    "stage": "Roof topped"
+   },
+   "caption": "These two frames were shot 169&deg; apart in gimbal yaw. The homography puts them back on top of each other.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/eastboth-before-1600.jpg",
+      "webp": "media/compare/eastboth-before-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/eastboth-before-800.jpg",
+      "webp": "media/compare/eastboth-before-800.webp"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/eastboth-after-1600.jpg",
+      "webp": "media/compare/eastboth-after-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/eastboth-after-800.jpg",
+      "webp": "media/compare/eastboth-after-800.webp"
+     }
+    }
+   }
+  },
+  {
+   "id": "admin",
+   "set": "admin-control",
+   "title": "The admin building",
+   "view": "oblique",
+   "registered": true,
+   "registration": {
+    "method": "SIFT + mutual NN + MAGSAC homography",
+    "inliers_per_step": [
+     35
+    ],
+    "homography_last_to_first": [
+     [
+      1.1504670369600876,
+      -0.6266311880928866,
+      -206.06984633961207
+     ],
+     [
+      -0.024167384382428096,
+      0.6985583364717206,
+      169.6980192547362
+     ],
+     [
+      7.123319928440952e-07,
+      -0.0006307936716121413,
+      1.0
+     ]
+    ],
+    "note": null
+   },
+   "before": {
+    "frame": 3,
+    "date": "2025-08-11",
+    "date_label": "11 Aug 2025",
+    "stage": "Complete"
+   },
+   "after": {
+    "frame": 15,
+    "date": "2025-08-26",
+    "date_label": "26 Aug 2025",
+    "stage": "Complete"
+   },
+   "caption": "A control. Slide it and almost nothing moves except a few parked cars &mdash; which is how you know the method is not inventing change.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/admin-before-1600.jpg",
+      "webp": "media/compare/admin-before-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/admin-before-800.jpg",
+      "webp": "media/compare/admin-before-800.webp"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/admin-after-1600.jpg",
+      "webp": "media/compare/admin-after-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/admin-after-800.jpg",
+      "webp": "media/compare/admin-after-800.webp"
+     }
+    }
+   }
+  },
+  {
+   "id": "easthalls",
+   "set": "east-halls-control",
+   "title": "East halls in service",
+   "view": "oblique",
+   "registered": true,
+   "registration": {
+    "method": "SIFT + mutual NN + MAGSAC homography",
+    "inliers_per_step": [
+     36
+    ],
+    "homography_last_to_first": [
+     [
+      1.1134347636232698,
+      0.033524877063196006,
+      -86.30609872058683
+     ],
+     [
+      0.033183371982334293,
+      1.9629207470873204,
+      -360.805419767306
+     ],
+     [
+      -1.707909518354474e-06,
+      0.00048553758423560046,
+      0.9999999999999999
+     ]
+    ],
+    "note": null
+   },
+   "before": {
+    "frame": 1,
+    "date": "2025-08-11",
+    "date_label": "11 Aug 2025",
+    "stage": "In service"
+   },
+   "after": {
+    "frame": 10,
+    "date": "2025-08-26",
+    "date_label": "26 Aug 2025",
+    "stage": "In service"
+   },
+   "caption": "The slight shift at the divider is parallax on a tall building, not construction.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/easthalls-before-1600.jpg",
+      "webp": "media/compare/easthalls-before-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/easthalls-before-800.jpg",
+      "webp": "media/compare/easthalls-before-800.webp"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/easthalls-after-1600.jpg",
+      "webp": "media/compare/easthalls-after-1600.webp"
+     },
+     "800": {
+      "jpg": "media/compare/easthalls-after-800.jpg",
+      "webp": "media/compare/easthalls-after-800.webp"
+     }
+    }
+   }
+  }
+ ],
+ "videos": [
+  {
+   "id": "00_all-sets-reel",
+   "set": null,
+   "title": "All twelve sets, one reel",
+   "subtitle": "",
+   "caption": "Every set in sequence.",
+   "duration_s": 91.8,
+   "media": {
+    "hq": {
+     "src": "media/video/hq/00_all-sets-reel.mp4",
+     "width": 1600,
+     "height": 900,
+     "bytes": 65303255
+    },
+    "web": {
+     "src": "media/video/web/00_all-sets-reel.mp4",
+     "width": 1280,
+     "height": 720,
+     "bytes": 17986144
+    }
+   },
+   "poster": null
+  },
+  {
+   "id": "01_hall-a",
+   "set": "hall-a",
+   "title": "Hall A",
+   "subtitle": "the DAYONE-branded hall",
+   "caption": "Two movements: straight down as the roof fills with plant, then the south elevation from October to December.",
+   "duration_s": 14.4,
+   "media": {
+    "hq": {
+     "src": "media/video/hq/01_hall-a.mp4",
+     "width": 1600,
+     "height": 900,
+     "bytes": 10878746
+    },
+    "web": {
+     "src": "media/video/web/01_hall-a.mp4",
+     "width": 1280,
+     "height": 720,
+     "bytes": 3089037
+    }
+   },
+   "poster": {
+    "jpg": "media/poster/01_hall-a.jpg",
+    "webp": "media/poster/01_hall-a.webp"
+   }
+  },
+  {
+   "id": "02_hall-b",
+   "set": "hall-b",
+   "title": "Hall B",
+   "subtitle": "the fastest mover on site",
+   "caption": "Straight down from bare slab to full chiller farm, then the same building from the north.",
+   "duration_s": 14.4,
+   "media": {
+    "hq": {
+     "src": "media/video/hq/02_hall-b.mp4",
+     "width": 1600,
+     "height": 900,
+     "bytes": 11497688
+    },
+    "web": {
+     "src": "media/video/web/02_hall-b.mp4",
+     "width": 1280,
+     "height": 720,
+     "bytes": 3186231
+    }
+   },
+   "poster": {
+    "jpg": "media/poster/02_hall-b.jpg",
+    "webp": "media/poster/02_hall-b.webp"
+   }
+  },
+  {
+   "id": "03_halls-ab",
+   "set": "halls-ab",
+   "title": "Halls A + B",
+   "subtitle": "wide nadirs",
+   "caption": "The frame that sits between both halls. A runs ahead of B throughout.",
+   "duration_s": 5.7,
+   "media": {
+    "hq": {
+     "src": "media/video/hq/03_halls-ab.mp4",
+     "width": 1600,
+     "height": 900,
+     "bytes": 4472882
+    },
+    "web": {
+     "src": "media/video/web/03_halls-ab.mp4",
+     "width": 1280,
+     "height": 720,
+     "bytes": 1242296
+    }
+   },
+   "poster": {
+    "jpg": "media/poster/03_halls-ab.jpg",
+    "webp": "media/poster/03_halls-ab.webp"
+   }
+  },
+  {
+   "id": "04_west-plot",
+   "set": "west-hall-plot",
+   "title": "West hall",
+   "subtitle": "and the plot next door",
+   "caption": "Wipe, not a warp &mdash; the viewpoints are 38&deg; apart. Grass becomes ground slabs.",
+   "duration_s": 8.7,
+   "media": {
+    "hq": {
+     "src": "media/video/hq/04_west-plot.mp4",
+     "width": 1600,
+     "height": 900,
+     "bytes": 4457044
+    },
+    "web": {
+     "src": "media/video/web/04_west-plot.mp4",
+     "width": 1280,
+     "height": 720,
+     "bytes": 1142008
+    }
+   },
+   "poster": {
+    "jpg": "media/poster/04_west-plot.jpg",
+    "webp": "media/poster/04_west-plot.webp"
+   }
+  },
+  {
+   "id": "05_north-plot",
+   "set": "north-plot",
+   "title": "North plot",
+   "subtitle": "bare earth to standing structure",
+   "caption": "Wipe across three visits: earthworks, pile caps, ground frame.",
+   "duration_s": 8.7,
+   "media": {
+    "hq": {
+     "src": "media/video/hq/05_north-plot.mp4",
+     "width": 1600,
+     "height": 900,
+     "bytes": 6339936
+    },
+    "web": {
+     "src": "media/video/web/05_north-plot.mp4",
+     "width": 1280,
+     "height": 720,
+     "bytes": 1488985
+    }
+   },
+   "poster": {
+    "jpg": "media/poster/05_north-plot.jpg",
+    "webp": "media/poster/05_north-plot.webp"
+   }
+  },
+  {
+   "id": "06_twin-pads",
+   "set": "twin-pads",
+   "title": "Twin pads",
+   "subtitle": "north-central",
+   "caption": "Straight down. Two raw pads gain foundations and podium slabs.",
+   "duration_s": 5.7,
+   "media": {
+    "hq": {
+     "src": "media/video/hq/06_twin-pads.mp4",
+     "width": 1600,
+     "height": 900,
+     "bytes": 4044105
+    },
+    "web": {
+     "src": "media/video/web/06_twin-pads.mp4",
+     "width": 1280,
+     "height": 720,
+     "bytes": 1107265
+    }
+   },
+   "poster": {
+    "jpg": "media/poster/06_twin-pads.jpg",
+    "webp": "media/poster/06_twin-pads.webp"
+   }
+  },
+  {
+   "id": "07_mid-plot",
+   "set": "mid-plot",
+   "title": "Mid plot",
+   "subtitle": "opposite the finished halls",
+   "caption": "Podium and first floor become a topped roof deck.",
+   "duration_s": 5.7,
+   "media": {
+    "hq": {
+     "src": "media/video/hq/07_mid-plot.mp4",
+     "width": 1600,
+     "height": 900,
+     "bytes": 4330472
+    },
+    "web": {
+     "src": "media/video/web/07_mid-plot.mp4",
+     "width": 1280,
+     "height": 720,
+     "bytes": 1165310
+    }
+   },
+   "poster": {
+    "jpg": "media/poster/07_mid-plot.jpg",
+    "webp": "media/poster/07_mid-plot.webp"
+   }
+  },
+  {
+   "id": "08_east-canal",
+   "set": "east-canal",
+   "title": "East plot",
+   "subtitle": "canal-side block",
+   "caption": "Precast roof planks become a topped deck with wall panels hung.",
+   "duration_s": 5.7,
+   "media": {
+    "hq": {
+     "src": "media/video/hq/08_east-canal.mp4",
+     "width": 1600,
+     "height": 900,
+     "bytes": 4778816
+    },
+    "web": {
+     "src": "media/video/web/08_east-canal.mp4",
+     "width": 1280,
+     "height": 720,
+     "bytes": 1415538
+    }
+   },
+   "poster": {
+    "jpg": "media/poster/08_east-canal.jpg",
+    "webp": "media/poster/08_east-canal.webp"
+   }
+  },
+  {
+   "id": "09_east-second",
+   "set": "east-second",
+   "title": "East plot",
+   "subtitle": "second block",
+   "caption": "Open frame with roof planks to topped deck carrying plant steel.",
+   "duration_s": 5.7,
+   "media": {
+    "hq": {
+     "src": "media/video/hq/09_east-second.mp4",
+     "width": 1600,
+     "height": 900,
+     "bytes": 4811054
+    },
+    "web": {
+     "src": "media/video/web/09_east-second.mp4",
+     "width": 1280,
+     "height": 720,
+     "bytes": 1307811
+    }
+   },
+   "poster": {
+    "jpg": "media/poster/09_east-second.jpg",
+    "webp": "media/poster/09_east-second.webp"
+   }
+  },
+  {
+   "id": "10_east-both",
+   "set": "east-both",
+   "title": "East plot",
+   "subtitle": "both blocks from above",
+   "caption": "Shot 169&deg; apart in gimbal yaw and put back on top of each other.",
+   "duration_s": 5.7,
+   "media": {
+    "hq": {
+     "src": "media/video/hq/10_east-both.mp4",
+     "width": 1600,
+     "height": 900,
+     "bytes": 4260604
+    },
+    "web": {
+     "src": "media/video/web/10_east-both.mp4",
+     "width": 1280,
+     "height": 720,
+     "bytes": 1175337
+    }
+   },
+   "poster": {
+    "jpg": "media/poster/10_east-both.jpg",
+    "webp": "media/poster/10_east-both.webp"
+   }
+  },
+  {
+   "id": "11_admin",
+   "set": "admin-control",
+   "title": "Control pair",
+   "subtitle": "the admin building",
+   "caption": "Two weeks apart on a finished building. Almost nothing moves &mdash; which is the point.",
+   "duration_s": 5.7,
+   "media": {
+    "hq": {
+     "src": "media/video/hq/11_admin.mp4",
+     "width": 1600,
+     "height": 900,
+     "bytes": 2202898
+    },
+    "web": {
+     "src": "media/video/web/11_admin.mp4",
+     "width": 1280,
+     "height": 720,
+     "bytes": 714149
+    }
+   },
+   "poster": {
+    "jpg": "media/poster/11_admin.jpg",
+    "webp": "media/poster/11_admin.webp"
+   }
+  },
+  {
+   "id": "12_east-halls",
+   "set": "east-halls-control",
+   "title": "Control pair",
+   "subtitle": "the east halls in service",
+   "caption": "The shift at the wipe is parallax on a tall building, not construction.",
+   "duration_s": 5.7,
+   "media": {
+    "hq": {
+     "src": "media/video/hq/12_east-halls.mp4",
+     "width": 1600,
+     "height": 900,
+     "bytes": 3237718
+    },
+    "web": {
+     "src": "media/video/web/12_east-halls.mp4",
+     "width": 1280,
+     "height": 720,
+     "bytes": 783169
+    }
+   },
+   "poster": {
+    "jpg": "media/poster/12_east-halls.jpg",
+    "webp": "media/poster/12_east-halls.webp"
+   }
+  }
+ ]
+}
