@@ -132,6 +132,7 @@
 
   /* card, hint and rail belong to the BLOCK, not the viewport */
   #card{position:absolute;left:22px;bottom:22px;width:320px;z-index:5;
+    transition:opacity .22s,transform .22s,left .28s,right .28s;
     background:var(--panel);border:1px solid var(--line);border-radius:8px;
     padding:17px 19px;opacity:0;transform:translateY(8px);
     transition:opacity .22s,transform .22s;pointer-events:none}
@@ -167,6 +168,139 @@
     letter-spacing:.1em;display:flex;justify-content:space-between;gap:20px;
     border-top:1px solid var(--line);padding-top:14px}
 
+  /* ---- KTP capture-timeline rail -------------------------------------
+     Johor only. Every other marker keeps the behaviour it already had: the
+     progression pack is one site's survey record, and nothing in it describes
+     Batam, Bangkok, Hong Kong or Australia, so nothing in it may stand in for
+     them. This is the one marker on the map with real material behind it, and
+     the way it says so is by being the only one that grows a rail. */
+  #tl{position:absolute;left:0;top:0;right:0;bottom:0;z-index:6;
+    pointer-events:none;opacity:0;transition:opacity .22s}
+  #tl.on{opacity:1}
+  /* the scrim carries type over the limb; it never covers the whole frame */
+  #tl .tl-scrim{position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(to right,rgba(4,14,26,.92) 0,rgba(4,14,26,.72) 300px,transparent 470px)}
+  #tl .tl-axis{position:absolute;left:76px;top:88px;bottom:84px;width:1px;
+    background:#1E3E55;pointer-events:none}
+  #tl .tl-nodes{position:absolute;left:76px;top:88px;bottom:84px;width:300px;
+    display:flex;flex-direction:column;justify-content:space-between;pointer-events:auto}
+  #tl .tl-head{position:absolute;left:76px;top:56px;color:#53CEFA;
+    font:600 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.18em;
+    text-transform:uppercase;white-space:nowrap}
+  #tl .tl-head span{color:#3F5A70;margin-left:9px}
+
+  #tl .tl-node{position:relative;display:flex;align-items:center;gap:13px;
+    margin-left:-3px;padding:2px 0;cursor:pointer;background:none;border:0;
+    text-align:left;font:inherit;color:inherit}
+  #tl .tl-node:focus{outline:none}
+  #tl .tl-node:focus-visible .tl-dot{box-shadow:0 0 0 3px rgba(83,206,250,.45)}
+  #tl .tl-dot{flex:0 0 auto;width:7px;height:7px;border:1px solid #53CEFA;
+    background:#06131F;transition:width .18s,height .18s,box-shadow .18s,background .18s}
+  #tl .tl-node.arch{opacity:.55}
+  #tl .tl-node.arch .tl-dot{border-color:#3F5A70}
+  #tl .tl-node.sel .tl-dot{width:13px;height:13px;background:#53CEFA;border-color:#53CEFA;
+    box-shadow:0 0 0 5px rgba(83,206,250,.18);margin-left:-3px}
+  #tl .tl-txt{display:flex;flex-direction:column;gap:3px;min-width:0}
+  #tl .tl-date{font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;
+    text-transform:uppercase;color:#ADB8C3;white-space:nowrap}
+  #tl .tl-node.sel .tl-date{font-size:12px;font-weight:600;color:#E4ECF3}
+  #tl .tl-meta{font:400 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.10em;
+    text-transform:uppercase;color:#3F5A70;white-space:nowrap}
+  #tl .tl-node.sel .tl-meta{color:#53CEFA}
+  /* mixed confidence gets one dot, not a sentence */
+  #tl .tl-mix{display:inline-block;width:3px;height:3px;border-radius:50%;
+    background:#E0A05A;margin-left:7px;vertical-align:middle}
+  #tl .tl-divide{position:relative;height:1px;background:#1E3E55;margin-left:-3px;width:172px}
+  #tl .tl-divide i{position:absolute;left:0;top:-13px;font-style:normal;
+    font:400 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em;
+    text-transform:uppercase;color:#3F5A70;background:#081F36;padding-right:8px}
+
+  /* preview card: 256 wide, image then caption, square corners like the rest */
+  #tl .tl-prev{position:absolute;width:256px;border:1px solid #1E3E55;
+    background:rgba(8,24,38,.9);pointer-events:none;opacity:0;
+    transform:scale(.96);transform-origin:left center;
+    transition:opacity .22s cubic-bezier(.2,.7,.3,1),transform .22s cubic-bezier(.2,.7,.3,1)}
+  #tl .tl-prev.on{opacity:1;transform:none}
+  #tl .tl-prev ktp-compare,#tl .tl-prev .tl-empty{display:block;width:100%;height:144px}
+  #tl .tl-prev .tl-empty{display:flex;align-items:center;justify-content:center;
+    text-align:center;padding:0 22px;background:#0E2739;color:#3F5A70;
+    font:600 9px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;
+    text-transform:uppercase}
+  #tl .tl-cap{padding:11px 13px 12px;border-top:1px solid #1E3E55}
+  #tl .tl-cap b{display:block;font:600 11px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;
+    letter-spacing:.12em;text-transform:uppercase;color:#E4ECF3;margin-bottom:5px}
+  #tl .tl-cap p{margin:0;font:400 11.5px/1.55 ui-sans-serif,system-ui,sans-serif;color:#ADB8C3}
+  /* amber is reserved for exactly one thing: a pair that would not register */
+  #tl .tl-chip{display:inline-block;margin-top:8px;padding:3px 7px;
+    border:1px solid #E0A05A;color:#E0A05A;
+    font:600 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;
+    text-transform:uppercase}
+
+  #tl .tl-svg{position:absolute;inset:0;pointer-events:none;overflow:visible}
+  #tl .tl-lead{fill:none;stroke:#53CEFA;stroke-width:1;stroke-dasharray:3 3;opacity:0;
+    transition:opacity .22s}
+  #tl.prev .tl-lead{opacity:1}
+  #tl .tl-halo circle{fill:none;stroke:#53CEFA;opacity:0;transition:opacity .22s}
+  #tl.prev .tl-halo circle:nth-child(1){opacity:.55;animation:tlPulse 2s ease-in-out infinite}
+  #tl.prev .tl-halo circle:nth-child(2){opacity:.26;animation:tlPulse 2s ease-in-out .25s infinite}
+  #tl.prev .tl-halo circle:nth-child(3){opacity:.11;animation:tlPulse 2s ease-in-out .5s infinite}
+  @keyframes tlPulse{0%,100%{opacity:inherit}50%{opacity:.06}}
+
+  /* expanded set list */
+  #tl .tl-sets{position:absolute;left:76px;top:88px;bottom:84px;width:0;overflow:hidden;
+    background:rgba(8,24,38,.94);border:0 solid #1E3E55;
+    transition:width .3s cubic-bezier(.2,.7,.3,1);pointer-events:auto}
+  #tl .tl-sets.on{width:392px;border-width:1px}
+  #tl .tl-sets .tl-inner{opacity:0;transition:opacity .2s .1s;padding:15px 17px;
+    height:100%;overflow-y:auto;box-sizing:border-box}
+  #tl .tl-sets.on .tl-inner{opacity:1}
+  #tl .tl-sets h4{margin:0 0 3px;font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+    letter-spacing:.14em;text-transform:uppercase;color:#E4ECF3}
+  #tl .tl-sets .tl-sub{margin:0 0 14px;font:400 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+    letter-spacing:.12em;text-transform:uppercase;color:#3F5A70}
+  #tl .tl-set{padding:11px 0;border-top:1px solid #142F43}
+  #tl .tl-set b{display:block;font:600 10.5px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;
+    letter-spacing:.12em;text-transform:uppercase;color:#ADB8C3}
+  #tl .tl-set em{display:block;font-style:normal;margin-top:3px;
+    font:400 11.5px/1.5 ui-sans-serif,system-ui,sans-serif;color:#7F94A8}
+  #tl .tl-set video{display:block;width:100%;margin-top:9px;background:#06131F}
+  #tl .tl-close{position:absolute;right:9px;top:9px;z-index:2;background:none;border:0;
+    color:#3F5A70;cursor:pointer;padding:5px 7px;
+    font:600 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em}
+  #tl .tl-close:hover{color:#E4ECF3}
+
+  /* Narrow: the labels go first, then the rail itself. A hairline of dots still
+     says "seven visits" without pretending there is room to read them. */
+  /* THE RAIL TAKES THE LEFT EDGE, so the two things that already lived there
+     have to move. The site card and the timeline are both panels of dark type
+     on the same 22px margin, and stacked they read as one broken panel rather
+     than as two. The card goes to the right rail, where nothing else is; the
+     country strip goes away entirely, because while the rail is up the frame is
+     already saying which site you are looking at, in more detail. Both are
+     scoped to #tl.on -- every other marker gets the layout it always had. */
+  #tl.on ~ #card{left:auto;right:22px}
+  #tl.on ~ #rail{opacity:0;transition:opacity .22s}
+  #tl.on ~ #hint{opacity:0}
+
+  @media (max-width:1100px){
+    #tl .tl-scrim{background:linear-gradient(to right,rgba(4,14,26,.86) 0,transparent 180px)}
+    #tl .tl-nodes{width:12px}
+    #tl .tl-txt,#tl .tl-head,#tl .tl-divide i{display:none}
+    #tl .tl-prev{display:none}
+    #tl .tl-sets.on{width:min(392px,calc(100% - 96px))}
+  }
+  @media (max-width:760px){ #tl{display:none} }
+
+  @media (prefers-reduced-motion: reduce){
+    #tl .tl-prev{transition:opacity .01s}
+    #tl .tl-sets,#tl .tl-sets .tl-inner{transition:none}
+    /* has to match the :nth-child rules above selector for selector, or their
+       specificity keeps the pulse running with the reduce flag set */
+    #tl.prev .tl-halo circle:nth-child(1),
+    #tl.prev .tl-halo circle:nth-child(2),
+    #tl.prev .tl-halo circle:nth-child(3){animation:none}
+  }
+
   @media (max-width:820px){
     #card{left:12px;right:12px;bottom:12px;width:auto}
     #hint{display:none}
@@ -181,6 +315,26 @@
   <div id="stage">
     <canvas id="c"></canvas>
     <div id="labels"></div>
+
+    <!-- KTP capture-timeline rail. Johor only -- see the note on #tl in the CSS.
+         The shell is static so the layout is readable here; the seven nodes and
+         everything in them are built from the manifest at runtime, because a
+         date typed into markup is a date that can drift away from the survey. -->
+    <div id="tl" aria-hidden="true">
+      <div class="tl-scrim"></div>
+      <svg class="tl-svg" aria-hidden="true">
+        <path class="tl-lead"></path>
+        <g class="tl-halo"><circle r="15"></circle><circle r="26"></circle><circle r="38"></circle></g>
+      </svg>
+      <div class="tl-axis"></div>
+      <div class="tl-head">KTP &middot; Johor<span id="tlCount"></span></div>
+      <div class="tl-nodes" id="tlNodes" role="listbox" aria-label="KTP capture visits" tabindex="0"></div>
+      <div class="tl-prev" id="tlPrev"></div>
+      <div class="tl-sets" id="tlSets" aria-hidden="true">
+        <button class="tl-close" id="tlClose" type="button">Esc</button>
+        <div class="tl-inner" id="tlInner"></div>
+      </div>
+    </div>
     <div id="rail">NUSAJAYA · BATAM · BANGKOK · HONG KONG</div>
     <div id="views">
       <button data-v="region" class="on">Region</button>
@@ -567,6 +721,7 @@ cvs.addEventListener('click',e=>{
 const card=document.getElementById('card');
 function select(m){
   selected=m; touch();
+  TL.setMarker(m);          // the rail lives and dies with the Johor marker
   for(const k of markers) k.el.classList.toggle('sel',k===m);
   if(!m){ card.classList.remove('on'); return; }
   const s=m.s;
@@ -582,7 +737,13 @@ function select(m){
   document.getElementById('cSoon').textContent=m.active
     ? (merged
         ? 'Johor and Batam are 59 km apart — one marker at this zoom. Open the Johor · Batam view to separate them.'
-        : 'Project material for this site is not wired into the map yet — this round is the map itself.')
+        // Say it about Batam specifically. The progression rail hangs off this
+        // same marker while they are merged, and every frame in it was taken
+        // over Johor; leaving Batam with the generic line would let somebody
+        // read the rail as covering both.
+        : s.id==='id'
+          ? 'No survey imagery for Batam. The capture timeline on the merged marker is the Johor campus only.'
+          : 'Project material for this site is not wired into the map yet — this round is the map itself.')
     : 'No site yet. Shown so the map reflects where the business is heading.';
   card.classList.add('on');
 }
@@ -717,9 +878,241 @@ function tick(){
     }
     m.pin.classList.toggle('sel', m===selected);
   }
+  TL.frame();
   grade.uniforms.uTime.value=(now%10000)/1000;
   composer.render();
 }
+
+/* ---- KTP capture-timeline rail --------------------------------------------
+   ONE SITE. Everything in uploads/ktp is the KTP campus in Johor: every frame,
+   date, coordinate and caption. The other markers have no survey imagery, so
+   this attaches to Johor and to nothing else, and it never borrows a KTP frame
+   to illustrate somewhere it was not taken.
+
+   THE MANIFEST IS THE ONLY SOURCE OF TRUTH. No date, count or path is written
+   into this file -- they are read out of ktp-progression.json, so a re-survey
+   changes the rail by changing the data. The one number that stays hardcoded is
+   "7 buildings" in CLUSTER_LABEL, and deliberately: the manifest holds 12 sets
+   which do not map one-to-one onto buildings, and computing 7 out of them would
+   be a coincidence dressed as a fact. It stays where it is until sets[] carries
+   a building id.
+
+   Nothing here runs until somebody selects Johor: the manifest, the compare
+   element and every image are fetched on that first selection, so the globe's
+   first paint is unchanged. */
+const TL=(()=>{
+  const BASE='uploads/ktp/';
+  const root=document.getElementById('tl');
+  const elNodes=document.getElementById('tlNodes');
+  const elPrev=document.getElementById('tlPrev');
+  const elSets=document.getElementById('tlSets');
+  const elInner=document.getElementById('tlInner');
+  const elCount=document.getElementById('tlCount');
+  const lead=root.querySelector('.tl-lead');
+  const halo=root.querySelector('.tl-halo');
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)');
+
+  let data=null, loading=null, built=false, on=false, active=null, marker=null;
+
+  const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const label=(iso)=>{ const [y,m,d]=iso.split('-'); return (+d)+' '+MON[+m-1]+' '+y; };
+  // captions carry &mdash; and &rarr;; they are content, not markup
+  const decode=(t)=>{ const x=document.createElement('textarea'); x.innerHTML=t||''; return x.value; };
+
+  function load(){
+    if(loading) return loading;
+    loading=Promise.all([
+      fetch(BASE+'data/ktp-progression.json').then(r=>r.json()),
+      import('./'+BASE+'web/ktp-compare.js').catch(()=>null)
+    ]).then(([j])=>{ data=j; return j; });
+    return loading;
+  }
+
+  /* A node is a visit. Its preview is a pair whose AFTER is that visit -- what
+     this trip showed against the one before it. Four of the seven have none:
+     the two 2024 orthomosaics carry no obliques at all, 31 Dec 2024 is a single
+     frame, and 11 Aug 2025 is the baseline every later pair is measured from.
+     They get told what they are. Borrowing another visit's pair to fill the
+     card would make the rail look complete and be a lie. */
+  function nodeModel(sh){
+    const cmps=data.comparisons.filter(c=>c.after.date===sh.date);
+    const asBefore=data.comparisons.filter(c=>c.before.date===sh.date).length;
+    let empty=null;
+    if(!cmps.length){
+      empty = sh.kind==='orthomosaic' ? 'Orthomosaic &middot; no obliques'
+            : asBefore ? 'Baseline &middot; the start of '+asBefore+' pair'+(asBefore>1?'s':'')
+            : sh.frames===1 ? '1 frame &middot; no pair'
+            : 'No paired imagery';
+    }
+    const mixed=cmps.some(c=>(data.sets.find(x=>x.id===c.set)||{}).confidence==='mixed');
+    return {sh, cmps, empty, mixed,
+      date:label(sh.date), archive:sh.date<'2025',
+      meta: sh.frames ? sh.frames+(sh.frames===1?' frame':' frames') : sh.kind};
+  }
+
+  function build(){
+    const models=data.shoots.map(nodeModel);
+    elCount.textContent=models.length+' visits';
+    elNodes.innerHTML='';
+    let dividerPlaced=false;
+    models.forEach((n,i)=>{
+      if(!n.archive && !dividerPlaced && i>0){
+        const d=document.createElement('div'); d.className='tl-divide';
+        d.innerHTML='<i>2025 survey</i>'; elNodes.appendChild(d); dividerPlaced=true;
+      }
+      const b=document.createElement('button');
+      b.type='button'; b.className='tl-node'+(n.archive?' arch':'');
+      b.setAttribute('role','option'); b.setAttribute('aria-selected','false');
+      b.tabIndex=-1;
+      b.innerHTML='<span class="tl-dot"></span><span class="tl-txt">'
+        +'<span class="tl-date">'+n.date+'</span>'
+        +'<span class="tl-meta">'+n.meta+(n.mixed?'<span class="tl-mix" title="One set in this visit is mixed confidence"></span>':'')+'</span>'
+        +'</span>';
+      b.addEventListener('mouseenter',()=>open(n,b));
+      b.addEventListener('focus',()=>open(n,b));
+      b.addEventListener('click',()=>expand(n));
+      b.addEventListener('keydown',(e)=>{
+        if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+          e.preventDefault();
+          const all=[...elNodes.querySelectorAll('.tl-node')];
+          const at=all.indexOf(b)+(e.key==='ArrowDown'?1:-1);
+          if(all[at]) all[at].focus();
+        } else if(e.key==='Enter'||e.key===' '){ e.preventDefault(); expand(n); }
+      });
+      b.__n=n; elNodes.appendChild(b);
+    });
+    elNodes.addEventListener('mouseleave',()=>{ if(!elSets.classList.contains('on')) close(); });
+    built=true;
+  }
+
+  /* ONE PREVIEW AT A TIME, and it sweeps once. The component's own sweep is
+     already the curve this wanted -- 2600ms ease-in-out-cubic, out to the after
+     side and back to rest at 4 -- and it cuts straight to 4 under reduced
+     motion, so there is nothing to reimplement here. */
+  function open(n,btn){
+    if(active===n) return;
+    active=n;
+    for(const b of elNodes.querySelectorAll('.tl-node')){
+      const sel=b===btn; b.classList.toggle('sel',sel); b.setAttribute('aria-selected',String(sel));
+    }
+    const c=n.cmps[0];
+    if(!c){
+      elPrev.innerHTML='<div class="tl-empty">'+n.empty+'</div>'
+        +'<div class="tl-cap"><b>'+n.date+'</b><p>'+n.meta+'</p></div>';
+    }else{
+      const m=c.media, u=(o,k,e)=>BASE+o[k][e];
+      elPrev.innerHTML='<ktp-compare '
+        +'before="'+u(m.before,'1600','jpg')+'" after="'+u(m.after,'1600','jpg')+'" '
+        +'before-srcset="'+u(m.before,'800','webp')+' 800w, '+u(m.before,'1600','webp')+' 1600w" '
+        +'after-srcset="'+u(m.after,'800','webp')+' 800w, '+u(m.after,'1600','webp')+' 1600w" '
+        +'sizes="(max-width: 760px) 100vw, 260px" '
+        +'before-label="'+c.before.date_label+'" after-label="'+c.after.date_label+'" '
+        +'ratio="'+(m.aspect||'1600/900')+'" no-sweep></ktp-compare>'
+        +'<div class="tl-cap"><b>'+c.title+'</b><p>'+decode(c.caption)+'</p>'
+        +(c.registered===false
+            ? '<span class="tl-chip" title="'+(c.registration&&c.registration.note||'')+'">Not registered &middot; wipe</span>'
+            : '')
+        +'</div>';
+      const cmp=elPrev.querySelector('ktp-compare');
+      // Rest on the AFTER frame either way. The component's own reduced-motion
+      // branch reads `value > 50 ? 4 : 96`, and a fresh element sits at exactly
+      // 50, so it lands on 96 -- the before frame, the opposite of where the
+      // sweep would have left it. Set it here rather than patching a vendored
+      // file: same destination, no motion.
+      if(cmp) requestAnimationFrame(()=>{
+        if(reduce.matches) cmp.value=4; else if(cmp.sweep) cmp.sweep();
+      });
+    }
+    position(btn);
+    elPrev.classList.add('on'); root.classList.add('prev');
+    frame();
+  }
+
+  function close(){
+    active=null; elPrev.classList.remove('on'); root.classList.remove('prev');
+    for(const b of elNodes.querySelectorAll('.tl-node')){
+      b.classList.remove('sel'); b.setAttribute('aria-selected','false');
+    }
+  }
+
+  function position(btn){
+    const st=stage.getBoundingClientRect(), r=btn.getBoundingClientRect();
+    elPrev.style.left='212px';
+    const h=elPrev.offsetHeight||210;
+    let top=(r.top-st.top)+r.height/2-h/2;
+    top=Math.max(88,Math.min(st.height-84-h,top));
+    elPrev.style.top=top+'px';
+  }
+
+  /* The globe drifts, so the marker moves under a preview that is standing
+     still. The elbow is redrawn from the live screen position every frame --
+     markers already carry sx/sy for exactly this reason. */
+  function frame(){
+    if(!on||!active||!marker) return;
+    const x1=212+elPrev.offsetWidth, y1=elPrev.offsetTop+elPrev.offsetHeight/2;
+    const mx=marker.sx, my=marker.sy;
+    if(!(mx>=0)||!(my>=0)) return;
+    lead.setAttribute('d','M'+x1+' '+y1+' L'+mx+' '+y1+' L'+mx+' '+my);
+    halo.setAttribute('transform','translate('+mx+' '+my+')');
+  }
+
+  function expand(n){
+    if(!n.cmps.length && !n.sh.frames) return;
+    const sets=[];
+    for(const c of n.cmps){
+      const st=data.sets.find(x=>x.id===c.set); if(!st) continue;
+      if(!sets.some(x=>x.set.id===st.id)) sets.push({set:st,cmps:[c]});
+      else sets.find(x=>x.set.id===st.id).cmps.push(c);
+    }
+    let html='<h4>'+n.date+'</h4><p class="tl-sub">'+n.meta
+      +(sets.length?' &middot; '+sets.length+' set'+(sets.length>1?'s':''):'')+'</p>';
+    if(!sets.length){
+      html+='<div class="tl-set"><em>'+decode(n.empty||'No paired imagery from this visit.')+'</em></div>';
+    }
+    for(const s of sets){
+      const v=data.videos.find(x=>x.set===s.set.id);
+      html+='<div class="tl-set"><b>'+s.set.title
+        +(s.set.confidence==='mixed'?'<span class="tl-mix" title="Mixed confidence"></span>':'')+'</b>'
+        +'<em>'+decode(s.set.subtitle||'')+'</em>';
+      for(const c of s.cmps){
+        html+='<em>'+c.title+' &middot; '+c.view+'</em>';
+        // A pair that would not register is never presented as though it had.
+        // Same chip, same words, same note as the preview card -- one amber
+        // thing on this map and this is it.
+        if(c.registered===false) html+='<span class="tl-chip" title="'
+          +(c.registration&&c.registration.note||'')+'">Not registered &middot; wipe</span>';
+      }
+      // poster first, preload none: the globe is already running in here
+      if(v&&v.media&&v.media.web) html+='<video controls preload="none" playsinline'
+        +(v.poster&&v.poster.jpg?' poster="'+BASE+v.poster.jpg+'"':'')
+        +' src="'+BASE+v.media.web.src+'"></video>';
+      html+='</div>';
+    }
+    elInner.innerHTML=html;
+    elSets.classList.add('on'); elSets.setAttribute('aria-hidden','false');
+  }
+  function collapse(){ elSets.classList.remove('on'); elSets.setAttribute('aria-hidden','true'); }
+
+  document.getElementById('tlClose').addEventListener('click',collapse);
+  addEventListener('keydown',(e)=>{ if(e.key==='Escape'&&on){ collapse(); close(); } });
+
+  return {
+    /* Called from select(). The rail exists for Johor and for nothing else --
+       Batam included, which shares the marker at low zoom but has no survey
+       imagery of its own, so the merged marker still resolves to KTP/Johor and
+       the rail titles itself accordingly. */
+    setMarker(m,merged){
+      const isJohor = !!m && m.s.id===HUB;
+      if(!isJohor){ if(on){ on=false; marker=null; root.classList.remove('on','prev');
+        root.setAttribute('aria-hidden','true'); collapse(); close(); } return; }
+      marker=m; on=true;
+      root.classList.add('on'); root.setAttribute('aria-hidden','false');
+      load().then(()=>{ if(!built) build(); }).catch(()=>{});
+    },
+    frame,
+    close(){ collapse(); close(); }
+  };
+})();
 tick();
 </script>
 </body>
