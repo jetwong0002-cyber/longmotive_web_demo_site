@@ -953,16 +953,15 @@ const TL=(()=>{
        shorter rail: it makes the survey look thinner than it is by drawing
        attention to the gaps rather than to the material.
        So a visit earns a node by having imagery -- a comparison to sweep, or
-       failing that its own frames. The count still says how many of the seven
-       that is, because dropping two dates quietly is its own kind of lie. */
-    const all=data.shoots.map(nodeModel);
-    const models=all.filter(n=>n.cmps.length||n.frames.length);
-    const gone=all.filter(n=>!n.cmps.length&&!n.frames.length);
-    elCount.textContent=gone.length
-      ? models.length+' of '+all.length+' visits'
-      : models.length+' visits';
-    if(gone.length) elCount.title=gone.map(n=>n.date+' — '+n.sh.kind
-      +', not in this pack').join('; ');
+       failing that its own frames.
+       The count is of what the rail shows, not of what the manifest holds. It
+       read "5 of 7 visits" for a while, on the reasoning that dropping two dates
+       silently overstates the survey. It does not: this rail is the imagery, and
+       a fraction in the header makes a visitor count the missing two instead of
+       looking at the five that are there. The two orthomosaic dates are still in
+       the manifest for anyone working with the data. */
+    const models=data.shoots.map(nodeModel).filter(n=>n.cmps.length||n.frames.length);
+    elCount.textContent=models.length+' visits';
     elNodes.innerHTML='';
     let dividerPlaced=false;
     models.forEach((n,i)=>{
