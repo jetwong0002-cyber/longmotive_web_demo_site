@@ -990,8 +990,25 @@ const TL=(()=>{
       });
       b.__n=n; elNodes.appendChild(b);
     });
-    elNodes.addEventListener('mouseleave',()=>{ if(!elSets.classList.contains('on')) close(); });
+    /* Leaving the rail puts it back to its opening state rather than to nothing.
+       An empty rail is the thing this was built to avoid, and it should not
+       come back the moment the pointer wanders off. */
+    elNodes.addEventListener('mouseleave',()=>{ if(!elSets.classList.contains('on')) openDefault(); });
     built=true;
+  }
+
+  /* THE RAIL ARRIVES WITH A PICTURE ALREADY OPEN. A column of dates is not an
+     invitation -- nothing about it says the dates are the way in, so somebody
+     who does not think to hover one sees a list and moves on, and the whole
+     survey stays behind a gesture nobody made. Opening the newest visit puts a
+     photograph on screen the moment Johor is selected, and the sweep across it
+     says the rest: these are before and after, and the dates are how you move
+     between them.
+     The newest visit is the right default -- it is the site as it stands, and it
+     is the one with the most pairs behind it. */
+  function openDefault(){
+    const b=elNodes.querySelector('.tl-node:last-of-type');
+    if(b && b.__n) open(b.__n,b);
   }
 
   /* ONE PREVIEW AT A TIME, and it sweeps once. The component's own sweep is
@@ -1131,9 +1148,10 @@ const TL=(()=>{
       const isJohor = !!m && m.s.id===HUB;
       if(!isJohor){ if(on){ on=false; marker=null; root.classList.remove('on','prev');
         root.setAttribute('aria-hidden','true'); collapse(); close(); } return; }
+      if(on) return;                    // already up; do not restart it mid-hover
       marker=m; on=true;
       root.classList.add('on'); root.setAttribute('aria-hidden','false');
-      load().then(()=>{ if(!built) build(); }).catch(()=>{});
+      load().then(()=>{ if(!built) build(); openDefault(); }).catch(()=>{});
     },
     frame,
     close(){ collapse(); close(); }
