@@ -533,14 +533,29 @@
             </div>
           </div>
         </div>
-        <div style="background:var(--lm-blue-900);padding:clamp(16px,3.4vh,34px) var(--gutter)">
-          <div class="lm-g4" style="max-width:var(--container-max);margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:24px" data-about-stats="true">
-            <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
-              <div data-reveal="{{ $index }}">
-                <div data-stat="1" style="font-family:var(--font-display);font-weight:800;font-size:clamp(28px,4.4vh,44px);line-height:1;color:#fff">{{ s.value }}<span style="color:var(--lm-cyan-400)">{{ s.suffix }}</span></div>
-                <div style="font-size:clamp(11px,1.5vh,13px);letter-spacing:.03em;color:var(--lm-blue-200);margin-top:clamp(4px,1vh,8px);text-transform:uppercase;font-family:var(--font-mono)">{{ s.label }}</div>
-              </div>
-            </sc-for>
+        <!-- THE RECORD IS A STOP, NOT A STRIP. These four numbers are the whole
+             case the page is making, and they were set in a 16px band under the
+             copy at 44px -- the size of a caption, in the place a reader scrolls
+             through on the way to the next heading. They now get a section of
+             their own: the numbers roughly double, each one sits under a
+             hairline with room around it, and the band is deep enough that the
+             page stops there. The count-up that was already on data-stat does
+             the rest; at this size it is worth watching.
+             auto-fit rather than the lm-g4 class on purpose. lm-g4 drops to one
+             column at 600px, and four 92px numbers stacked single-file is a
+             long scroll past the same fact four times; auto-fit gives two up
+             before it gives one. -->
+        <div style="background:var(--lm-blue-900);padding:clamp(56px,9vh,104px) var(--gutter)">
+          <div style="max-width:var(--container-max);margin:0 auto">
+            <span data-reveal="0" style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--lm-cyan-400)"><span style="width:28px;height:2px;background:currentColor"></span>Track record</span>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:clamp(26px,3vw,44px);margin-top:clamp(26px,4vh,44px)" data-about-stats="true">
+              <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
+                <div data-reveal="{{ $index }}" style="border-top:1px solid rgba(120,180,225,.22);padding-top:clamp(15px,2.3vh,24px)">
+                  <div data-stat="1" style="font-family:var(--font-display);font-weight:800;font-size:clamp(46px,8vh,92px);line-height:.94;letter-spacing:-.022em;color:#fff">{{ s.value }}<span style="color:var(--lm-cyan-400)">{{ s.suffix }}</span></div>
+                  <div style="font-size:clamp(11px,1.5vh,13px);letter-spacing:.14em;color:var(--lm-blue-200);margin-top:clamp(10px,1.8vh,16px);text-transform:uppercase;font-family:var(--font-mono)">{{ s.label }}</div>
+                </div>
+              </sc-for>
+            </div>
           </div>
         </div>
       </section>
@@ -846,7 +861,13 @@ const SERVICES=[
 const STATS=[
   {value:'20',suffix:'+',label:'Years Experience'},
   {value:'50',suffix:'+',label:'Data-Center Projects'},
-  {value:'100',suffix:'+',label:'Professionals'},
+  // ONE HEADCOUNT. The home hero said "500+ workforce" while this said "100+
+  // professionals" -- the same site quoting two different sizes of the same
+  // company, which is the kind of thing a client notices and an auditor asks
+  // about. 500 is the number, and the label follows the hero's word for it:
+  // workforce covers the site teams, professionals reads as staff engineers
+  // only and would be a second claim rather than the same one.
+  {value:'500',suffix:'+',label:'Workforce'},
   {value:'100',suffix:'%',label:'QA / QC Coverage'}
 ];
 const PROJECTS=[
@@ -2519,7 +2540,8 @@ class Component extends DCLogic {
       certs: CERTS.map(c=>({...c,alt:c.code+' — '+c.title+' certificate'})),
       strongPoints: [
         '20+ years of M&E engineering experience',
-        '100+ professionals across every MEP discipline',
+        // the third place the headcount appeared, and the third number for it
+        '500+ workforce across every MEP discipline',
         '50+ data-center projects constructed',
         'A personnel organization ranked among the industry\'s best'
       ],
