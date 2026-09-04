@@ -125,6 +125,14 @@
 <script src="campus-hero.js"></script>
 <style>
   html{scroll-behavior:smooth}
+  /* THE PROJECTS PAGE BELOW THE NAV IS ONE SURFACE, and its colour is not a
+     design-system token -- it is the globe embed's own background, taken from
+     projects-map-prototype.html. The wall has to match the iframe EXACTLY or
+     the seam the flat colour exists to remove comes straight back. The page
+     used to run deep-navy hero, deep-navy globe, WHITE wall, deep-navy footer:
+     a white block sandwiched between three dark ones, which is what made the
+     globe look bolted on. */
+  :root{--lm-projects-bg:#061424}
   html,body{margin:0;padding:0;background:var(--surface-page)}
   *{box-sizing:border-box}
   a{color:var(--text-link);text-decoration:none}
@@ -222,14 +230,11 @@
     border:1px solid rgba(0,176,240,.55);border-radius:var(--radius-sm);padding:5px 9px;
     font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.12em;
     text-transform:uppercase;color:var(--lm-cyan-300);pointer-events:none}
-  .lm-3dbtn{margin-top:10px;align-self:flex-start;display:inline-flex;align-items:center;gap:9px;
-    font-family:var(--font-display);font-weight:700;font-size:.78rem;letter-spacing:.06em;
-    text-transform:uppercase;color:var(--color-brand);background:transparent;
-    border:2px solid var(--color-brand);border-radius:var(--radius-sm);padding:8px 14px;
-    transition:background .15s,color .15s}
-  .lm-pcard:hover .lm-3dbtn{background:var(--color-brand);color:#fff}
-  .lm-3dbtn svg{transition:transform .15s}
-  .lm-pcard:hover .lm-3dbtn svg{transform:translateX(3px)}
+  /* .lm-3dbtn is gone. It said "Open 3D viewer" on all twenty cards, under a
+     "3D" badge that was also on all twenty -- the same claim twice per card,
+     forty times down the page, distinguishing nothing. The badge stays because
+     it sits ON the photograph where the eye already is; the button went because
+     the whole card has always been the click target. */
   /* Selected Work is a cinematic discovery surface; the Projects page remains
      the practical directory. One authored moment: the physical CardSwap deck. */
   .lm-project-section{position:relative;background:#071f39;color:#fff;padding:clamp(78px,8vw,118px) var(--gutter);scroll-snap-align:start;overflow:hidden}
@@ -280,7 +285,7 @@
   .lm-atlas-card-copy strong{font-family:var(--font-display);font-size:14px;line-height:1.22}.lm-atlas-card-copy span{color:#92b1c8;font-size:11px;line-height:1.35}
   @media (max-width:1050px){.lm-work-stage{grid-template-columns:1fr;gap:30px}.lm-work-copy{max-width:760px}.lm-work-heading{max-width:14ch}.lm-work-current{margin-top:28px}.lm-work-deck{height:530px}.lm-swapcard{left:47%;width:min(82vw,790px)}}
   @media (max-width:760px){.lm-project-section{padding:70px var(--gutter)}.lm-work-stage{min-height:0}.lm-work-heading{font-size:clamp(38px,12vw,58px)}.lm-work-intro{font-size:15px}.lm-work-deck{height:430px}.lm-swapcard{left:50%;top:18px;width:min(86vw,430px);height:350px;flex-direction:column}.lm-swap-photo{flex:0 0 54%!important}.lm-swap-model{border-left:0;border-top:1px solid #53cefa}.lm-swap-label{bottom:8px;left:8px}.lm-atlas-head{align-items:flex-start;flex-direction:column}.lm-atlas-row{grid-template-columns:1fr;gap:12px}.lm-atlas-rail{grid-auto-columns:minmax(220px,78vw)}}
-  @media (prefers-reduced-motion:reduce){.lm-3dbtn svg,.lm-work-open,.lm-work-arrow,.lm-atlas-toggle,.lm-swapcard img,.lm-atlas-card{transition:none!important}.lm-project-atlas{animation:none}.lm-work-open:hover,.lm-work-arrow:hover,.lm-atlas-card:hover{transform:none}}
+  @media (prefers-reduced-motion:reduce){.lm-work-open,.lm-work-arrow,.lm-atlas-toggle,.lm-swapcard img,.lm-atlas-card{transition:none!important}.lm-project-atlas{animation:none}.lm-work-open:hover,.lm-work-arrow:hover,.lm-atlas-card:hover{transform:none}}
 </style>
 </helmet>
 <div style="min-height:100%;display:flex;flex-direction:column;background:var(--surface-page);color:var(--text-body);font-family:var(--font-sans)">
@@ -616,7 +621,7 @@
     <div>
       <!-- Tightened in the deploy repo, where a change cannot survive an export.
            Ported here so it does. -->
-      <section class="lm-projects-hero" style="background:var(--lm-gradient-deep);padding:clamp(24px,2.5vw,30px) var(--gutter)">
+      <section class="lm-projects-hero" style="background:var(--lm-projects-bg);padding:clamp(24px,2.5vw,30px) var(--gutter)">
         <div data-reveal="0" style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;gap:12px;max-width:64ch">
           <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--lm-cyan-400)"><span style="width:28px;height:2px;background:currentColor"></span>Portfolio</span>
           <h1 style="margin:0;font-size:var(--fs-display-lg);color:#fff">Our Projects</h1>
@@ -633,7 +638,7 @@
            reach any of it. postMessage is the seam when a site click has to open
            project material. Nothing below this block moved -- the MEP portfolio is
            unchanged, it just starts lower. -->
-      <section style="background:var(--lm-gradient-deep);padding:0 var(--gutter) clamp(22px,3vw,36px)">
+      <section style="background:var(--lm-projects-bg);padding:0 var(--gutter) clamp(22px,3vw,36px)">
         <div style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;gap:12px">
           <iframe class="lm-globeframe" src="projects-globe-embed.html" loading="lazy"
                   title="Where Longmotive builds — interactive site map"></iframe>
@@ -641,22 +646,21 @@
             Four countries, one delivery team · drag to turn · click a site</p>
         </div>
       </section>
-      <section style="background:var(--surface-page);padding:44px var(--gutter) var(--section-y)">
+      <section style="background:var(--lm-projects-bg);padding:38px var(--gutter) var(--section-y)">
         <div style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;gap:30px">
           <div style="display:flex;gap:10px;flex-wrap:wrap">
             <sc-for list="{{ filters }}" as="f" hint-placeholder-count="6">
-              <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}</button>
+              <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}<span style="{{ f.countStyle }}">{{ f.count }}</span></button>
             </sc-for>
           </div>
           <div class="lm-g3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px">
             <sc-for list="{{ filteredProjects }}" as="p" hint-placeholder-count="6">
-              <div class="lm-pcard" data-comment-anchor="project-card-{{ p.title }}" onClick="{{ p.onOpen }}" style="{{ p.cardStyle }}" style-hover="box-shadow:var(--shadow-md);transform:translateY(-3px);border-color:var(--lm-blue-200)">
-                <div style="position:relative;height:200px;overflow:hidden;background:var(--lm-blue-50)"><img data-src="{{ p.img }}" alt="{{ p.title }}" style="width:100%;height:100%;object-fit:cover;display:block"/><sc-if value="{{ p.viewer3d }}" hint-placeholder-val="{{ false }}"><span class="lm-3dbadge">{{ cubeIcon }} 3D</span></sc-if></div>
-                <div style="padding:16px 18px 18px;display:flex;flex-direction:column;gap:6px">
-                  <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent)">{{ p.cat }}</span>
-                  <h3 style="margin:0;font-size:18px;color:var(--text-strong)">{{ p.title }}</h3>
-                  <p style="margin:0;font-size:13.5px;color:var(--text-muted);line-height:1.5">{{ p.meta }}</p>
-                  <sc-if value="{{ p.viewer3d }}" hint-placeholder-val="{{ false }}"><span class="lm-3dbtn">Open 3D viewer {{ arrowIcon }}</span></sc-if>
+              <div class="lm-pcard" data-comment-anchor="project-card-{{ p.title }}" onClick="{{ p.onOpen }}" style="{{ p.cardStyle }}" style-hover="background:#0c2338;border-color:rgba(83,206,250,.5);transform:translateY(-2px);box-shadow:0 10px 26px rgba(0,0,0,.35)">
+                <div style="position:relative;aspect-ratio:3/2;overflow:hidden;background:#02080f"><img data-src="{{ p.img }}" alt="{{ p.title }}" style="width:100%;height:100%;object-fit:cover;display:block"/><sc-if value="{{ p.viewer3d }}" hint-placeholder-val="{{ false }}"><span class="lm-3dbadge">{{ cubeIcon }} 3D</span></sc-if></div>
+                <div style="padding:15px 18px 17px;display:flex;flex-direction:column;gap:6px">
+                  <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#53cefa">{{ p.disciplineLabel }}</span>
+                  <h3 style="margin:0;font-size:18px;color:#e8f2fb">{{ p.title }}</h3>
+                  <p style="margin:0;font-size:12.5px;color:#8aa4bd;line-height:1.6">{{ p.meta }}</p>
                 </div>
               </div>
             </sc-for>
@@ -2475,7 +2479,11 @@ class Component extends DCLogic {
     const openChilledTank=()=>{ window.location.href='outdoor-chilled-water-tank-viewer.dc.html'; };
     const openChillerPiping=()=>{ window.location.href='chiller-piping-viewer.dc.html'; };
     const VIEWERS={'Chiller Plant Room':openViewer,'Data Hall':openHall,'Main Switchboard (MSB)':openMsb,'Air Handling Unit Room':openAhu,'Rooftop Diesel Generators':openRooftopGenerator,'Rooftop AC Outdoor Units':openRooftopAc,'Rooftop Fluorine-Pump System':openRooftopFluorinePump,'Level 3 Chiller Room':openCooling,'ECC Monitoring Room':openEcc,'CRAH Room':openCrah,'ELV Room':openElv,'Generator Plant':openGen,'AC Makeup-Water Pump Room':openMakeup,'Pre-Action Sprinkler Valve Room':openPreaction,'BA Control Room':openBa,'Fluorine-Pump Cooling Towers':openFpct,'Open Cooling Towers':openOc,'Outdoor Chilled-Water Storage Tank':openChilledTank,'Chiller Piping':openChillerPiping,'Telecom Operator Access Room':openTelecom};
-    const baseCard={background:'var(--surface-card)',border:'1px solid var(--border-subtle)',borderRadius:'var(--radius-lg)',overflow:'hidden',boxShadow:'var(--shadow-xs)',display:'flex',flexDirection:'column',transition:'box-shadow .25s,transform .25s,border-color .25s'};
+    // EVERY VALUE HERE IS COPIED FROM projects-map-prototype.html, not picked to
+    // look similar to it: the panel fill is that page's `.below div`, the border
+    // is its `--line`. A near-miss of the globe's palette reads worse than the
+    // white card did, because it looks like the same idea done badly.
+    const baseCard={background:'#08192b',border:'1px solid rgba(180,214,240,.20)',borderRadius:'var(--radius-lg)',overflow:'hidden',display:'flex',flexDirection:'column',transition:'background .25s,transform .25s,border-color .25s,box-shadow .25s'};
     const projects = PROJECTS.map(p=>{
       const open=VIEWERS[p.title];
       const code=p.tags[0]==='Electrical'?'ELEC':p.tags[0]==='ELV & Controls'?'ELV':p.tags[0]==='Fire Protection'?'FIRE':p.tags[0]==='Data Hall'?'DATA':'HVAC';
@@ -2483,6 +2491,11 @@ class Component extends DCLogic {
       return {...p,img:p.abs?p.img:IMG+p.img,
         onOpen:open,
         disciplineCode:code,disciplineClass,accessibleLabel:p.title+' — Open 3D model',
+        // The card used to print `cat` -- Cooling / HVAC / ELV / Fire -- while the
+        // chip above it said HVAC & Cooling / ELV & Controls / Fire Protection, so
+        // no card ever carried the same words as the chip that produced it.
+        // tags[0] IS the chip's label, so the two can no longer drift.
+        disciplineLabel:p.tags[0],
         cardStyle:open?{...baseCard,cursor:'pointer'}:baseCard};
     });
     const featured = projects.slice(0,6).map(p=>({...p,onOpen:p.onOpen||(()=>this.go('Projects'))}));
@@ -2496,9 +2509,18 @@ class Component extends DCLogic {
     const swapCards=SWAP.map((s,i)=>({...s,img:IMG+s.img,cardRef:swapRefs[i],
       index:('0'+(i+1)).slice(-2),accessibleLabel:s.title+': compare site photograph and BIM model',
       onOpen:()=>{ if(!this._swapMoved) window.location.href=s.href; }}));
-    const chipBase={fontFamily:'var(--font-mono)',fontSize:'11px',fontWeight:600,letterSpacing:'.08em',textTransform:'uppercase',padding:'8px 16px',borderRadius:'999px',border:'1px solid var(--border-default)',background:'var(--surface-card)',color:'var(--text-body)',cursor:'pointer',appearance:'none',transition:'all .15s'};
-    const filters=FILTERS.map(f=>({label:f,onClick:()=>this.setState({filter:f}),
-      style:this.state.filter===f?{...chipBase,background:'var(--color-brand)',borderColor:'var(--color-brand)',color:'#fff'}:chipBase}));
+    // Shaped like the globe's own #views buttons -- 4px radius, mono 10px at
+    // .14em, cyan fill when active -- because they sit forty pixels under them.
+    const chipBase={fontFamily:'var(--font-mono)',fontSize:'10px',fontWeight:700,letterSpacing:'.14em',textTransform:'uppercase',padding:'9px 13px',borderRadius:'4px',border:'1px solid rgba(180,214,240,.20)',background:'rgba(8,22,38,.7)',color:'#8aa4bd',cursor:'pointer',appearance:'none',transition:'all .15s'};
+    // A COUNT ON THE CHIP IS THE WHOLE FIX FOR THE DEAD FILTER. Fire Protection
+    // returns one card and Data Hall returns one card; printing the 1 before the
+    // click means nobody is surprised by it, and nothing has to be hidden,
+    // merged or re-grouped to make the row look fuller than the work is.
+    const countOf=f=>f==='All'?PROJECTS.length:PROJECTS.filter(p=>p.tags.indexOf(f)!==-1).length;
+    const countBase={marginLeft:'7px',fontWeight:700};
+    const filters=FILTERS.map(f=>({label:f,onClick:()=>this.setState({filter:f}),count:countOf(f),
+      countStyle:this.state.filter===f?{...countBase,color:'#04121f',opacity:.65}:{...countBase,color:'#53cefa'},
+      style:this.state.filter===f?{...chipBase,background:'#53cefa',borderColor:'#53cefa',color:'#04121f'}:chipBase}));
     const filteredProjects=projects.map(p=>({...p,viewer3d:!!p.onOpen}))
       .filter(p=>this.state.filter==='All'||p.tags.indexOf(this.state.filter)!==-1);
     return {
