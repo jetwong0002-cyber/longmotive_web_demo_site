@@ -1,0 +1,2143 @@
+{
+ "id": "ntp-progression",
+ "name": "NTP Progression",
+ "version": "1.0.0",
+ "generated": "2026-09-04",
+ "description": "Aerial construction-progress record of the NTP campus: 63 drone frames from three visits, matched into 7 before/after sets and 8 comparisons of which one could be registered.",
+ "site": {
+  "label": "NTP campus",
+  "approx_bounds": {
+   "lat": [
+    1.4234,
+    1.4358
+   ],
+   "lon": [
+    103.5973,
+    103.6018
+   ]
+  }
+ },
+ "camera": {
+  "make": "DJI",
+  "models": [
+   "FC8282",
+   "FC8284"
+  ]
+ },
+ "shoots": [
+  {
+   "date": "2025-08-26",
+   "kind": "mixed",
+   "frames": 24
+  },
+  {
+   "date": "2025-10-09",
+   "kind": "mixed",
+   "frames": 18
+  },
+  {
+   "date": "2025-12-12",
+   "kind": "mixed",
+   "frames": 21
+  }
+ ],
+ "method": [
+  "DJI XMP gives GPS, altitude, gimbal yaw and pitch for 47 of 63 frames; 16 lost it to compression",
+  "slant distance = relative_altitude / tan(|pitch|), projected along yaw to a ground target",
+  "single-link clustering of those targets at 70 m separated the frames into plots",
+  "the 16 stripped frames were matched against 17 anchors by SIFT + RANSAC; 11 found a home",
+  "frames ordered by construction stage from the imagery alone, then checked against capture dates",
+  "no interpolation or generative synthesis: every pixel is a photograph"
+ ],
+ "finding": "Only 1 of 8 comparisons could be registered — the one building that did not change. The three flights were not flown to repeatable camera positions: altitudes span 80–500 m and gimbal yaw varies by up to 180° for the same plot.",
+ "sets": [
+  {
+   "id": "east-plot",
+   "title": "East plot",
+   "subtitle": "twin pads beside the highway",
+   "confidence": "high",
+   "approx_location": {
+    "lat": 1.4254,
+    "lon": 103.6006
+   },
+   "before": [
+    19,
+    10,
+    11
+   ],
+   "between": [
+    40,
+    39,
+    35,
+    33,
+    30,
+    62
+   ],
+   "after": [
+    50,
+    51,
+    52,
+    46,
+    47,
+    48
+   ]
+  },
+  {
+   "id": "northwest-hall",
+   "title": "North-west hall",
+   "subtitle": "finished before the survey began",
+   "confidence": "high",
+   "approx_location": {
+    "lat": 1.4276,
+    "lon": 103.5984
+   },
+   "before": [
+    14,
+    8,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "between": [
+    32,
+    38,
+    25
+   ],
+   "after": [
+    41
+   ]
+  },
+  {
+   "id": "central-block",
+   "title": "Central block",
+   "subtitle": "",
+   "confidence": "high",
+   "approx_location": {
+    "lat": 1.4255,
+    "lon": 103.5989
+   },
+   "before": [
+    16,
+    9,
+    7,
+    20,
+    21
+   ],
+   "between": [
+    34,
+    36
+   ],
+   "after": [
+    44,
+    53
+   ]
+  },
+  {
+   "id": "west-block",
+   "title": "West block",
+   "subtitle": "",
+   "confidence": "high",
+   "approx_location": {
+    "lat": 1.4265,
+    "lon": 103.5978
+   },
+   "before": [
+    18,
+    22,
+    0,
+    15
+   ],
+   "between": [],
+   "after": [
+    42,
+    43,
+    54
+   ]
+  },
+  {
+   "id": "long-hall",
+   "title": "Long hall",
+   "subtitle": "the linear building",
+   "confidence": "mixed",
+   "approx_location": {
+    "lat": 1.4245,
+    "lon": 103.5981
+   },
+   "before": [
+    17,
+    12,
+    13
+   ],
+   "between": [],
+   "after": [
+    31,
+    29,
+    28
+   ]
+  },
+  {
+   "id": "mid-plot",
+   "title": "Mid plot",
+   "subtitle": "",
+   "confidence": "high",
+   "approx_location": {
+    "lat": 1.4267,
+    "lon": 103.5995
+   },
+   "before": [
+    37
+   ],
+   "between": [],
+   "after": [
+    45
+   ]
+  },
+  {
+   "id": "north-site",
+   "title": "North site",
+   "subtitle": "a separate facility, 1 km north",
+   "confidence": "high",
+   "approx_location": {
+    "lat": 1.4344,
+    "lon": 103.6007
+   },
+   "before": [],
+   "between": [],
+   "after": [
+    49,
+    55,
+    56,
+    61,
+    60,
+    57,
+    58,
+    59
+   ]
+  }
+ ],
+ "frames": [
+  {
+   "id": 0,
+   "ref": "frame-00",
+   "source_file": "图片_20250826135346_1214_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Roof slab",
+   "set": "west-block",
+   "media": {
+    "jpg": "media/frames/frame-00.jpg",
+    "webp": "media/frames/frame-00.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.428845,
+    "lon": 103.596830603,
+    "rel_altitude_m": 148.1,
+    "gimbal_yaw_deg": 153.0,
+    "gimbal_pitch_deg": -26.7,
+    "captured": "2025-08-26T13:34:39+08:00"
+   },
+   "ground_target": {
+    "lat": 1.426488,
+    "lon": 103.598032,
+    "slant_distance_m": 294
+   }
+  },
+  {
+   "id": 1,
+   "ref": "frame-01",
+   "source_file": "图片_20250826135350_1215_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "In service",
+   "set": "northwest-hall",
+   "media": {
+    "jpg": "media/frames/frame-01.jpg",
+    "webp": "media/frames/frame-01.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.429246186,
+    "lon": 103.59814297,
+    "rel_altitude_m": 80.1,
+    "gimbal_yaw_deg": 167.4,
+    "gimbal_pitch_deg": -26.4,
+    "captured": "2025-08-26T13:32:08+08:00"
+   },
+   "ground_target": {
+    "lat": 1.427832,
+    "lon": 103.598459,
+    "slant_distance_m": 161
+   }
+  },
+  {
+   "id": 2,
+   "ref": "frame-02",
+   "source_file": "图片_20250826135352_1216_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "In service",
+   "set": "northwest-hall",
+   "media": {
+    "jpg": "media/frames/frame-02.jpg",
+    "webp": "media/frames/frame-02.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.428777063,
+    "lon": 103.599320146,
+    "rel_altitude_m": 80.4,
+    "gimbal_yaw_deg": -147.4,
+    "gimbal_pitch_deg": -26.4,
+    "captured": "2025-08-26T13:32:31+08:00"
+   },
+   "ground_target": {
+    "lat": 1.427551,
+    "lon": 103.598536,
+    "slant_distance_m": 162
+   }
+  },
+  {
+   "id": 3,
+   "ref": "frame-03",
+   "source_file": "图片_20250826135356_1217_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "In service",
+   "set": "northwest-hall",
+   "media": {
+    "jpg": "media/frames/frame-03.jpg",
+    "webp": "media/frames/frame-03.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.427777608,
+    "lon": 103.599927779,
+    "rel_altitude_m": 80.4,
+    "gimbal_yaw_deg": -100.1,
+    "gimbal_pitch_deg": -29.4,
+    "captured": "2025-08-26T13:32:50+08:00"
+   },
+   "ground_target": {
+    "lat": 1.427553,
+    "lon": 103.598665,
+    "slant_distance_m": 143
+   }
+  },
+  {
+   "id": 4,
+   "ref": "frame-04",
+   "source_file": "图片_20250826135400_1218_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "In service",
+   "set": "northwest-hall",
+   "media": {
+    "jpg": "media/frames/frame-04.jpg",
+    "webp": "media/frames/frame-04.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.426661619,
+    "lon": 103.599621748,
+    "rel_altitude_m": 80.4,
+    "gimbal_yaw_deg": -59.2,
+    "gimbal_pitch_deg": -25.9,
+    "captured": "2025-08-26T13:33:07+08:00"
+   },
+   "ground_target": {
+    "lat": 1.427423,
+    "lon": 103.598344,
+    "slant_distance_m": 166
+   }
+  },
+  {
+   "id": 5,
+   "ref": "frame-05",
+   "source_file": "图片_20250826135403_1219_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "In service",
+   "set": "northwest-hall",
+   "media": {
+    "jpg": "media/frames/frame-05.jpg",
+    "webp": "media/frames/frame-05.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.425870303,
+    "lon": 103.598601744,
+    "rel_altitude_m": 157.9,
+    "gimbal_yaw_deg": -10.9,
+    "gimbal_pitch_deg": -41.8,
+    "captured": "2025-08-26T13:33:31+08:00"
+   },
+   "ground_target": {
+    "lat": 1.427428,
+    "lon": 103.598302,
+    "slant_distance_m": 177
+   }
+  },
+  {
+   "id": 6,
+   "ref": "frame-06",
+   "source_file": "图片_20250826135405_1220_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "In service",
+   "set": "northwest-hall",
+   "media": {
+    "jpg": "media/frames/frame-06.jpg",
+    "webp": "media/frames/frame-06.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.426268197,
+    "lon": 103.597482192,
+    "rel_altitude_m": 158.1,
+    "gimbal_yaw_deg": 30.5,
+    "gimbal_pitch_deg": -41.8,
+    "captured": "2025-08-26T13:33:50+08:00"
+   },
+   "ground_target": {
+    "lat": 1.427637,
+    "lon": 103.598289,
+    "slant_distance_m": 177
+   }
+  },
+  {
+   "id": 7,
+   "ref": "frame-07",
+   "source_file": "图片_20250826135408_1221_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Frame",
+   "set": "central-block",
+   "media": {
+    "jpg": "media/frames/frame-07.jpg",
+    "webp": "media/frames/frame-07.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.426269219,
+    "lon": 103.597483577,
+    "rel_altitude_m": 158.1,
+    "gimbal_yaw_deg": 120.8,
+    "gimbal_pitch_deg": -41.8,
+    "captured": "2025-08-26T13:33:59+08:00"
+   },
+   "ground_target": {
+    "lat": 1.425456,
+    "lon": 103.598848,
+    "slant_distance_m": 177
+   }
+  },
+  {
+   "id": 8,
+   "ref": "frame-08",
+   "source_file": "图片_20250826135410_1222_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "In service",
+   "set": "northwest-hall",
+   "media": {
+    "jpg": "media/frames/frame-08.jpg",
+    "webp": "media/frames/frame-08.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.428023518,
+    "lon": 103.597190067,
+    "rel_altitude_m": 147.5,
+    "gimbal_yaw_deg": 111.8,
+    "gimbal_pitch_deg": -48.2,
+    "captured": "2025-08-26T13:34:23+08:00"
+   },
+   "ground_target": {
+    "lat": 1.427584,
+    "lon": 103.59829,
+    "slant_distance_m": 132
+   }
+  },
+  {
+   "id": 9,
+   "ref": "frame-09",
+   "source_file": "图片_20250826135413_1223_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Frame",
+   "set": "central-block",
+   "media": {
+    "jpg": "media/frames/frame-09.jpg",
+    "webp": "media/frames/frame-09.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.428844485,
+    "lon": 103.596829562,
+    "rel_altitude_m": 148.1,
+    "gimbal_yaw_deg": 146.5,
+    "gimbal_pitch_deg": -17.2,
+    "captured": "2025-08-26T13:34:46+08:00"
+   },
+   "ground_target": {
+    "lat": 1.425261,
+    "lon": 103.599202,
+    "slant_distance_m": 478
+   }
+  },
+  {
+   "id": 10,
+   "ref": "frame-10",
+   "source_file": "图片_20250826135415_1224_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Pile caps",
+   "set": "east-plot",
+   "media": {
+    "jpg": "media/frames/frame-10.jpg",
+    "webp": "media/frames/frame-10.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.427523599,
+    "lon": 103.597785087,
+    "rel_altitude_m": 152.8,
+    "gimbal_yaw_deg": 115.1,
+    "gimbal_pitch_deg": -19.2,
+    "captured": "2025-08-26T13:35:05+08:00"
+   },
+   "ground_target": {
+    "lat": 1.425852,
+    "lon": 103.601356,
+    "slant_distance_m": 439
+   }
+  },
+  {
+   "id": 11,
+   "ref": "frame-11",
+   "source_file": "图片_20250826135418_1225_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Pile caps",
+   "set": "east-plot",
+   "media": {
+    "jpg": "media/frames/frame-11.jpg",
+    "webp": "media/frames/frame-11.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.427523727,
+    "lon": 103.597783127,
+    "rel_altitude_m": 152.7,
+    "gimbal_yaw_deg": 137.4,
+    "gimbal_pitch_deg": -19.2,
+    "captured": "2025-08-26T13:35:09+08:00"
+   },
+   "ground_target": {
+    "lat": 1.424624,
+    "lon": 103.60045,
+    "slant_distance_m": 438
+   }
+  },
+  {
+   "id": 12,
+   "ref": "frame-12",
+   "source_file": "图片_20250826135420_1226_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Envelope",
+   "set": "long-hall",
+   "media": {
+    "jpg": "media/frames/frame-12.jpg",
+    "webp": "media/frames/frame-12.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.427525923,
+    "lon": 103.597782434,
+    "rel_altitude_m": 152.6,
+    "gimbal_yaw_deg": 151.6,
+    "gimbal_pitch_deg": -16.5,
+    "captured": "2025-08-26T13:35:13+08:00"
+   },
+   "ground_target": {
+    "lat": 1.423455,
+    "lon": 103.599984,
+    "slant_distance_m": 515
+   }
+  },
+  {
+   "id": 13,
+   "ref": "frame-13",
+   "source_file": "图片_20250826135423_1227_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Envelope",
+   "set": "long-hall",
+   "media": {
+    "jpg": "media/frames/frame-13.jpg",
+    "webp": "media/frames/frame-13.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.427523883,
+    "lon": 103.597781918,
+    "rel_altitude_m": 152.4,
+    "gimbal_yaw_deg": 174.9,
+    "gimbal_pitch_deg": -24.5,
+    "captured": "2025-08-26T13:35:17+08:00"
+   },
+   "ground_target": {
+    "lat": 1.424532,
+    "lon": 103.598049,
+    "slant_distance_m": 334
+   }
+  },
+  {
+   "id": 14,
+   "ref": "frame-14",
+   "source_file": "图片_20250826135425_1228_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "In service",
+   "set": "northwest-hall",
+   "media": {
+    "jpg": "media/frames/frame-14.jpg",
+    "webp": "media/frames/frame-14.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.427503732,
+    "lon": 103.598389602,
+    "rel_altitude_m": 261.0,
+    "gimbal_yaw_deg": 119.5,
+    "gimbal_pitch_deg": -90.0,
+    "captured": "2025-08-26T13:35:45+08:00"
+   },
+   "ground_target": {
+    "lat": 1.427504,
+    "lon": 103.59839,
+    "slant_distance_m": 0
+   }
+  },
+  {
+   "id": 15,
+   "ref": "frame-15",
+   "source_file": "图片_20250826135428_1229_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Roof slab",
+   "set": "west-block",
+   "media": {
+    "jpg": "media/frames/frame-15.jpg",
+    "webp": "media/frames/frame-15.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.42749923,
+    "lon": 103.598387336,
+    "rel_altitude_m": 260.8,
+    "gimbal_yaw_deg": -155.3,
+    "gimbal_pitch_deg": -63.2,
+    "captured": "2025-08-26T13:35:56+08:00"
+   },
+   "ground_target": {
+    "lat": 1.426424,
+    "lon": 103.597893,
+    "slant_distance_m": 132
+   }
+  },
+  {
+   "id": 16,
+   "ref": "frame-16",
+   "source_file": "图片_20250826135431_1230_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Frame",
+   "set": "central-block",
+   "media": {
+    "jpg": "media/frames/frame-16.jpg",
+    "webp": "media/frames/frame-16.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.429099497,
+    "lon": 103.598024111,
+    "rel_altitude_m": 285.9,
+    "gimbal_yaw_deg": 163.3,
+    "gimbal_pitch_deg": -34.2,
+    "captured": "2025-08-26T13:36:18+08:00"
+   },
+   "ground_target": {
+    "lat": 1.42548,
+    "lon": 103.59911,
+    "slant_distance_m": 421
+   }
+  },
+  {
+   "id": 17,
+   "ref": "frame-17",
+   "source_file": "图片_20250826135434_1231_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Envelope",
+   "set": "long-hall",
+   "media": {
+    "jpg": "media/frames/frame-17.jpg",
+    "webp": "media/frames/frame-17.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.424358638,
+    "lon": 103.598879578,
+    "rel_altitude_m": 357.5,
+    "gimbal_yaw_deg": -148.9,
+    "gimbal_pitch_deg": -90.0,
+    "captured": "2025-08-26T13:37:18+08:00"
+   },
+   "ground_target": {
+    "lat": 1.424359,
+    "lon": 103.59888,
+    "slant_distance_m": 0
+   }
+  },
+  {
+   "id": 18,
+   "ref": "frame-18",
+   "source_file": "图片_20250826135436_1232_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Roof slab",
+   "set": "west-block",
+   "media": {
+    "jpg": "media/frames/frame-18.jpg",
+    "webp": "media/frames/frame-18.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.425909556,
+    "lon": 103.598075804,
+    "rel_altitude_m": 268.1,
+    "gimbal_yaw_deg": -148.9,
+    "gimbal_pitch_deg": -90.0,
+    "captured": "2025-08-26T13:40:34+08:00"
+   },
+   "ground_target": {
+    "lat": 1.42591,
+    "lon": 103.598076,
+    "slant_distance_m": 0
+   }
+  },
+  {
+   "id": 19,
+   "ref": "frame-19",
+   "source_file": "图片_20250826135438_1233_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Pile caps",
+   "set": "east-plot",
+   "media": {
+    "jpg": "media/frames/frame-19.jpg",
+    "webp": "media/frames/frame-19.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.425332557,
+    "lon": 103.600503961,
+    "rel_altitude_m": 288.4,
+    "gimbal_yaw_deg": 120.1,
+    "gimbal_pitch_deg": -90.0,
+    "captured": "2025-08-26T13:39:35+08:00"
+   },
+   "ground_target": {
+    "lat": 1.425333,
+    "lon": 103.600504,
+    "slant_distance_m": 0
+   }
+  },
+  {
+   "id": 20,
+   "ref": "frame-20",
+   "source_file": "图片_20250826135441_1234_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Frame",
+   "set": "central-block",
+   "media": {
+    "jpg": "media/frames/frame-20.jpg",
+    "webp": "media/frames/frame-20.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.424988011,
+    "lon": 103.600043828,
+    "rel_altitude_m": 221.4,
+    "gimbal_yaw_deg": -63.5,
+    "gimbal_pitch_deg": -54.1,
+    "captured": "2025-08-26T13:39:52+08:00"
+   },
+   "ground_target": {
+    "lat": 1.42563,
+    "lon": 103.598755,
+    "slant_distance_m": 160
+   }
+  },
+  {
+   "id": 21,
+   "ref": "frame-21",
+   "source_file": "图片_20250826135444_1235_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Frame",
+   "set": "central-block",
+   "media": {
+    "jpg": "media/frames/frame-21.jpg",
+    "webp": "media/frames/frame-21.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 22,
+   "ref": "frame-22",
+   "source_file": "图片_20250826135446_1236_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Roof slab",
+   "set": "west-block",
+   "media": {
+    "jpg": "media/frames/frame-22.jpg",
+    "webp": "media/frames/frame-22.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 23,
+   "ref": "frame-23",
+   "source_file": "图片_20250826135456_1237_47.jpg",
+   "date": "2025-08-26",
+   "date_label": "26 Aug 2025",
+   "stage": "Unplaced",
+   "set": null,
+   "media": {
+    "jpg": "media/frames/frame-23.jpg",
+    "webp": "media/frames/frame-23.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 24,
+   "ref": "frame-24",
+   "source_file": "图片_20251009164034_725_11.jpg",
+   "date": "2025-10-09",
+   "date_label": "9 Oct 2025",
+   "stage": "Unplaced",
+   "set": null,
+   "media": {
+    "jpg": "media/frames/frame-24.jpg",
+    "webp": "media/frames/frame-24.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 25,
+   "ref": "frame-25",
+   "source_file": "图片_20251009164037_726_11.jpg",
+   "date": "2025-10-09",
+   "date_label": "9 Oct 2025",
+   "stage": "In service",
+   "set": "northwest-hall",
+   "media": {
+    "jpg": "media/frames/frame-25.jpg",
+    "webp": "media/frames/frame-25.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 26,
+   "ref": "frame-26",
+   "source_file": "图片_20251009164041_727_11.jpg",
+   "date": "2025-10-09",
+   "date_label": "9 Oct 2025",
+   "stage": "Unplaced",
+   "set": null,
+   "media": {
+    "jpg": "media/frames/frame-26.jpg",
+    "webp": "media/frames/frame-26.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 27,
+   "ref": "frame-27",
+   "source_file": "图片_20251009164047_728_11.jpg",
+   "date": "2025-10-09",
+   "date_label": "9 Oct 2025",
+   "stage": "Unplaced",
+   "set": null,
+   "media": {
+    "jpg": "media/frames/frame-27.jpg",
+    "webp": "media/frames/frame-27.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 28,
+   "ref": "frame-28",
+   "source_file": "图片_20251009164050_729_11.jpg",
+   "date": "2025-10-09",
+   "date_label": "9 Oct 2025",
+   "stage": "Rooftop plant",
+   "set": "long-hall",
+   "media": {
+    "jpg": "media/frames/frame-28.jpg",
+    "webp": "media/frames/frame-28.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 29,
+   "ref": "frame-29",
+   "source_file": "图片_20251009164055_730_11.jpg",
+   "date": "2025-10-09",
+   "date_label": "9 Oct 2025",
+   "stage": "Rooftop plant",
+   "set": "long-hall",
+   "media": {
+    "jpg": "media/frames/frame-29.jpg",
+    "webp": "media/frames/frame-29.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 30,
+   "ref": "frame-30",
+   "source_file": "图片_20251009164059_731_11.jpg",
+   "date": "2025-10-09",
+   "date_label": "9 Oct 2025",
+   "stage": "Foundations",
+   "set": "east-plot",
+   "media": {
+    "jpg": "media/frames/frame-30.jpg",
+    "webp": "media/frames/frame-30.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 31,
+   "ref": "frame-31",
+   "source_file": "图片_20251009164102_732_11.jpg",
+   "date": "2025-10-09",
+   "date_label": "9 Oct 2025",
+   "stage": "Rooftop plant",
+   "set": "long-hall",
+   "media": {
+    "jpg": "media/frames/frame-31.jpg",
+    "webp": "media/frames/frame-31.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 32,
+   "ref": "frame-32",
+   "source_file": "图片_20251009164105_733_11.jpg",
+   "date": "2025-10-09",
+   "date_label": "9 Oct 2025",
+   "stage": "In service",
+   "set": "northwest-hall",
+   "media": {
+    "jpg": "media/frames/frame-32.jpg",
+    "webp": "media/frames/frame-32.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 33,
+   "ref": "frame-33",
+   "source_file": "图片_20251009164109_734_11.jpg",
+   "date": "2025-10-09",
+   "date_label": "9 Oct 2025",
+   "stage": "Foundations",
+   "set": "east-plot",
+   "media": {
+    "jpg": "media/frames/frame-33.jpg",
+    "webp": "media/frames/frame-33.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 34,
+   "ref": "frame-34",
+   "source_file": "图片_20251009164111_735_11.jpg",
+   "date": "2025-10-09",
+   "date_label": "9 Oct 2025",
+   "stage": "Roof slab",
+   "set": "central-block",
+   "media": {
+    "jpg": "media/frames/frame-34.jpg",
+    "webp": "media/frames/frame-34.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 35,
+   "ref": "frame-35",
+   "source_file": "图片_20251009164115_736_11.jpg",
+   "date": "2025-10-09",
+   "date_label": "9 Oct 2025",
+   "stage": "Foundations",
+   "set": "east-plot",
+   "media": {
+    "jpg": "media/frames/frame-35.jpg",
+    "webp": "media/frames/frame-35.webp"
+   },
+   "metadata": "stripped"
+  },
+  {
+   "id": 36,
+   "ref": "frame-36",
+   "source_file": "图片_20251009164119_737_11.jpg",
+   "date": "2025-10-09",
+   "date_label": "9 Oct 2025",
+   "stage": "Roof slab",
+   "set": "central-block",
+   "media": {
+    "jpg": "media/frames/frame-36.jpg",
+    "webp": "media/frames/frame-36.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.424522928,
+    "lon": 103.59994698,
+    "rel_altitude_m": 499.6,
+    "gimbal_yaw_deg": -54.8,
+    "gimbal_pitch_deg": -70.6,
+    "captured": "2025-10-09T14:50:54+08:00"
+   },
+   "ground_target": {
+    "lat": 1.425434,
+    "lon": 103.598655,
+    "slant_distance_m": 176
+   }
+  },
+  {
+   "id": 37,
+   "ref": "frame-37",
+   "source_file": "图片_20251009164123_738_11.jpg",
+   "date": "2025-10-09",
+   "date_label": "9 Oct 2025",
+   "stage": "Roof deck",
+   "set": "mid-plot",
+   "media": {
+    "jpg": "media/frames/frame-37.jpg",
+    "webp": "media/frames/frame-37.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.424522214,
+    "lon": 103.599945809,
+    "rel_altitude_m": 499.7,
+    "gimbal_yaw_deg": -12.5,
+    "gimbal_pitch_deg": -62.7,
+    "captured": "2025-10-09T14:51:01+08:00"
+   },
+   "ground_target": {
+    "lat": 1.426784,
+    "lon": 103.599444,
+    "slant_distance_m": 258
+   }
+  },
+  {
+   "id": 38,
+   "ref": "frame-38",
+   "source_file": "图片_20251009164128_739_11.jpg",
+   "date": "2025-10-09",
+   "date_label": "9 Oct 2025",
+   "stage": "In service",
+   "set": "northwest-hall",
+   "media": {
+    "jpg": "media/frames/frame-38.jpg",
+    "webp": "media/frames/frame-38.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.424441168,
+    "lon": 103.599969076,
+    "rel_altitude_m": 499.7,
+    "gimbal_yaw_deg": -25.5,
+    "gimbal_pitch_deg": -51.5,
+    "captured": "2025-10-09T14:51:06+08:00"
+   },
+   "ground_target": {
+    "lat": 1.427664,
+    "lon": 103.598431,
+    "slant_distance_m": 397
+   }
+  },
+  {
+   "id": 39,
+   "ref": "frame-39",
+   "source_file": "图片_20251009164132_740_11.jpg",
+   "date": "2025-10-09",
+   "date_label": "9 Oct 2025",
+   "stage": "Foundations",
+   "set": "east-plot",
+   "media": {
+    "jpg": "media/frames/frame-39.jpg",
+    "webp": "media/frames/frame-39.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.42602567,
+    "lon": 103.60090634,
+    "rel_altitude_m": 499.9,
+    "gimbal_yaw_deg": -55.4,
+    "gimbal_pitch_deg": -90.0,
+    "captured": "2025-10-09T14:51:32+08:00"
+   },
+   "ground_target": {
+    "lat": 1.426026,
+    "lon": 103.600906,
+    "slant_distance_m": 0
+   }
+  },
+  {
+   "id": 40,
+   "ref": "frame-40",
+   "source_file": "图片_20251009164135_741_11.jpg",
+   "date": "2025-10-09",
+   "date_label": "9 Oct 2025",
+   "stage": "Foundations",
+   "set": "east-plot",
+   "media": {
+    "jpg": "media/frames/frame-40.jpg",
+    "webp": "media/frames/frame-40.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.425533765,
+    "lon": 103.601031243,
+    "rel_altitude_m": 367.4,
+    "gimbal_yaw_deg": 124.7,
+    "gimbal_pitch_deg": -90.0,
+    "captured": "2025-10-09T14:53:29+08:00"
+   },
+   "ground_target": {
+    "lat": 1.425534,
+    "lon": 103.601031,
+    "slant_distance_m": 0
+   }
+  },
+  {
+   "id": 41,
+   "ref": "frame-41",
+   "source_file": "图片_20251212102519_1768_11.jpg",
+   "date": "2025-12-12",
+   "date_label": "12 Dec 2025",
+   "stage": "In service",
+   "set": "northwest-hall",
+   "media": {
+    "jpg": "media/frames/frame-41.jpg",
+    "webp": "media/frames/frame-41.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.43077371,
+    "lon": 103.598912234,
+    "rel_altitude_m": 225.4,
+    "gimbal_yaw_deg": -170.4,
+    "gimbal_pitch_deg": -30.5,
+    "captured": "2025-12-12T10:06:09+08:00"
+   },
+   "ground_target": {
+    "lat": 1.427384,
+    "lon": 103.598339,
+    "slant_distance_m": 383
+   }
+  },
+  {
+   "id": 42,
+   "ref": "frame-42",
+   "source_file": "图片_20251212102523_1769_11.jpg",
+   "date": "2025-12-12",
+   "date_label": "12 Dec 2025",
+   "stage": "Cladding",
+   "set": "west-block",
+   "media": {
+    "jpg": "media/frames/frame-42.jpg",
+    "webp": "media/frames/frame-42.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.430508408,
+    "lon": 103.597996314,
+    "rel_altitude_m": 225.4,
+    "gimbal_yaw_deg": -168.2,
+    "gimbal_pitch_deg": -29.6,
+    "captured": "2025-12-12T10:06:23+08:00"
+   },
+   "ground_target": {
+    "lat": 1.427019,
+    "lon": 103.597267,
+    "slant_distance_m": 397
+   }
+  },
+  {
+   "id": 43,
+   "ref": "frame-43",
+   "source_file": "图片_20251212102526_1770_11.jpg",
+   "date": "2025-12-12",
+   "date_label": "12 Dec 2025",
+   "stage": "Cladding",
+   "set": "west-block",
+   "media": {
+    "jpg": "media/frames/frame-43.jpg",
+    "webp": "media/frames/frame-43.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.430509006,
+    "lon": 103.597996489,
+    "rel_altitude_m": 225.4,
+    "gimbal_yaw_deg": -175.3,
+    "gimbal_pitch_deg": -24.9,
+    "captured": "2025-12-12T10:06:27+08:00"
+   },
+   "ground_target": {
+    "lat": 1.426162,
+    "lon": 103.597639,
+    "slant_distance_m": 486
+   }
+  },
+  {
+   "id": 44,
+   "ref": "frame-44",
+   "source_file": "图片_20251212102530_1771_11.jpg",
+   "date": "2025-12-12",
+   "date_label": "12 Dec 2025",
+   "stage": "Roof topped",
+   "set": "central-block",
+   "media": {
+    "jpg": "media/frames/frame-44.jpg",
+    "webp": "media/frames/frame-44.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.429127785,
+    "lon": 103.598218193,
+    "rel_altitude_m": 225.3,
+    "gimbal_yaw_deg": 173.0,
+    "gimbal_pitch_deg": -28.2,
+    "captured": "2025-12-12T10:06:42+08:00"
+   },
+   "ground_target": {
+    "lat": 1.425381,
+    "lon": 103.598678,
+    "slant_distance_m": 420
+   }
+  },
+  {
+   "id": 45,
+   "ref": "frame-45",
+   "source_file": "图片_20251212102534_1772_11.jpg",
+   "date": "2025-12-12",
+   "date_label": "12 Dec 2025",
+   "stage": "Roof topped",
+   "set": "mid-plot",
+   "media": {
+    "jpg": "media/frames/frame-45.jpg",
+    "webp": "media/frames/frame-45.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.429129547,
+    "lon": 103.598217648,
+    "rel_altitude_m": 225.2,
+    "gimbal_yaw_deg": 151.6,
+    "gimbal_pitch_deg": -35.2,
+    "captured": "2025-12-12T10:06:48+08:00"
+   },
+   "ground_target": {
+    "lat": 1.426607,
+    "lon": 103.599582,
+    "slant_distance_m": 319
+   }
+  },
+  {
+   "id": 46,
+   "ref": "frame-46",
+   "source_file": "图片_20251212102540_1773_11.jpg",
+   "date": "2025-12-12",
+   "date_label": "12 Dec 2025",
+   "stage": "Structure",
+   "set": "east-plot",
+   "media": {
+    "jpg": "media/frames/frame-46.jpg",
+    "webp": "media/frames/frame-46.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.428399776,
+    "lon": 103.598558049,
+    "rel_altitude_m": 225.2,
+    "gimbal_yaw_deg": 160.5,
+    "gimbal_pitch_deg": -27.6,
+    "captured": "2025-12-12T10:06:57+08:00"
+   },
+   "ground_target": {
+    "lat": 1.424752,
+    "lon": 103.59985,
+    "slant_distance_m": 431
+   }
+  },
+  {
+   "id": 47,
+   "ref": "frame-47",
+   "source_file": "图片_20251212102547_1774_11.jpg",
+   "date": "2025-12-12",
+   "date_label": "12 Dec 2025",
+   "stage": "Structure",
+   "set": "east-plot",
+   "media": {
+    "jpg": "media/frames/frame-47.jpg",
+    "webp": "media/frames/frame-47.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.428400135,
+    "lon": 103.598557299,
+    "rel_altitude_m": 225.1,
+    "gimbal_yaw_deg": 139.6,
+    "gimbal_pitch_deg": -30.3,
+    "captured": "2025-12-12T10:07:04+08:00"
+   },
+   "ground_target": {
+    "lat": 1.425765,
+    "lon": 103.600801,
+    "slant_distance_m": 385
+   }
+  },
+  {
+   "id": 48,
+   "ref": "frame-48",
+   "source_file": "图片_20251212102551_1775_11.jpg",
+   "date": "2025-12-12",
+   "date_label": "12 Dec 2025",
+   "stage": "Structure",
+   "set": "east-plot",
+   "media": {
+    "jpg": "media/frames/frame-48.jpg",
+    "webp": "media/frames/frame-48.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.426824346,
+    "lon": 103.599306889,
+    "rel_altitude_m": 225.2,
+    "gimbal_yaw_deg": 144.7,
+    "gimbal_pitch_deg": -49.8,
+    "captured": "2025-12-12T10:07:31+08:00"
+   },
+   "ground_target": {
+    "lat": 1.425429,
+    "lon": 103.600295,
+    "slant_distance_m": 190
+   }
+  },
+  {
+   "id": 49,
+   "ref": "frame-49",
+   "source_file": "图片_20251212102556_1776_11.jpg",
+   "date": "2025-12-12",
+   "date_label": "12 Dec 2025",
+   "stage": "In service",
+   "set": "north-site",
+   "media": {
+    "jpg": "media/frames/frame-49.jpg",
+    "webp": "media/frames/frame-49.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.43352354,
+    "lon": 103.599871129,
+    "rel_altitude_m": 101.4,
+    "gimbal_yaw_deg": 32.5,
+    "gimbal_pitch_deg": -36.8,
+    "captured": "2025-12-12T10:16:18+08:00"
+   },
+   "ground_target": {
+    "lat": 1.43455,
+    "lon": 103.600526,
+    "slant_distance_m": 136
+   }
+  },
+  {
+   "id": 50,
+   "ref": "frame-50",
+   "source_file": "图片_20251212102601_1777_11.jpg",
+   "date": "2025-12-12",
+   "date_label": "12 Dec 2025",
+   "stage": "Roof deck",
+   "set": "east-plot",
+   "media": {
+    "jpg": "media/frames/frame-50.jpg",
+    "webp": "media/frames/frame-50.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.426043837,
+    "lon": 103.600867162,
+    "rel_altitude_m": 225.2,
+    "gimbal_yaw_deg": 125.6,
+    "gimbal_pitch_deg": -90.0,
+    "captured": "2025-12-12T10:07:56+08:00"
+   },
+   "ground_target": {
+    "lat": 1.426044,
+    "lon": 103.600867,
+    "slant_distance_m": 0
+   }
+  },
+  {
+   "id": 51,
+   "ref": "frame-51",
+   "source_file": "图片_20251212102611_1778_11.jpg",
+   "date": "2025-12-12",
+   "date_label": "12 Dec 2025",
+   "stage": "Roof deck",
+   "set": "east-plot",
+   "media": {
+    "jpg": "media/frames/frame-51.jpg",
+    "webp": "media/frames/frame-51.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.424832405,
+    "lon": 103.600078308,
+    "rel_altitude_m": 225.2,
+    "gimbal_yaw_deg": 124.9,
+    "gimbal_pitch_deg": -90.0,
+    "captured": "2025-12-12T10:08:13+08:00"
+   },
+   "ground_target": {
+    "lat": 1.424832,
+    "lon": 103.600078,
+    "slant_distance_m": 0
+   }
+  },
+  {
+   "id": 52,
+   "ref": "frame-52",
+   "source_file": "图片_20251212102627_1779_11.jpg",
+   "date": "2025-12-12",
+   "date_label": "12 Dec 2025",
+   "stage": "Roof deck",
+   "set": "east-plot",
+   "media": {
+    "jpg": "media/frames/frame-52.jpg",
+    "webp": "media/frames/frame-52.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.425280469,
+    "lon": 103.600362516,
+    "rel_altitude_m": 283.1,
+    "gimbal_yaw_deg": 125.4,
+    "gimbal_pitch_deg": -90.0,
+    "captured": "2025-12-12T10:08:32+08:00"
+   },
+   "ground_target": {
+    "lat": 1.42528,
+    "lon": 103.600363,
+    "slant_distance_m": 0
+   }
+  },
+  {
+   "id": 53,
+   "ref": "frame-53",
+   "source_file": "图片_20251212102638_1780_11.jpg",
+   "date": "2025-12-12",
+   "date_label": "12 Dec 2025",
+   "stage": "Roof topped",
+   "set": "central-block",
+   "media": {
+    "jpg": "media/frames/frame-53.jpg",
+    "webp": "media/frames/frame-53.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.425337336,
+    "lon": 103.600222708,
+    "rel_altitude_m": 203.5,
+    "gimbal_yaw_deg": -79.6,
+    "gimbal_pitch_deg": -52.4,
+    "captured": "2025-12-12T10:09:05+08:00"
+   },
+   "ground_target": {
+    "lat": 1.425591,
+    "lon": 103.598838,
+    "slant_distance_m": 157
+   }
+  },
+  {
+   "id": 54,
+   "ref": "frame-54",
+   "source_file": "图片_20251212102647_1781_11.jpg",
+   "date": "2025-12-12",
+   "date_label": "12 Dec 2025",
+   "stage": "Cladding",
+   "set": "west-block",
+   "media": {
+    "jpg": "media/frames/frame-54.jpg",
+    "webp": "media/frames/frame-54.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.425338929,
+    "lon": 103.60022936,
+    "rel_altitude_m": 203.8,
+    "gimbal_yaw_deg": -61.9,
+    "gimbal_pitch_deg": -32.7,
+    "captured": "2025-12-12T10:09:18+08:00"
+   },
+   "ground_target": {
+    "lat": 1.426682,
+    "lon": 103.597713,
+    "slant_distance_m": 317
+   }
+  },
+  {
+   "id": 55,
+   "ref": "frame-55",
+   "source_file": "图片_20251212102659_1782_11.jpg",
+   "date": "2025-12-12",
+   "date_label": "12 Dec 2025",
+   "stage": "In service",
+   "set": "north-site",
+   "media": {
+    "jpg": "media/frames/frame-55.jpg",
+    "webp": "media/frames/frame-55.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.433138139,
+    "lon": 103.600556649,
+    "rel_altitude_m": 116.9,
+    "gimbal_yaw_deg": 18.0,
+    "gimbal_pitch_deg": -44.3,
+    "captured": "2025-12-12T10:15:41+08:00"
+   },
+   "ground_target": {
+    "lat": 1.434162,
+    "lon": 103.600889,
+    "slant_distance_m": 120
+   }
+  },
+  {
+   "id": 56,
+   "ref": "frame-56",
+   "source_file": "图片_20251212102726_1783_11.jpg",
+   "date": "2025-12-12",
+   "date_label": "12 Dec 2025",
+   "stage": "In service",
+   "set": "north-site",
+   "media": {
+    "jpg": "media/frames/frame-56.jpg",
+    "webp": "media/frames/frame-56.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.433837955,
+    "lon": 103.599788577,
+    "rel_altitude_m": 98.2,
+    "gimbal_yaw_deg": 84.2,
+    "gimbal_pitch_deg": -31.3,
+    "captured": "2025-12-12T10:17:52+08:00"
+   },
+   "ground_target": {
+    "lat": 1.433985,
+    "lon": 103.601232,
+    "slant_distance_m": 162
+   }
+  },
+  {
+   "id": 57,
+   "ref": "frame-57",
+   "source_file": "图片_20251212102730_1784_11.jpg",
+   "date": "2025-12-12",
+   "date_label": "12 Dec 2025",
+   "stage": "In service",
+   "set": "north-site",
+   "media": {
+    "jpg": "media/frames/frame-57.jpg",
+    "webp": "media/frames/frame-57.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.433799585,
+    "lon": 103.600355578,
+    "rel_altitude_m": 101.4,
+    "gimbal_yaw_deg": 48.0,
+    "gimbal_pitch_deg": -25.7,
+    "captured": "2025-12-12T10:16:43+08:00"
+   },
+   "ground_target": {
+    "lat": 1.435066,
+    "lon": 103.601763,
+    "slant_distance_m": 211
+   }
+  },
+  {
+   "id": 58,
+   "ref": "frame-58",
+   "source_file": "图片_20251212102734_1785_11.jpg",
+   "date": "2025-12-12",
+   "date_label": "12 Dec 2025",
+   "stage": "In service",
+   "set": "north-site",
+   "media": {
+    "jpg": "media/frames/frame-58.jpg",
+    "webp": "media/frames/frame-58.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.433865168,
+    "lon": 103.600379138,
+    "rel_altitude_m": 98.2,
+    "gimbal_yaw_deg": 21.6,
+    "gimbal_pitch_deg": -25.7,
+    "captured": "2025-12-12T10:16:55+08:00"
+   },
+   "ground_target": {
+    "lat": 1.435569,
+    "lon": 103.601054,
+    "slant_distance_m": 204
+   }
+  },
+  {
+   "id": 59,
+   "ref": "frame-59",
+   "source_file": "图片_20251212102741_1786_11.jpg",
+   "date": "2025-12-12",
+   "date_label": "12 Dec 2025",
+   "stage": "In service",
+   "set": "north-site",
+   "media": {
+    "jpg": "media/frames/frame-59.jpg",
+    "webp": "media/frames/frame-59.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.433864212,
+    "lon": 103.600378416,
+    "rel_altitude_m": 98.1,
+    "gimbal_yaw_deg": -0.6,
+    "gimbal_pitch_deg": -24.9,
+    "captured": "2025-12-12T10:17:03+08:00"
+   },
+   "ground_target": {
+    "lat": 1.435763,
+    "lon": 103.600359,
+    "slant_distance_m": 211
+   }
+  },
+  {
+   "id": 60,
+   "ref": "frame-60",
+   "source_file": "图片_20251212102748_1787_11.jpg",
+   "date": "2025-12-12",
+   "date_label": "12 Dec 2025",
+   "stage": "In service",
+   "set": "north-site",
+   "media": {
+    "jpg": "media/frames/frame-60.jpg",
+    "webp": "media/frames/frame-60.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.433807154,
+    "lon": 103.599547144,
+    "rel_altitude_m": 98.2,
+    "gimbal_yaw_deg": 24.1,
+    "gimbal_pitch_deg": -38.0,
+    "captured": "2025-12-12T10:17:29+08:00"
+   },
+   "ground_target": {
+    "lat": 1.434838,
+    "lon": 103.600008,
+    "slant_distance_m": 126
+   }
+  },
+  {
+   "id": 61,
+   "ref": "frame-61",
+   "source_file": "图片_20251212102756_1788_11.jpg",
+   "date": "2025-12-12",
+   "date_label": "12 Dec 2025",
+   "stage": "In service",
+   "set": "north-site",
+   "media": {
+    "jpg": "media/frames/frame-61.jpg",
+    "webp": "media/frames/frame-61.webp"
+   },
+   "metadata": "dji-xmp",
+   "camera": {
+    "lat": 1.433806157,
+    "lon": 103.599547274,
+    "rel_altitude_m": 98.2,
+    "gimbal_yaw_deg": 59.7,
+    "gimbal_pitch_deg": -34.0,
+    "captured": "2025-12-12T10:17:37+08:00"
+   },
+   "ground_target": {
+    "lat": 1.434466,
+    "lon": 103.600677,
+    "slant_distance_m": 146
+   }
+  },
+  {
+   "id": 62,
+   "ref": "frame-62",
+   "source_file": "图片_20251009164233_743_11.png",
+   "date": "2025-10-09",
+   "date_label": "9 Oct 2025",
+   "stage": "Foundations",
+   "set": "east-plot",
+   "media": {
+    "jpg": "media/frames/frame-62.jpg",
+    "webp": "media/frames/frame-62.webp"
+   },
+   "metadata": "stripped"
+  }
+ ],
+ "comparisons": [
+  {
+   "id": "east-nadir",
+   "set": "east-plot",
+   "title": "Twin pads to structure",
+   "view": "straight down",
+   "registered": false,
+   "registration": {
+    "method": null,
+    "inliers_per_step": null,
+    "note": "below inlier threshold; presented as a wipe, both frames unmodified"
+   },
+   "before": {
+    "frame": 19,
+    "date": "2025-08-26",
+    "date_label": "26 Aug 2025",
+    "stage": "Pile caps"
+   },
+   "after": {
+    "frame": 50,
+    "date": "2025-12-12",
+    "date_label": "12 Dec 2025",
+    "stage": "Roof deck"
+   },
+   "caption": "The headline change: a field of pile caps becomes a full ground-floor structure in 108 days. Both frames are straight down but from 261 m and 225 m at different yaw, and almost every feature in the August frame was buried by December — so this is a wipe between unmodified frames.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/east-nadir-before-1600.jpg"
+     },
+     "800": {
+      "jpg": "media/compare/east-nadir-before-800.jpg"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/east-nadir-after-1600.jpg"
+     },
+     "800": {
+      "jpg": "media/compare/east-nadir-after-800.jpg"
+     }
+    }
+   }
+  },
+  {
+   "id": "east-oblique",
+   "set": "east-plot",
+   "title": "The same plot from the north",
+   "view": "oblique",
+   "registered": false,
+   "registration": {
+    "method": null,
+    "inliers_per_step": null,
+    "note": "below inlier threshold; presented as a wipe, both frames unmodified"
+   },
+   "before": {
+    "frame": 11,
+    "date": "2025-08-26",
+    "date_label": "26 Aug 2025",
+    "stage": "Pile caps"
+   },
+   "after": {
+    "frame": 46,
+    "date": "2025-12-12",
+    "date_label": "12 Dec 2025",
+    "stage": "Structure"
+   },
+   "caption": "This pair got closest to registering — 29 inliers under the loosest settings — but the blend ghosted badly, so it was demoted. An honest wipe beats a warp that quietly misaligns.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/east-oblique-before-1600.jpg"
+     },
+     "800": {
+      "jpg": "media/compare/east-oblique-before-800.jpg"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/east-oblique-after-1600.jpg"
+     },
+     "800": {
+      "jpg": "media/compare/east-oblique-after-800.jpg"
+     }
+    }
+   }
+  },
+  {
+   "id": "east-oct-dec",
+   "set": "east-plot",
+   "title": "Foundations to roof deck",
+   "view": "straight down",
+   "registered": false,
+   "registration": {
+    "method": null,
+    "inliers_per_step": null,
+    "note": "below inlier threshold; presented as a wipe, both frames unmodified"
+   },
+   "before": {
+    "frame": 40,
+    "date": "2025-10-09",
+    "date_label": "9 Oct 2025",
+    "stage": "Foundations"
+   },
+   "after": {
+    "frame": 51,
+    "date": "2025-12-12",
+    "date_label": "12 Dec 2025",
+    "stage": "Roof deck"
+   },
+   "caption": "Nine weeks, the shortest interval here, and still not registrable: October was flown at 367 m, December at 225 m.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/east-oct-dec-before-1600.jpg"
+     },
+     "800": {
+      "jpg": "media/compare/east-oct-dec-before-800.jpg"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/east-oct-dec-after-1600.jpg"
+     },
+     "800": {
+      "jpg": "media/compare/east-oct-dec-after-800.jpg"
+     }
+    }
+   }
+  },
+  {
+   "id": "hallb-nadir",
+   "set": "northwest-hall",
+   "title": "Already in service",
+   "view": "straight down",
+   "registered": true,
+   "registration": {
+    "method": "SIFT + mutual NN + MAGSAC homography",
+    "inliers_per_step": [
+     108
+    ],
+    "note": null
+   },
+   "before": {
+    "frame": 14,
+    "date": "2025-08-26",
+    "date_label": "26 Aug 2025",
+    "stage": "In service"
+   },
+   "after": {
+    "frame": 32,
+    "date": "2025-10-09",
+    "date_label": "9 Oct 2025",
+    "stage": "In service"
+   },
+   "caption": "The only registered pair in the set. Slide it and the hall sits perfectly still — only the construction around its edges moves. That stillness is what a correct registration looks like.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/hallb-nadir-before-1600.jpg"
+     },
+     "800": {
+      "jpg": "media/compare/hallb-nadir-before-800.jpg"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/hallb-nadir-after-1600.jpg"
+     },
+     "800": {
+      "jpg": "media/compare/hallb-nadir-after-800.jpg"
+     }
+    }
+   }
+  },
+  {
+   "id": "central",
+   "set": "central-block",
+   "title": "Frame to roof topped",
+   "view": "oblique",
+   "registered": false,
+   "registration": {
+    "method": null,
+    "inliers_per_step": null,
+    "note": "below inlier threshold; presented as a wipe, both frames unmodified"
+   },
+   "before": {
+    "frame": 16,
+    "date": "2025-08-26",
+    "date_label": "26 Aug 2025",
+    "stage": "Frame"
+   },
+   "after": {
+    "frame": 44,
+    "date": "2025-12-12",
+    "date_label": "12 Dec 2025",
+    "stage": "Roof topped"
+   },
+   "caption": "Same plot, confirmed by GPS to within 40 m, but shot from bearings 10° apart at very different ranges.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/central-before-1600.jpg"
+     },
+     "800": {
+      "jpg": "media/compare/central-before-800.jpg"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/central-after-1600.jpg"
+     },
+     "800": {
+      "jpg": "media/compare/central-after-800.jpg"
+     }
+    }
+   }
+  },
+  {
+   "id": "west",
+   "set": "west-block",
+   "title": "Roof slab to cladding",
+   "view": "oblique",
+   "registered": false,
+   "registration": {
+    "method": null,
+    "inliers_per_step": null,
+    "note": "below inlier threshold; presented as a wipe, both frames unmodified"
+   },
+   "before": {
+    "frame": 18,
+    "date": "2025-08-26",
+    "date_label": "26 Aug 2025",
+    "stage": "Roof slab"
+   },
+   "after": {
+    "frame": 43,
+    "date": "2025-12-12",
+    "date_label": "12 Dec 2025",
+    "stage": "Cladding"
+   },
+   "caption": "August is straight down, December an oblique from 225 m. No common geometry to solve for.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/west-before-1600.jpg"
+     },
+     "800": {
+      "jpg": "media/compare/west-before-800.jpg"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/west-after-1600.jpg"
+     },
+     "800": {
+      "jpg": "media/compare/west-after-800.jpg"
+     }
+    }
+   }
+  },
+  {
+   "id": "longhall",
+   "set": "long-hall",
+   "title": "Envelope to rooftop plant",
+   "view": "oblique",
+   "registered": false,
+   "registration": {
+    "method": null,
+    "inliers_per_step": null,
+    "note": "below inlier threshold; presented as a wipe, both frames unmodified"
+   },
+   "before": {
+    "frame": 13,
+    "date": "2025-08-26",
+    "date_label": "26 Aug 2025",
+    "stage": "Envelope"
+   },
+   "after": {
+    "frame": 31,
+    "date": "2025-10-09",
+    "date_label": "9 Oct 2025",
+    "stage": "Rooftop plant"
+   },
+   "caption": "The building is unmistakable by shape, which is how it was matched. Registration reached only 16 inliers.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/longhall-before-1600.jpg"
+     },
+     "800": {
+      "jpg": "media/compare/longhall-before-800.jpg"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/longhall-after-1600.jpg"
+     },
+     "800": {
+      "jpg": "media/compare/longhall-after-800.jpg"
+     }
+    }
+   }
+  },
+  {
+   "id": "mid",
+   "set": "mid-plot",
+   "title": "Roof deck to topped",
+   "view": "oblique",
+   "registered": false,
+   "registration": {
+    "method": null,
+    "inliers_per_step": null,
+    "note": "below inlier threshold; presented as a wipe, both frames unmodified"
+   },
+   "before": {
+    "frame": 37,
+    "date": "2025-10-09",
+    "date_label": "9 Oct 2025",
+    "stage": "Roof deck"
+   },
+   "after": {
+    "frame": 45,
+    "date": "2025-12-12",
+    "date_label": "12 Dec 2025",
+    "stage": "Roof topped"
+   },
+   "caption": "A GPS-only pairing, two frames, nine weeks apart.",
+   "media": {
+    "aspect": "1600/900",
+    "before": {
+     "1600": {
+      "jpg": "media/compare/mid-before-1600.jpg"
+     },
+     "800": {
+      "jpg": "media/compare/mid-before-800.jpg"
+     }
+    },
+    "after": {
+     "1600": {
+      "jpg": "media/compare/mid-after-1600.jpg"
+     },
+     "800": {
+      "jpg": "media/compare/mid-after-800.jpg"
+     }
+    }
+   }
+  }
+ ],
+ "videos": [
+  {
+   "id": "01_east-plot",
+   "set": "east-plot",
+   "title": "East plot",
+   "subtitle": "twin pads beside the highway",
+   "media": {
+    "src": "transitions/01_east-plot.mp4"
+   }
+  },
+  {
+   "id": "02_east-oblique",
+   "set": "east-plot",
+   "title": "East plot",
+   "subtitle": "the same plot from the north",
+   "media": {
+    "src": "transitions/02_east-oblique.mp4"
+   }
+  },
+  {
+   "id": "03_northwest-hall",
+   "set": "northwest-hall",
+   "title": "North-west hall",
+   "subtitle": "finished before the survey began",
+   "media": {
+    "src": "transitions/03_northwest-hall.mp4"
+   }
+  },
+  {
+   "id": "04_central-block",
+   "set": "central-block",
+   "title": "Central block",
+   "subtitle": "frame to roof topped",
+   "media": {
+    "src": "transitions/04_central-block.mp4"
+   }
+  },
+  {
+   "id": "05_west-block",
+   "set": "west-block",
+   "title": "West block",
+   "subtitle": "roof slab to cladding",
+   "media": {
+    "src": "transitions/05_west-block.mp4"
+   }
+  },
+  {
+   "id": "06_long-hall",
+   "set": "long-hall",
+   "title": "Long hall",
+   "subtitle": "envelope to rooftop plant",
+   "media": {
+    "src": "transitions/06_long-hall.mp4"
+   }
+  },
+  {
+   "id": "07_mid-plot",
+   "set": "mid-plot",
+   "title": "Mid plot",
+   "subtitle": "roof deck to topped",
+   "media": {
+    "src": "transitions/07_mid-plot.mp4"
+   }
+  }
+ ],
+ "unplaced": [
+  23,
+  24,
+  26,
+  27
+ ]
+}

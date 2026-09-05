@@ -125,6 +125,17 @@
     font:600 11px/1.35 ui-monospace,monospace;letter-spacing:.13em;
     text-transform:uppercase;transition:opacity .18s}
   .lb{text-shadow:0 1px 3px rgba(2,8,15,.95),0 0 10px rgba(2,8,15,.85)}
+  /* [emblem][name/sub] rather than a bare text stack. The emblem is a flag for a
+     place a flag exists for, and the campus's own aerial for the two that have
+     no flag -- see FLAG/EMBLEM below for why neither is fetched from anywhere. */
+  .lb{display:flex;align-items:center;gap:7px}
+  .lb .em{flex:0 0 auto;display:block;width:18px;height:12px;border-radius:1.5px;
+    box-shadow:0 0 0 1px rgba(2,8,15,.75),0 1px 3px rgba(2,8,15,.6);overflow:hidden}
+  .lb .em svg{display:block;width:100%;height:100%}
+  /* A campus emblem is a square crop of that campus from the air, so it is sized
+     square and keyed to the same optical weight as a flag rather than to its box. */
+  .lb .em.shot{width:22px;height:22px;border-radius:2px;object-fit:cover}
+  .lb .tx{display:block;min-width:0}
   .lb b{display:block;color:var(--ink);font-weight:700}
   .lb i{display:block;font-style:normal;color:var(--dim);font-size:10px;letter-spacing:.1em}
   .lb.planned b{color:var(--dim)}
@@ -204,6 +215,19 @@
     font:600 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.18em;
     text-transform:uppercase;white-space:nowrap}
   #tl .tl-head span{color:#3F5A70;margin-left:9px}
+  /* TWO CAMPUSES ON ONE MARKER. Johor holds Nusajaya Tech Park and Kempas Tech
+     Park, about 20 km apart, and each has its own survey with its own manifest.
+     They are not merged into one chronology -- interleaving two construction
+     sites by date would describe a project that does not exist. The switch is
+     shaped like the globe's own #views buttons because that is what it is. */
+  #tl .tl-parks{display:inline-flex;gap:5px;margin:0;pointer-events:auto;vertical-align:middle}
+  #tl .tl-parks button{margin:0;padding:4px 8px;border:1px solid rgba(180,214,240,.20);
+    border-radius:3px;background:rgba(8,22,38,.75);color:#6F8CA5;cursor:pointer;
+    font:700 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.16em;
+    text-transform:uppercase;transition:color .15s,border-color .15s,background .15s}
+  #tl .tl-parks button:hover{color:#CFE3F2;border-color:rgba(83,206,250,.5)}
+  #tl .tl-parks button[aria-pressed="true"]{background:#53CEFA;border-color:#53CEFA;color:#04121F}
+  #tl .tl-parks button:focus-visible{outline:2px solid #53CEFA;outline-offset:2px}
 
   #tl .tl-node{position:relative;display:flex;align-items:center;gap:13px;
     margin-left:-3px;padding:2px 0;cursor:pointer;background:none;border:0;
@@ -371,8 +395,8 @@
         <g class="tl-halo"><circle r="15"></circle><circle r="26"></circle><circle r="38"></circle></g>
       </svg>
       <div class="tl-axis"></div>
-      <div class="tl-head">KTP &middot; Johor<span id="tlCount"></span></div>
-      <div class="tl-nodes" id="tlNodes" role="listbox" aria-label="KTP capture visits" tabindex="0"></div>
+      <div class="tl-head"><span class="tl-parks" id="tlParks" role="group" aria-label="Campus"></span><span id="tlCount"></span></div>
+      <div class="tl-nodes" id="tlNodes" role="listbox" aria-label="Capture visits" tabindex="0"></div>
       <div class="tl-prev" id="tlPrev"></div>
     </div>
     <div id="rail">NUSAJAYA · BATAM · BANGKOK · HONG KONG</div>
@@ -424,9 +448,22 @@ import {SMAAPass}        from 'three/addons/postprocessing/SMAAPass.js';
    which is enough because the gap between the pins only ever grows from there.
    `power` is delivered load, and only Johor has a figure. */
 const SITES=[
+  /* JOHOR IS A REGION, NOT A DOT, and it used to be marked at (1.48, 103.66) --
+     a midpoint somebody typed, matching no place on the ground. The two
+     campuses are 19.7 km apart and both coordinates below are the CENTRE OF THE
+     approx_bounds each pack's OWN MANIFEST declares, not a name looked up
+     somewhere: NTP 1.4234-1.4358 / 103.5973-103.6018, KTP 1.5586-1.5618 /
+     103.7149-103.7248. The Johor marker now sits at their true midpoint, which
+     is what a marker labelled "Johor" honestly is. Below SPLIT_D it hands over
+     to the two real ones -- one dot while they share a pixel, two places once
+     you are close enough to tell them apart. */
   {id:'my', country:'Malaysia',  name:'Johor',      sub:'Nusajaya & Kempas Tech Park',
-   lat:1.48,  lon:103.66, status:'active',  sites:'6 (A–E, Kempas A)', year:'2022',
+   lat:1.4949, lon:103.6598, status:'active',  sites:'6 (A–E, Kempas A)', year:'2022',
    dy:-21, power:'891.6', powerUnit:'delivered'},
+  {id:'ntp', parent:'my', pack:'ntp', country:'Malaysia', name:'NTP', place:'Iskandar Puteri',
+   sub:'Nusajaya Tech Park', lat:1.4296, lon:103.5996, status:'active', dy:17},
+  {id:'ktp', parent:'my', pack:'ktp', country:'Malaysia', name:'KTP', place:'Kempas Tech Park',
+   sub:'Kempas Tech Park',  lat:1.5602, lon:103.7199, status:'active', dy:-17},
   {id:'id', country:'Indonesia', name:'Batam',      sub:'NDP-A · power, generator, cooling modules',
    lat:1.08,  lon:104.03, status:'active',  sites:'1', year:'2024', dy:21},
   {id:'th', country:'Thailand',  name:'Thailand',   sub:'Data centre scope',
@@ -653,6 +690,63 @@ const labelHost=document.getElementById('labels');
 const markers=[];
 let selected=null;
 
+/* ---- marker emblems -------------------------------------------------------
+   DRAWN HERE, NOT FETCHED. Every flag below is inline SVG on a 36x24 viewBox:
+   no network request, nothing to 404, nothing whose licence anyone has to think
+   about, and the same hand-built approach as the coastline and the arcs. They
+   render at 18x12, where the honest limit is a silhouette -- Australia's Union
+   Jack and Hong Kong's bauhinia are simplified, deliberately, because detail
+   that cannot survive 18 pixels is detail that only costs bytes.
+   JOHOR GETS ITS STATE FLAG, not Malaysia's: the marker says Johor, and the
+   state flag is the one that is true of it. Malaysia's national flag is not
+   here at all because nothing on this map is labelled Malaysia. */
+const STAR='M0,-1L.2245,-.309L.9511,-.309L.3633,.118L.5878,.809L0,.382'
+          +'L-.5878,.809L-.3633,.118L-.9511,-.309L-.2245,-.309Z';
+const svg=(inner)=>'<svg viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg" '
+  +'preserveAspectRatio="none" aria-hidden="true">'+inner+'</svg>';
+const star=(x,y,r,fill)=>'<path d="'+STAR+'" fill="'+fill+'" transform="translate('
+  +x+','+y+') scale('+r+')"/>';
+
+const FLAG={
+  // Johor: dark blue field, red canton, white crescent and five-pointed star.
+  // The crescent is a white disc with a red disc bitten out of it -- the same
+  // construction the real flag uses, and cheaper than an arc path.
+  my: svg('<rect width="36" height="24" fill="#17408B"/>'
+        + '<rect width="15" height="12" fill="#CE1126"/>'
+        + '<circle cx="5.8" cy="6" r="3.5" fill="#fff"/>'
+        + '<circle cx="7.4" cy="6" r="3.0" fill="#CE1126"/>'
+        + star(11.2, 6, 2.5, '#fff')),
+  id: svg('<rect width="36" height="12" fill="#CE1126"/>'
+        + '<rect y="12" width="36" height="12" fill="#fff"/>'),
+  th: svg('<rect width="36" height="24" fill="#A51931"/>'
+        + '<rect y="4" width="36" height="16" fill="#F4F5F8"/>'
+        + '<rect y="8" width="36" height="8" fill="#2D2A4A"/>'),
+  // Hong Kong: five bauhinia petals, no stamens -- at 18px they would be noise.
+  hk: svg('<rect width="36" height="24" fill="#DE2910"/>'
+        + [0,1,2,3,4].map(k=>'<ellipse cx="18" cy="6.6" rx="3.1" ry="5.4" fill="#fff" '
+            +'transform="rotate('+(k*72)+' 18 12)"/>').join('')),
+  // Australia: navy, a simplified Union Jack in the canton, the Commonwealth
+  // Star under it, and the Southern Cross on the fly.
+  au: svg('<rect width="36" height="24" fill="#00008B"/>'
+        + '<path d="M0,0L18,12M18,0L0,12" stroke="#fff" stroke-width="2.6"/>'
+        + '<path d="M0,0L18,12M18,0L0,12" stroke="#C8102E" stroke-width="1.2"/>'
+        + '<path d="M9,0V12M0,6H18" stroke="#fff" stroke-width="4"/>'
+        + '<path d="M9,0V12M0,6H18" stroke="#C8102E" stroke-width="2.2"/>'
+        + star(9, 18.6, 2.6, '#fff')
+        + star(27.5, 5.2, 1.5, '#fff') + star(31.6, 12.4, 1.9, '#fff')
+        + star(27.2, 19.4, 1.7, '#fff') + star(23.2, 12.8, 1.5, '#fff')
+        + star(29.4, 9.2, 0.9, '#fff')),
+  fi: svg('<rect width="36" height="24" fill="#fff"/>'
+        + '<path d="M13,0V24M0,12H36" stroke="#003580" stroke-width="6.4"/>'),
+};
+
+/* The two campuses have no flag, and their emblem is not borrowed from anywhere
+   either: it is a square crop of that campus FROM ITS OWN SURVEY, generated by
+   tools/campus-emblem.py out of the frame the manifest names. A stock photograph
+   of somebody else's industrial park, standing in for the site the company
+   actually built, would be the one thing on this map that is not evidence. */
+const EMBLEM={ ntp:'uploads/ntp/media/marker.jpg', ktp:'uploads/ktp/media/marker.jpg' };
+
 function addSites(){
   const hub=SITES.find(s=>s.id===HUB);
   for(const s of SITES){
@@ -670,8 +764,11 @@ function addSites(){
     if(s.dy) el.style.setProperty('--dy', s.dy+'px');
     // second line is the country -- except where the name IS the country, which
     // is every site we cannot yet name a city for. Repeating it read as a bug.
-    const sub2 = active ? (s.name===s.country ? '' : s.country) : 'Planned';
-    el.innerHTML='<b>'+s.name+'</b>'+(sub2?'<i>'+sub2+'</i>':'');
+    const sub2 = s.parent ? s.place : (active ? (s.name===s.country ? '' : s.country) : 'Planned');
+    const em = EMBLEM[s.id]
+      ? '<img class="em shot" src="'+EMBLEM[s.id]+'" alt="" loading="lazy">'
+      : (FLAG[s.id] ? '<span class="em">'+FLAG[s.id]+'</span>' : '');
+    el.innerHTML=em+'<span class="tx"><b>'+s.name+'</b>'+(sub2?'<i>'+sub2+'</i>':'')+'</span>';
     labelHost.appendChild(el);
 
     markers.push({s,v,el,pin,active});
@@ -679,7 +776,7 @@ function addSites(){
     // great-circle arc from the Johor hub -- "cross-border" is the company's own
     // phrase for what it does, and the arcs are the only thing on the map that
     // says the sites are one business rather than six unrelated dots
-    if(s.id!==HUB){
+    if(s.id!==HUB && !s.parent){
       const a=ll2v(hub.lat,hub.lon), b=v.clone().normalize();
       const pts=[]; const N=64;
       const lift=0.10+0.16*a.angleTo(b)/Math.PI;   // longer hops arc higher
@@ -823,7 +920,12 @@ addEventListener('pointerup',()=>{drag=false;});
 cvs.addEventListener('wheel',e=>{
   if(!(e.ctrlKey||e.metaKey)) return;          // let it through to the page
   e.preventDefault(); touch();
-  want.d=Math.max(1.18,Math.min(4.2,want.d*(1+Math.sign(e.deltaY)*0.08)));
+  /* The floor is 1.18 everywhere except over Johor, where the whole point is to
+     get close enough that two campuses 19.7 km apart stop being one pixel. A
+     single global floor either merges them or lets every other part of the
+     globe be zoomed to a coarse near-flat plane. */
+  const floor = (selected && (selected.s.id===HUB || selected.s.parent)) ? 1.06 : 1.18;
+  want.d=Math.max(floor,Math.min(4.2,want.d*(1+Math.sign(e.deltaY)*0.08)));
 },{passive:false});
 
 /* click-to-select: pick the nearest marker in screen space that is on the near
@@ -847,17 +949,53 @@ function nearest(e,radius){
    Johor is aimed off-centre on purpose. The capture rail owns the left of the
    frame, so the site the rail belongs to is framed right of it rather than
    underneath the preview card. */
+/* WHERE ONE DOT BECOMES TWO. The campuses are 0.1776 deg apart on the sphere,
+   so at fov 38 on an 805px stage their screen separation is
+       px = 0.0031 rad * H / ((d-1) * 2*tan(19deg))  =  3.62 / (d-1)
+   which is 6.6px at the old fly-to of 1.55 and still only 20px at 1.18, the
+   wheel's floor -- two 11px two-line labels on top of each other either way.
+   PARKS_D is set from that arithmetic and then CHECKED on screen, because a
+   formula about a projection is a hypothesis until something measures it. */
 const SITE_D=1.55;
+const PARKS_D=1.10;      // ~36px apart, plus the dy nudges the labels carry
+const SPLIT_D=1.16;      // above this the region reads as one place, and is one marker
+
+/* NO AIM OFFSET, AND THE MEASUREMENT THAT SETTLED IT. `lon - 9` used to push the
+   selected site right so the capture rail on the left would not cover it. On a
+   1424x805 stage with the rail open, that push lands the subject at x 1063 --
+   and the site CARD, which moves to the RIGHT of the frame whenever the rail is
+   up, occupies 1082-1402. The offset was dodging one panel by driving into
+   another, which is exactly how it looked: two campus markers pinned against
+   the edge of the card.
+       rail preview   212 - 468
+       site card     1082 - 1402
+       clear band     468 - 1082,  centre 712 = the middle of the stage
+   So the correct aim is the thing you clicked, centred -- which is also what
+   anyone who clicks a marker expects to happen. The honest value is zero, so
+   there is no parameter here any more, only this note. */
 function flyTo(m){
   if(!m) return;
   touch();
-  want.lat=m.s.lat;
-  want.lon=m.s.lon-(m.s.id===HUB?9:0);
-  want.d=SITE_D;
+  const hubbish = m.s.id===HUB || !!m.s.parent;
+  want.d  = hubbish ? PARKS_D : SITE_D;
+  want.lat= m.s.lat;
+  want.lon= m.s.lon;
   // a framed view is no longer what you are looking at
   for(const b of document.querySelectorAll('#views button')) b.classList.remove('on');
 }
-cvs.addEventListener('click',e=>{ const m=nearest(e,44); select(m); flyTo(m); });
+cvs.addEventListener('click',e=>{
+  const m=nearest(e,44);
+  /* A campus marker is not a seventh site. Its card is Johor's card -- same
+     country, same year, same 891.6 MW, because that is one figure for the
+     region and splitting it across two parks would be inventing a number
+     nobody has given us. What it does change is which survey the rail shows. */
+  if(m && m.s.parent){
+    const parent=markers.find(x=>x.s.id===m.s.parent);
+    select(parent||m); flyTo(m); TL.setPack(m.s.pack);
+    return;
+  }
+  select(m); flyTo(m);
+});
 
 /* HOVERING JOHOR IS ENOUGH TO OPEN THE RAIL. Requiring a click meant the
    material was behind two guesses rather than one: you had to work out that the
@@ -1067,7 +1205,10 @@ function tick(){
     // label stuck to the border, which reads as a rendering fault rather than as
     // a site that is off-screen.
     const inFrame = m.sx>4 && m.sx<w-4 && m.sy>4 && m.sy<h-4;
-    const vis = m.onScreen && inFrame;
+    // The region marker and its two campuses are the same fact at two scales,
+    // so exactly one of them is ever on screen.
+    const zoomOK = m.s.parent ? cam.d<=SPLIT_D : (m.s.id===HUB ? cam.d>SPLIT_D : true);
+    const vis = m.onScreen && inFrame && zoomOK;
     const fade = vis ? String(Math.min(1,(facing-0.06)*6)) : '0';
 
     m.pin.style.left=m.sx+'px'; m.pin.style.top=m.sy+'px'; m.pin.style.opacity=fade;
@@ -1101,11 +1242,22 @@ function tick(){
    element and every image are fetched on that first selection, so the globe's
    first paint is unchanged. */
 const TL=(()=>{
-  const BASE='uploads/ktp/';
+  /* TWO SURVEYS, TWO MANIFESTS, NEVER MERGED. Both parks sit under the Johor
+     marker, ~20 km apart (KTP 1.560/103.720, NTP 1.430/103.600 by their own
+     bounds). Each pack is read whole from its own manifest and the rail shows
+     one at a time; interleaving them by date would describe one construction
+     project where there are two. */
+  const PACKS=[
+    {id:'ktp', label:'KTP', base:'uploads/ktp/', manifest:'data/ktp-progression.json'},
+    {id:'ntp', label:'NTP', base:'uploads/ntp/', manifest:'data/ntp-progression.json'}
+  ];
+  const CACHE={};
+  let pack=PACKS[0], seq=0;
   const root=document.getElementById('tl');
   const elNodes=document.getElementById('tlNodes');
   const elPrev=document.getElementById('tlPrev');
   const elCount=document.getElementById('tlCount');
+  const elParks=document.getElementById('tlParks');
   const lead=root.querySelector('.tl-lead');
   const halo=root.querySelector('.tl-halo');
   const reduce=matchMedia('(prefers-reduced-motion: reduce)');
@@ -1117,13 +1269,41 @@ const TL=(()=>{
   // captions carry &mdash; and &rarr;; they are content, not markup
   const decode=(t)=>{ const x=document.createElement('textarea'); x.innerHTML=t||''; return x.value; };
 
+  // The <ktp-compare> element is one component serving both packs -- it lives
+  // under uploads/ktp because that is where it was written, not because it is
+  // KTP's. Imported once, whichever campus asks first.
+  let elemP=null;
+  const element=()=>elemP||(elemP=import('./uploads/ktp/web/ktp-compare.js').catch(()=>null));
   function load(){
-    if(loading) return loading;
-    loading=Promise.all([
-      fetch(BASE+'data/ktp-progression.json').then(r=>r.json()),
-      import('./'+BASE+'web/ktp-compare.js').catch(()=>null)
-    ]).then(([j])=>{ data=j; return j; });
-    return loading;
+    const p=pack;
+    if(CACHE[p.id]){ data=CACHE[p.id]; return Promise.resolve(data); }
+    return Promise.all([
+      fetch(p.base+p.manifest).then(r=>r.json()),
+      element()
+    ]).then(([j])=>{ CACHE[p.id]=j; if(pack===p) data=j; return j; });
+  }
+
+  function paintParks(){
+    if(elParks.children.length!==PACKS.length){
+      elParks.innerHTML=PACKS.map(p=>'<button type="button" data-p="'+p.id+'">'+p.label+'</button>').join('');
+      elParks.querySelectorAll('button').forEach(b=>b.addEventListener('click',(e)=>{
+        e.stopPropagation(); selectPack(b.dataset.p); }));
+    }
+    elParks.querySelectorAll('button').forEach(b=>
+      b.setAttribute('aria-pressed', String(b.dataset.p===pack.id)));
+  }
+
+  /* A stale fetch must not paint over a campus the reader has already switched
+     back to, so every switch takes a ticket and only the current one may build. */
+  function selectPack(id){
+    const p=PACKS.find(x=>x.id===id);
+    if(!p||p===pack) return;
+    pack=p; built=false; active=null;
+    const mine=++seq;
+    paintParks();
+    collapse(); elPrev.classList.remove('on','big'); root.classList.remove('prev');
+    elNodes.innerHTML=''; elCount.textContent='';
+    load().then(()=>{ if(mine!==seq) return; build(); openDefault(); }).catch(()=>{});
   }
 
   /* A node is a visit. Its preview is a pair whose AFTER is that visit -- what
@@ -1158,7 +1338,17 @@ const TL=(()=>{
        looking at the five that are there. The two orthomosaic dates are still in
        the manifest for anyone working with the data. */
     const models=data.shoots.map(nodeModel).filter(n=>n.cmps.length||n.frames.length);
-    elCount.textContent=models.length+' visits';
+    /* THE RATIO IS STATED ONLY WHERE FAILING TO REGISTER IS THE NORMAL CASE.
+       KTP registers 12 of 14, and a fraction in the header would make a visitor
+       count the two exceptions instead of reading the five visits -- that is why
+       it says "5 visits" and not "5 of 7". NTP registers 1 of 8, and that IS the
+       survey's headline: its manifest says so in its own `finding` field, and
+       the one pair that did register is the building that never changed. So the
+       rule is majority, not a per-campus special case. */
+    const reg=data.comparisons.filter(c=>c.registered===true).length;
+    const total=data.comparisons.length;
+    elCount.textContent=models.length+' visits'
+      +((total-reg)>reg ? ' · '+reg+' of '+total+' registered' : '');
     elNodes.innerHTML='';
     let dividerPlaced=false;
     models.forEach((n,i)=>{
@@ -1229,11 +1419,16 @@ const TL=(()=>{
           +' this visit, none of them paired against an earlier one.'
         : n.frames.length+(n.frames.length===1?' frame':' frames')
           +' this visit, with nothing earlier to compare against.';
-      elPrev.innerHTML='<img class="tl-shot" src="'+BASE+m.jpg+'" alt="" '
-        +(m.webp?'srcset="'+BASE+m.webp+'"':'')+'>'
+      elPrev.innerHTML='<img class="tl-shot" src="'+pack.base+m.jpg+'" alt="" '
+        +(m.webp?'srcset="'+pack.base+m.webp+'"':'')+'>'
         +'<div class="tl-cap"><b>'+(f.stage||n.date)+'</b><p>'+note+'</p></div>';
     }else{
-      const m=c.media, u=(o,k,e)=>BASE+o[k][e];
+      const m=c.media;
+      // NTP's compare images were packed as JPEG only -- no WebP variants were
+      // ever generated for it. Asking for .webp there yields `undefined` in the
+      // srcset, which the browser fetches as a relative path and 404s, and the
+      // card silently shows nothing. Fall back to whatever the manifest has.
+      const u=(o,k,e)=>pack.base+(o[k][e]||o[k].jpg||o[k].webp);
       elPrev.innerHTML='<ktp-compare '
         +'before="'+u(m.before,'1600','jpg')+'" after="'+u(m.after,'1600','jpg')+'" '
         +'before-srcset="'+u(m.before,'800','webp')+' 800w, '+u(m.before,'1600','webp')+' 1600w" '
@@ -1380,9 +1575,15 @@ const TL=(()=>{
       if(on) return;                    // already up; do not restart it mid-hover
       marker=m; on=true;
       root.classList.add('on'); root.setAttribute('aria-hidden','false');
-      load().then(()=>{ if(!built) build(); openDefault(); }).catch(()=>{});
+      paintParks();
+      const mine=++seq;
+      load().then(()=>{ if(mine!==seq) return; if(!built) build(); openDefault(); }).catch(()=>{});
     },
     frame,
+    /* Clicking one of the two campus markers on the globe is the same request
+       as pressing its button in the rail head, so it is the same code path.
+       No-ops when the rail is not up, which is every zoom above SPLIT_D. */
+    setPack(id){ if(on) selectPack(id); },
     // open preview or open set list -- either means somebody is reading
     busy(){ return on && elPrev.classList.contains('on'); },
     close(){ big(false); close(); }
