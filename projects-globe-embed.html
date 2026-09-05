@@ -355,9 +355,21 @@
   @media (max-width:640px){
     #tl .tl-scrim{background:linear-gradient(to right,rgba(4,14,26,.86) 0,transparent 180px)}
     #tl .tl-nodes{width:12px}
-    #tl .tl-txt,#tl .tl-head,#tl .tl-divide i{display:none}
+    #tl .tl-txt,#tl .tl-divide i{display:none}
     #tl .tl-prev{display:none}
+    /* .tl-head USED to be hidden here with everything else, and that was right
+       while it held one line of static text. It now holds the campus switch,
+       and hiding a CONTROL is not the same as hiding a caption: this width
+       showed a rail locked to KTP with no way to reach NTP or to learn it
+       exists. The count goes, the buttons stay. */
+    #tl .tl-head{top:14px;left:14px}
+    #tl #tlCount{display:none}
   }
+  /* BELOW THIS THERE IS NO RAIL AT ALL, and the two campus markers exist to
+     drive it. Without it they are two dots 20px apart whose labels run to 319px
+     of a 327px stage -- worse than the one honest marker they replace. So the
+     split is gated on this width as well as on zoom, and the number here and
+     the one in the script MUST agree. */
   @media (max-width:460px){ #tl{display:none} }
 
   @media (prefers-reduced-motion: reduce){
@@ -924,7 +936,7 @@ cvs.addEventListener('wheel',e=>{
      get close enough that two campuses 19.7 km apart stop being one pixel. A
      single global floor either merges them or lets every other part of the
      globe be zoomed to a coarse near-flat plane. */
-  const floor = (selected && (selected.s.id===HUB || selected.s.parent)) ? 1.06 : 1.18;
+  const floor = (canSplit() && selected && (selected.s.id===HUB || selected.s.parent)) ? 1.06 : 1.18;
   want.d=Math.max(floor,Math.min(4.2,want.d*(1+Math.sign(e.deltaY)*0.08)));
 },{passive:false});
 
@@ -959,6 +971,30 @@ function nearest(e,radius){
 const SITE_D=1.55;
 const PARKS_D=1.10;      // ~36px apart, plus the dy nudges the labels carry
 const SPLIT_D=1.16;      // above this the region reads as one place, and is one marker
+/* AND BELOW THIS STAGE WIDTH THE SPLIT DOES NOT HAPPEN AT ALL.
+   Two separate things go wrong as the stage narrows, and only the second sets
+   this number:
+     1. Separation is proportional to stage HEIGHT -- 43px at 900 tall, 27 at
+        560, 24 at 500, 20 at 409. Uncomfortable, but the dy nudges keep the
+        labels apart, so this alone would not disqualify a narrow stage.
+     2. The pair collides with the page's own chrome. Swept, clicking Johor at
+        each width and measuring the overlap against every panel that is
+        actually on screen:
+            1440  clear      1200  clear      1040  clear      1010  clear
+             990  card 5x24   970  card 15x29  950  card 25x35  930  card 34x40
+             900  card 49x48  820  prev 10x79 + card 148x43
+             700  prev 76x93
+        1024 sits just above the last clean measurement with a little margin.
+   Below it the region stays ONE marker -- the same fallback already used below
+   460, where `@media (max-width:460px){#tl{display:none}}` removes the rail
+   entirely and the campuses would be driving nothing.
+   NOT SOLVED, only avoided: between 460 and 1024 the split would be legible if
+   the camera aimed at the free area rather than the stage centre, deriving the
+   aim from the visible panels' rects the way the clear-band check measures it.
+   That is the fix if this band matters; a wider cliff is the honest stand-in
+   until then. */
+const SPLIT_W=1024;
+const canSplit = () => innerWidth > SPLIT_W;
 
 /* NO AIM OFFSET, AND THE MEASUREMENT THAT SETTLED IT. `lon - 9` used to push the
    selected site right so the capture rail on the left would not cover it. On a
@@ -976,7 +1012,9 @@ const SPLIT_D=1.16;      // above this the region reads as one place, and is one
 function flyTo(m){
   if(!m) return;
   touch();
-  const hubbish = m.s.id===HUB || !!m.s.parent;
+  // No point flying to the distance that separates two markers that will not
+  // be drawn. Narrow stages get the ordinary site framing.
+  const hubbish = (m.s.id===HUB || !!m.s.parent) && canSplit();
   want.d  = hubbish ? PARKS_D : SITE_D;
   want.lat= m.s.lat;
   want.lon= m.s.lon;
@@ -1207,7 +1245,9 @@ function tick(){
     const inFrame = m.sx>4 && m.sx<w-4 && m.sy>4 && m.sy<h-4;
     // The region marker and its two campuses are the same fact at two scales,
     // so exactly one of them is ever on screen.
-    const zoomOK = m.s.parent ? cam.d<=SPLIT_D : (m.s.id===HUB ? cam.d>SPLIT_D : true);
+    const wide = canSplit();
+    const zoomOK = m.s.parent ? (wide && cam.d<=SPLIT_D)
+                              : (m.s.id===HUB ? (!wide || cam.d>SPLIT_D) : true);
     const vis = m.onScreen && inFrame && zoomOK;
     const fade = vis ? String(Math.min(1,(facing-0.06)*6)) : '0';
 
