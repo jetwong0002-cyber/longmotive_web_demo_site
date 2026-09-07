@@ -1413,12 +1413,29 @@ const TL=(()=>{
       if(v.getAttribute('src')) return;
       v.setAttribute('preload','auto'); v.src=f.src;
     };
+    // A POINTER EVENT MUST NOT BE DROPPED BECAUSE A SEEK IS IN FLIGHT. Assigning
+    // currentTime only when !v.seeking loses every move made during a seek, and
+    // over a network that is most of them -- on the local disk a drag landed at
+    // 8.60s, on the deployed site the identical drag left it at 0.00s. So the
+    // pointer only records a target and a rAF loop chases it, which is the same
+    // shape the scroll hero uses and also what makes the drag feel smooth.
+    let want=null, cur=0, raf=0;
+    const chase=()=>{
+      raf=0;
+      if(!(v.duration>0)) return;
+      if(want!==null){
+        cur+=(want-cur)*0.35;
+        if(Math.abs(want-cur)<0.002) cur=want;
+        if(!v.seeking) v.currentTime=cur*(v.duration-0.05);
+        bar.style.width=(cur*100).toFixed(1)+'%';
+        if(cur!==want || v.seeking) raf=requestAnimationFrame(chase); else want=null;
+      }
+    };
     const seek=(clientX)=>{
       const r=wrap.getBoundingClientRect();
-      if(!r.width || !(v.duration>0)) return;
-      const p=Math.min(1,Math.max(0,(clientX-r.left)/r.width));
-      if(!v.seeking) v.currentTime=p*(v.duration-0.05);
-      bar.style.width=(p*100).toFixed(1)+'%';
+      if(!r.width) return;
+      want=Math.min(1,Math.max(0,(clientX-r.left)/r.width));
+      if(!raf) raf=requestAnimationFrame(chase);
     };
     wrap.addEventListener('pointerdown',(e)=>{
       if(!elPrev.classList.contains('big')) return;
