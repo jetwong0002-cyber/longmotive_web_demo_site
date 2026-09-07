@@ -1388,6 +1388,17 @@ const TL=(()=>{
      `preload="none"` until the card is enlarged -- the poster is 0.2MB and the
      clip is 9.4MB, and hovering a rail must never cost the clip. */
   let filmOn=false, filmVid=null;
+  /* filmOn was set and never cleared, so the button stayed lit over a card
+     that had been replaced by a hover -- it claimed a film was showing when
+     one was not. Every exit from the film goes through here. */
+  function endFilm(){
+    if(!filmOn) return;
+    filmOn=false;
+    if(filmVid){ try{ filmVid.pause(); }catch(_){}
+      filmVid.removeAttribute('src'); try{ filmVid.load(); }catch(_){} }
+    filmVid=null;
+    paintParks();
+  }
   function showFilm(){
     if(!pack.film) return;
     const f=pack.film;
@@ -1489,6 +1500,7 @@ const TL=(()=>{
   function selectPack(id){
     const p=PACKS.find(x=>x.id===id);
     if(!p||p===pack) return;
+    endFilm();
     pack=p; built=false; active=null;
     const mine=++seq;
     paintParks();
@@ -1555,9 +1567,15 @@ const TL=(()=>{
         +'<span class="tl-date">'+n.date+'</span>'
         +'<span class="tl-meta">'+n.meta+(n.mixed?'<span class="tl-mix" title="One set in this visit is mixed confidence"></span>':'')+'</span>'
         +'</span>';
-      b.addEventListener('mouseenter',()=>{ touch(); open(n,b); });
+      // Hovering a date must not steal a film the reader asked for. Moving
+      // the cursor from the Film button toward the card crosses the rail,
+      // and every crossing used to replace the clip with a visit preview --
+      // which is why clicking Film looked like nothing happened.
+      b.addEventListener('mouseenter',()=>{ if(filmOn) return; touch(); open(n,b); });
       b.addEventListener('focus',()=>{ touch(); open(n,b); });
-      b.addEventListener('click',()=>{ touch(); expand(n); });
+      b.addEventListener('click',()=>{ touch();
+        if(filmOn){ endFilm(); open(n,b); return; }   // explicit: take it back
+        expand(n); });
       b.addEventListener('keydown',(e)=>{
         if(e.key==='ArrowDown'||e.key==='ArrowUp'){
           e.preventDefault();
@@ -1571,7 +1589,7 @@ const TL=(()=>{
     /* Leaving the rail puts it back to its opening state rather than to nothing.
        An empty rail is the thing this was built to avoid, and it should not
        come back the moment the pointer wanders off. */
-    elNodes.addEventListener('mouseleave',()=>{ if(!elPrev.classList.contains('big')) openDefault(); });
+    elNodes.addEventListener('mouseleave',()=>{ if(filmOn) return; if(!elPrev.classList.contains('big')) openDefault(); });
     built=true;
   }
 
@@ -1655,6 +1673,7 @@ const TL=(()=>{
   }
 
   function close(){
+    endFilm();
     active=null; elPrev.classList.remove('on'); root.classList.remove('prev');
     for(const b of elNodes.querySelectorAll('.tl-node')){
       b.classList.remove('sel'); b.setAttribute('aria-selected','false');
