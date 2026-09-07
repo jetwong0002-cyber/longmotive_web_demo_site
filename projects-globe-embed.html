@@ -266,6 +266,32 @@
      picture belongs. */
   #tl .tl-prev ktp-compare,#tl .tl-prev .tl-shot{display:block;width:100%;height:144px}
   #tl .tl-prev .tl-shot{object-fit:cover}
+  /* THE FILM PANEL reuses the preview card rather than adding a second surface,
+     so it inherits the card's size, its enlarge catcher and its Esc button. The
+     video is the same box as .tl-shot at both sizes. preload is "none" until the
+     card is enlarged: the clip is 9.4MB and nobody should pay for it by hovering
+     a rail node. */
+  #tl .tl-prev .tl-film{display:block;width:100%;height:144px;object-fit:cover;
+    background:#04121F}
+  #tl .tl-prev.big .tl-film{height:383px}
+  #tl .tl-film-wrap{position:relative;display:block}
+  #tl .tl-scrub{position:absolute;left:0;right:0;bottom:0;height:2px;
+    background:rgba(180,214,240,.22)}
+  #tl .tl-scrub i{display:block;height:100%;width:0;background:#53CEFA}
+  #tl .tl-prev.big .tl-film-wrap{cursor:ew-resize}
+  #tl .tl-film-hint{position:absolute;left:9px;bottom:9px;z-index:2;display:none;
+    font:600 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.11em;
+    text-transform:uppercase;color:#CFE3F2;background:rgba(4,18,31,.78);
+    border:1px solid rgba(180,214,240,.22);border-radius:2px;padding:5px 7px;
+    pointer-events:none}
+  #tl .tl-prev.big .tl-film-hint{display:block}
+  /* The film button sits with the campus switch because a film belongs to a
+     campus, not to a visit -- and a pack with no film simply has no button,
+     which is why there is never an empty slot to explain. */
+  #tl .tl-parks button.tl-film-btn{margin-left:7px;border-color:rgba(83,206,250,.34);
+    color:#8FB6CE}
+  #tl .tl-parks button.tl-film-btn[aria-pressed="true"]{background:#53CEFA;
+    border-color:#53CEFA;color:#04121F}
   #tl .tl-cap{padding:11px 13px 12px;border-top:1px solid #1E3E55}
   #tl .tl-cap b{display:block;font:600 11px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;
     letter-spacing:.12em;text-transform:uppercase;color:#E4ECF3;margin-bottom:5px}
@@ -1289,7 +1315,17 @@ const TL=(()=>{
      project where there are two. */
   const PACKS=[
     {id:'ktp', label:'KTP', base:'uploads/ktp/', manifest:'data/ktp-progression.json'},
-    {id:'ntp', label:'NTP', base:'uploads/ntp/', manifest:'data/ntp-progression.json'}
+    {id:'ntp', label:'NTP', base:'uploads/ntp/', manifest:'data/ntp-progression.json',
+     /* The only finished-campus flight in the library: 39.1s of oblique orbit
+        shot 17 Dec 2025, first 24s taken at 2x. KTP has no equivalent, so KTP
+        has no film key and therefore no button -- an absent capability shows as
+        an absent control, not as a disabled one. The path is NOT declared in a
+        progression manifest; it is a campus asset, not a visit's media. */
+     film:{src:'uploads/hero-real/campus-arc.mp4',
+           poster:'uploads/hero-real/campus-arc-poster.jpg',
+           title:'The finished campus',
+           note:'One continuous flight around NTP after handover, 17 Dec 2025. '
+               +'Enlarge, then drag across the picture to fly.'}}
   ];
   const CACHE={};
   let pack=PACKS[0], seq=0;
@@ -1329,8 +1365,74 @@ const TL=(()=>{
       elParks.querySelectorAll('button').forEach(b=>b.addEventListener('click',(e)=>{
         e.stopPropagation(); selectPack(b.dataset.p); }));
     }
-    elParks.querySelectorAll('button').forEach(b=>
+    let fb=elParks.querySelector('.tl-film-btn');
+    if(pack.film && !fb){
+      fb=document.createElement('button');
+      fb.type='button'; fb.className='tl-film-btn'; fb.textContent='Film';
+      fb.addEventListener('click',(e)=>{ e.stopPropagation(); showFilm(); });
+      elParks.appendChild(fb);
+    }else if(!pack.film && fb){ fb.remove(); }
+    elParks.querySelectorAll('button:not(.tl-film-btn)').forEach(b=>
       b.setAttribute('aria-pressed', String(b.dataset.p===pack.id)));
+    if(fb) fb.setAttribute('aria-pressed', String(filmOn));
+  }
+
+  /* THE FILM. Rendered into the same preview card the visits use, so it gets
+     the enlarge catcher, the Esc button and the positioning for free.
+     `preload="none"` until the card is enlarged -- the poster is 0.2MB and the
+     clip is 9.4MB, and hovering a rail must never cost the clip. */
+  let filmOn=false, filmVid=null;
+  function showFilm(){
+    if(!pack.film) return;
+    const f=pack.film;
+    active=null; filmOn=true;
+    elPrev.innerHTML=
+      '<span class="tl-film-wrap">'
+      +'<video class="tl-film" preload="none" muted playsinline'
+      +' poster="'+f.poster+'"></video>'
+      +'<span class="tl-film-hint">Drag to fly</span>'
+      +'<span class="tl-scrub"><i></i></span></span>'
+      +'<div class="tl-cap"><b>'+f.title+'</b><p>'+f.note+'</p></div>';
+    elPrev.insertAdjacentHTML('afterbegin',
+      '<button class="tl-open" type="button" aria-label="Enlarge"></button>');
+    elPrev.insertAdjacentHTML('beforeend',
+      '<button class="tl-shut" type="button" aria-label="Close">Esc</button>');
+    filmVid=elPrev.querySelector('.tl-film');
+    wireFilm(elPrev.querySelector('.tl-film-wrap'), filmVid,
+             elPrev.querySelector('.tl-scrub i'), f);
+    const first=elNodes.querySelector('button');
+    if(first) position(first);
+    elPrev.classList.add('on'); root.classList.add('prev');
+    paintParks(); frame();
+  }
+
+  function wireFilm(wrap, v, bar, f){
+    // Only fetch the clip once the card is big; that is also the only size at
+    // which the .tl-open catcher is gone and a drag can reach the picture.
+    const arm=()=>{
+      if(v.getAttribute('src')) return;
+      v.setAttribute('preload','auto'); v.src=f.src;
+    };
+    const seek=(clientX)=>{
+      const r=wrap.getBoundingClientRect();
+      if(!r.width || !(v.duration>0)) return;
+      const p=Math.min(1,Math.max(0,(clientX-r.left)/r.width));
+      if(!v.seeking) v.currentTime=p*(v.duration-0.05);
+      bar.style.width=(p*100).toFixed(1)+'%';
+    };
+    wrap.addEventListener('pointerdown',(e)=>{
+      if(!elPrev.classList.contains('big')) return;
+      arm(); wrap.setPointerCapture(e.pointerId); seek(e.clientX); e.preventDefault();
+    });
+    wrap.addEventListener('pointermove',(e)=>{
+      if(e.buttons&&wrap.hasPointerCapture(e.pointerId)) seek(e.clientX);
+    });
+    v.addEventListener('timeupdate',()=>{
+      if(v.duration>0) bar.style.width=(v.currentTime/v.duration*100).toFixed(1)+'%';
+    });
+    // Enlarging is what arms the download, whichever control did it.
+    new MutationObserver(()=>{ if(elPrev.classList.contains('big')) arm(); })
+      .observe(elPrev,{attributes:true,attributeFilter:['class']});
   }
 
   /* A stale fetch must not paint over a campus the reader has already switched
