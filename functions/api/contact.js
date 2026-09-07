@@ -5,12 +5,6 @@ const ALLOWED_TYPES = {
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
 };
 
-const JOB_TITLES = [
-  'QS Engineer', 'Civil Engineer', 'Mechanical Engineer', 'Safety Engineer',
-  'Electric Engineer', 'Fire Engineer', 'Project Engineer', 'Internship Engineer',
-  'QAQC Engineer', 'ELV Engineer',
-];
-
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -82,8 +76,8 @@ export async function onRequestPost({ request, env }) {
   if (isCareers) {
     if (!contact) errors.push('Contact No. is required');
     if (!salutation) errors.push('Salutation is required');
-    if (!jobTitle) errors.push('Job Title is required');
-    if (jobTitle && !JOB_TITLES.includes(jobTitle)) errors.push('Invalid job title');
+    if (!jobTitle) errors.push('Position / Area of Interest is required');
+    if (jobTitle.length > 120) errors.push('Position / Area of Interest is too long');
     if (salutation.length > 20) errors.push('Salutation is too long');
     // An application with no CV attached is not one the team can act on.
     if (!hasCv) errors.push('CV is required');
@@ -139,7 +133,7 @@ export async function onRequestPost({ request, env }) {
         <tr><td><b>Name</b></td><td>${escapeHtml(name)}</td></tr>
         <tr><td><b>Contact No.</b></td><td>${escapeHtml(contact)}</td></tr>
         <tr><td><b>Email</b></td><td>${escapeHtml(email)}</td></tr>
-        <tr><td><b>Job Title</b></td><td>${escapeHtml(jobTitle)}</td></tr>
+        <tr><td><b>Position / Area of Interest</b></td><td>${escapeHtml(jobTitle)}</td></tr>
         <tr><td><b>CV</b></td><td>${attachment ? escapeHtml(attachment.filename) : 'Not attached'}</td></tr>
         <tr><td><b>Archived</b></td><td>${storedKey ? escapeHtml(storedKey) : '-'}</td></tr>
       </table>`
