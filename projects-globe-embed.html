@@ -353,7 +353,11 @@
     transform .22s cubic-bezier(.2,.7,.3,1),
     width .3s cubic-bezier(.2,.7,.3,1), left .3s cubic-bezier(.2,.7,.3,1),
     top .3s cubic-bezier(.2,.7,.3,1)}
-  #tl .tl-prev.big{width:680px;pointer-events:auto;z-index:8;
+  /* WIDTH MUST BE THE SAME EXPRESSION place() USES. It positioned the card
+     with w = min(680, stage - 268) while the CSS made it a flat 680, so on
+     a 820px stage it was placed for 552 and painted at 680 -- 104px of it
+     hanging off the right edge. One formula, in both places. */
+  #tl .tl-prev.big{width:min(680px,calc(100% - 268px));pointer-events:auto;z-index:8;
     box-shadow:0 22px 60px rgba(2,9,17,.55)}
   #tl .tl-prev.big ktp-compare,#tl .tl-prev.big .tl-shot{height:383px}
   #tl .tl-prev.big .tl-cap{padding:15px 19px 17px}
@@ -373,7 +377,9 @@
      offset come in together instead of the feature switching off. */
   @media (max-width:1140px){
     #tl .tl-prev{width:216px}
-    #tl .tl-prev.big{width:min(680px,calc(100% - 120px))}
+    /* same expression as place() and as the base rule -- this one wins below
+       1140px, which is exactly where the overflow showed */
+    #tl .tl-prev.big{width:min(680px,calc(100% - 268px))}
     #tl .tl-prev.big ktp-compare,#tl .tl-prev.big .tl-shot{height:300px}
     #tl .tl-nodes{width:200px}
   }
