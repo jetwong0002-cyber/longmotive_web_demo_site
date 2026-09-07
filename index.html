@@ -762,10 +762,8 @@
                 <input type="email" name="email" value="{{ form.email }}" onChange="{{ setEmail }}" placeholder="Email" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
               </div>
               <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
-                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Job Title <span style="color:var(--lm-danger)">*</span></label>
-                <select name="jobTitle" value="{{ form.jobTitle }}" onChange="{{ setJobTitle }}" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff">
-                  <sc-for list="{{ jobTitles }}" as="o" hint-placeholder-count="11"><option value="{{ o }}">{{ o }}</option></sc-for>
-                </select>
+                <label for="career-interest" style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Position / Area of Interest <span style="color:var(--lm-danger)">*</span></label>
+                <input id="career-interest" name="jobTitle" value="{{ form.jobTitle }}" onChange="{{ setJobTitle }}" maxlength="120" placeholder="e.g. Engineering, Safety, Administration or General Application" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
               </div>
               <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
                 <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Upload CV <span style="color:var(--lm-danger)">*</span> <span style="font-weight:400;color:var(--text-muted);text-transform:none;letter-spacing:0">(PDF / DOC)</span></label>
@@ -1155,7 +1153,7 @@ const SECTION_STEP_COOLDOWN_MS=780;
 class Component extends DCLogic {
   state = { screen:null, filter:'All', projectsExpanded:false, contactTab:'careers', menuOpen:false, sent:false, err:false, submitting:false, errorMessage:'', openCert:null, logoStage:0, navRevealed:false, flyT:null, swapFront:0,
     enquiry:{name:'',email:'',contact:'',subject:'',message:'',website:''},
-    form:{salutation:'~ Please select one. ~',name:'',contact:'',email:'',jobTitle:'~ Please select one. ~',cv:'',website:''} };
+    form:{salutation:'~ Please select one. ~',name:'',contact:'',email:'',jobTitle:'',cv:'',website:''} };
 
   icon(name,size){
     return React.createElement('svg',{viewBox:'0 0 24 24',width:size||24,height:size||24,fill:'none',
@@ -2391,7 +2389,7 @@ class Component extends DCLogic {
     const f=isEnquiry?this.state.enquiry:this.state.form;
     const invalid=isEnquiry
       ?(!f.name||!f.email||!f.subject||!f.message)
-      :(!f.name||!f.email||!f.contact||f.salutation==='~ Please select one. ~'||f.jobTitle==='~ Please select one. ~'||!f.cv);
+      :(!f.name||!f.email||!f.contact||f.salutation==='~ Please select one. ~'||!f.jobTitle||!f.cv);
     if(invalid){
       this.setState({err:true,sent:false,submitting:false,errorMessage:'Please complete all mandatory fields.'});
       return;
@@ -2415,7 +2413,7 @@ class Component extends DCLogic {
       if(formElement&&formElement.reset) formElement.reset();
       const reset={sent:true,err:false,submitting:false,errorMessage:''};
       if(isEnquiry) reset.enquiry={name:'',email:'',contact:'',subject:'',message:'',website:''};
-      else reset.form={salutation:'~ Please select one. ~',name:'',contact:'',email:'',jobTitle:'~ Please select one. ~',cv:'',website:''};
+      else reset.form={salutation:'~ Please select one. ~',name:'',contact:'',email:'',jobTitle:'',cv:'',website:''};
       this.setState(reset);
     }catch(error){
       this.setState({err:true,sent:false,submitting:false,errorMessage:error&&error.message?error.message:'Network error. Please try again.'});
@@ -2553,7 +2551,6 @@ class Component extends DCLogic {
       ],
       galleryVideoRef: this._galleryVideoRef,
       salutations: ['~ Please select one. ~','Mr.','Ms.','Mdm.','Dr.'],
-      jobTitles: ['~ Please select one. ~','QS Engineer','Civil Engineer','Mechanical Engineer','Safety Engineer','Electric Engineer','Fire Engineer','Project Engineer','Internship Engineer','QAQC Engineer','ELV Engineer'],
       isHome: scr==='Home', isAbout: scr==='About', isProjects: scr==='Projects', isContact: scr==='Contact',
       isStats: this.props.showStats!==false,
       heroSrc: IMG + (this.props.heroImage || 'datacenter-aerial.jpg'),
@@ -2588,10 +2585,10 @@ class Component extends DCLogic {
       showEnquiry:()=>this.switchContactTab('enquiry'), showCareers:()=>this.switchContactTab('careers'),
       enquiryTabStyle:isEnquiryTab?tabActive:tabIdle, careersTabStyle:isCareersTab?tabActive:tabIdle,
       contactEyebrow:isEnquiryTab?'Get In Touch':'Join Our Team',
-      contactHeading:isEnquiryTab?'Submit Your Enquiry':'Build the Data-Center Backbone With Us',
+      contactHeading:isEnquiryTab?'Submit Your Enquiry':'Build Your Future With Us',
       contactDescription:isEnquiryTab
         ?"We welcome project enquiries and feedback. Submit the form below or email info@longmotive.com — we'll reply as soon as possible."
-        :"We're hiring engineers across every MEP discipline. Pick your role, attach your CV and tell us how to reach you — or email us directly at info@longmotive.com.",
+        :"We're always looking for talented and committed people to join our growing team. Whatever your background or experience level, tell us where you'd like to contribute, attach your CV and contact details — or email humanresource@longmotive.com.",
       successTitle:isEnquiryTab?'Enquiry received':'Application received',
       successMessage:isEnquiryTab?'— thank you, we\'ll get back to you as soon as possible.':'— thank you, our team will be in touch as soon as possible.',
       enquiry: this.state.enquiry,
