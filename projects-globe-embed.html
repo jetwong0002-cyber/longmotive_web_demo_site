@@ -1409,7 +1409,7 @@ const TL=(()=>{
     active=null; filmOn=true;
     elPrev.innerHTML=
       '<span class="tl-film-wrap">'
-      +'<video class="tl-film" preload="none" muted playsinline'
+      +'<video class="tl-film" preload="none" muted loop playsinline'
       +' poster="'+f.poster+'"></video>'
       +'<span class="tl-film-hint">Drag to fly</span>'
       +'<span class="tl-scrub"><i></i></span></span>'
@@ -1476,12 +1476,41 @@ const TL=(()=>{
       // say how to drive it, which depends on whether the host allows seeking.
       const big=elPrev.classList.contains('big');
       const m = !big ? 'open' : (canSeek() ? 'seek' : 'play');
-      if(m===mode) return;
+      // ENLARGING IS THE PLAY GESTURE. Where the clip cannot be scrubbed there is
+      // nothing to drive, so asking for a second click to start it was a step
+      // that carried no decision. Opening it starts it; the click is left as the
+      // pause. Muted autoplay needs no gesture of its own, and the enlarge was
+      // one anyway.
+      // Only on ENTERING play -- recomputing must not restart it, or the pause
+      // click is undone by the pause event that the click itself fires.
+      if(m!==mode && m==='play') wantPlay=true;
+      if(m!=='play'){ wantPlay=false; if(!v.paused) v.pause(); }
       mode=m;
-      hint.textContent = m==='open' ? 'Click to enlarge'
-                       : m==='seek' ? 'Drag to fly' : 'Click to play';
-      wrap.style.cursor = m==='seek' ? 'ew-resize' : 'pointer';
+      tryPlay();
+      paint();
     };
+    /* WANTING TO PLAY AND BEING ABLE TO ARE NOT THE SAME MOMENT. Enlarging sets
+       the src and flips the class in the same beat, so the first play() lands on
+       a video that has no source yet, the promise rejects, and nothing retries --
+       the card sat there paused saying "Click to play". The intent is held and
+       re-attempted as the media becomes usable. */
+    let wantPlay=false;
+    const tryPlay=()=>{
+      if(!wantPlay || !v.paused || v.readyState<2) return;
+      v.play().catch(()=>{});
+    };
+    for(const e of ['loadeddata','canplay','canplaythrough']) v.addEventListener(e,tryPlay);
+    const paint=()=>{
+      const label = mode==='open' ? 'Click to enlarge'
+                  : mode==='seek' ? 'Drag to fly'
+                  : (v.paused ? 'Click to play' : '');
+      hint.textContent = label;
+      hint.style.display = label ? '' : 'none';
+      wrap.style.cursor = mode==='seek' ? 'ew-resize' : 'pointer';
+    };
+    // the label follows play/pause; the MODE does not change with them
+    v.addEventListener('play', paint);
+    v.addEventListener('pause', paint);
     // the mode changes when the card is enlarged, not only when media loads
     new MutationObserver(setMode).observe(elPrev,{attributes:true,attributeFilter:['class']});
     setMode();
@@ -1491,7 +1520,7 @@ const TL=(()=>{
     wrap.addEventListener('pointerdown',(e)=>{
       if(!elPrev.classList.contains('big')) return;
       arm(); setMode();
-      if(mode==='play'){ if(v.paused) v.play().catch(()=>{}); else v.pause(); return; }
+      if(mode==='play'){ wantPlay=v.paused; if(v.paused) v.play().catch(()=>{}); else v.pause(); return; }
       try{ wrap.setPointerCapture(e.pointerId); }catch(_){}
       seek(e.clientX); e.preventDefault();
     });
