@@ -279,12 +279,12 @@
     background:rgba(180,214,240,.22)}
   #tl .tl-scrub i{display:block;height:100%;width:0;background:#53CEFA}
   #tl .tl-prev.big .tl-film-wrap{cursor:ew-resize}
-  #tl .tl-film-hint{position:absolute;left:9px;bottom:9px;z-index:2;display:none;
+  #tl .tl-film-hint{position:absolute;left:9px;bottom:9px;z-index:3;display:block;
     font:600 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.11em;
     text-transform:uppercase;color:#CFE3F2;background:rgba(4,18,31,.78);
     border:1px solid rgba(180,214,240,.22);border-radius:2px;padding:5px 7px;
     pointer-events:none}
-  #tl .tl-prev.big .tl-film-hint{display:block}
+  /* shown at both sizes: small says how to open it, big says how to drive it */
   /* The film button sits with the campus switch because a film belongs to a
      campus, not to a visit -- and a pack with no film simply has no button,
      which is why there is never an empty slot to explain. */
@@ -336,8 +336,12 @@
      and the videos were the same footage the compare shows, pre-scrubbed. The
      click makes the picture big instead, and at that size the slider is worth
      dragging -- which is why the catcher over the small card comes off here. */
+  /* THE CATCHER NEEDS ITS OWN POINTER-EVENTS. .tl-prev is pointer-events:none
+     until it is .big, so this button -- the whole point of which is to be
+     clicked while the card is small -- has never actually been clickable.
+     A real mouse click on the picture left the card at 256px. */
   #tl .tl-open{position:absolute;left:0;top:0;right:0;height:144px;z-index:2;
-    border:0;background:transparent;cursor:zoom-in;padding:0}
+    border:0;background:transparent;cursor:zoom-in;padding:0;pointer-events:auto}
   #tl .tl-prev.big .tl-open{display:none}
   /* on the corner, not inside it: both top corners of the compare are taken by
      its own date labels, and a close control sitting on one of them hides the
@@ -1468,12 +1472,19 @@ const TL=(()=>{
     const canSeek=()=>v.seekable && v.seekable.length>0 && v.seekable.end(0)>0.5;
     let mode=null;
     const setMode=()=>{
-      const m=canSeek()?'seek':'play';
+      // Small card: the only useful action is to open it, so say that. Big card:
+      // say how to drive it, which depends on whether the host allows seeking.
+      const big=elPrev.classList.contains('big');
+      const m = !big ? 'open' : (canSeek() ? 'seek' : 'play');
       if(m===mode) return;
       mode=m;
-      hint.textContent = m==='seek' ? 'Drag to fly' : 'Click to play';
+      hint.textContent = m==='open' ? 'Click to enlarge'
+                       : m==='seek' ? 'Drag to fly' : 'Click to play';
       wrap.style.cursor = m==='seek' ? 'ew-resize' : 'pointer';
     };
+    // the mode changes when the card is enlarged, not only when media loads
+    new MutationObserver(setMode).observe(elPrev,{attributes:true,attributeFilter:['class']});
+    setMode();
     v.addEventListener('loadedmetadata',setMode);
     v.addEventListener('canplay',setMode);
     v.addEventListener('progress',setMode);
