@@ -16,6 +16,8 @@ assert.match(section, /onClick="\{\{ goProjects \}\}"/);
 assert.match(section, /aria-label="Selected project gallery"/);
 assert.match(section, /c\.cardSrcSet/);
 assert.match(section, /c\.cardFallback/);
+assert.match(section, />Completed installation</);
+assert.match(section, />Coordinated design</);
 
 for (const forbidden of [
   'Interactive<br/>BIM viewers',
@@ -37,12 +39,17 @@ const swapData = html.slice(swapStart, swapEnd);
 assert.equal((swapData.match(/project-comparisons\/web\//g) || []).length, 18);
 assert.equal((swapData.match(/cardSrcSet:/g) || []).length, 6);
 assert.equal((swapData.match(/cardFallback:/g) || []).length, 6);
+assert.equal(html.includes('_swapStartAuto'), false, 'selected projects must not auto-advance');
+assert.match(html, /_reduce=typeof matchMedia!==['"]undefined['"]&&matchMedia\(['"]\(prefers-reduced-motion: reduce\)['"]\)\.matches/);
 
 const assetPaths = [...swapData.matchAll(/assets\/img\/project-comparisons\/web\/[\w.-]+/g)]
   .map((match) => match[0]);
 assert.equal(new Set(assetPaths).size, 18, 'all six cards must expose three distinct responsive assets');
 for (const assetPath of assetPaths) {
-  assert.ok(fs.existsSync(path.join(root, assetPath)), `missing responsive card asset: ${assetPath}`);
+  const absolutePath = path.join(root, assetPath);
+  assert.ok(fs.existsSync(absolutePath), `missing responsive card asset: ${assetPath}`);
+  const budget = assetPath.endsWith('-800w.webp') ? 80 * 1024 : 300 * 1024;
+  assert.ok(fs.statSync(absolutePath).size <= budget, `responsive card exceeds its ${budget / 1024}KB budget: ${assetPath}`);
 }
 
 console.log('PASS selected projects section is delivery-led and uses responsive comparison cards');

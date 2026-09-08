@@ -31,33 +31,72 @@
 <link rel="preload" as="style" href="_ds/longmotive-design-system-8d1e5cc8-409c-43e1-9315-92313b8f450f/styles.css">
 <link rel="preload" as="image" href="uploads/campus-v2-merged16-poster-eae9bed7.jpg" fetchpriority="high">
 <script>
+// EVERY LOAD STARTS AT THE TOP, AND THIS HAS TO BE HERE RATHER THAN IN THE APP.
+// Browsers restore the previous scroll position during load, which on a page
+// whose first section is 500vh means being put back inside the hero with the
+// intro behind you -- a still picture, captions that answer to a scroll position
+// you did not choose, and the tour already over. Setting scrollRestoration from
+// componentDidMount was too late by about two thousand lines: measured on the
+// live page, history.scrollRestoration still read 'auto' well after mount.
+// A deep link still wins; #Projects and friends are an explicit destination.
+(function(){
+  try{
+    if('scrollRestoration' in history) history.scrollRestoration='manual';
+    // AND IT MUST STAND DOWN ONCE THE APP IS DRIVING. `load` waits for every
+    // subresource, so on a slow load it fires after the hero tour has started --
+    // and scrolling the window to 0 under a tour in flight looks to the tour
+    // exactly like somebody grabbing the scrollbar. It hands over, permanently,
+    // and the intro dies with the video parked at frame 0. Measured: the tour
+    // armed at 4248ms while load fired at 2804ms, a margin of 1.4 seconds.
+    // The component raises __lmScrollOwned at mount. By then scrollRestoration
+    // is already 'manual', so there is nothing here left to defend against.
+    window.__lmScrollOwned=false;
+    var top0=function(){
+      if(window.__lmScrollOwned) return;
+      if(!location.hash) window.scrollTo(0,0);
+    };
+    top0();
+    // and again at each point the browser might still move us: some versions
+    // restore after DOMContentLoaded, and a bfcache restore fires only pageshow.
+    document.addEventListener('DOMContentLoaded',top0);
+    window.addEventListener('load',top0);
+    window.addEventListener('pageshow',top0);
+  }catch(e){}
+})();
+</script>
+<script>
 // Kick off the hero video download immediately (before the app boots) at high priority,
 // so it doesn't queue behind below-the-fold images. The component picks up this promise.
 (function(){
   try{
     var conn=navigator.connection;
     if(conn&&(conn.saveData||/(^|-)2g$/.test(conn.effectiveType||''))) return;
-    // Desktop drives the hero from the image sequence, so do NOT also pull the
-    // 6.5MB clip. Warm only the first four quality-2 master frames here; the
-    // priority scheduler fills a contiguous startup buffer after the app boots.
-    // Only the first four master frames load in <head>; the remaining 20-frame
-    // startup buffer is scheduled after React and layout are ready.
-    // If the frames fail, the component's _seqFail() loads this same video.
-    if(matchMedia('(min-width: 1025px)').matches
-       && !matchMedia('(prefers-reduced-motion: reduce)').matches
-       && !(conn && /(^|-)3g$/.test(conn.effectiveType||''))){
-      for(var i=0;i<4;i++){
-        fetch('assets/frames/frame-'+('000'+(i+1)).slice(-4)+'.jpg?v=q2-20260820',{priority:'high'})
-          .catch(function(){});
-      }
-      return;
-    }
+    // ONE CLIP. The two-tier version is gone: it made the loading bar reach 100%
+    // at the small cut while the one that would actually play was still arriving,
+    // and its hand-over landing mid-tour stopped the video half way. This host
+    // serves no ranges, so whichever clip we choose has to arrive whole before a
+    // single frame can show -- the only thing worth controlling is whether the
+    // bar tells the truth about it. Must match HERO_VIDEO() in the page below.
     var src=matchMedia('(max-width: 760px)').matches
       ? 'uploads/merged16-scrub-mobile.mp4'
-      : 'uploads/merged16-scrub-desktop.mp4';
+      : 'uploads/merged16-scrub-1600-g8.mp4';
+    // Streamed against Content-Length so the hero's loading bar can show this
+    // download -- it is the only thing between arriving and the tour starting,
+    // and this preloader, not the component, is what normally fetches it.
     var load=function(tries){
       return fetch(src,{priority:'high'})
-        .then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.blob(); })
+        .then(function(r){
+          if(!r.ok) throw new Error('http '+r.status);
+          var total=+(r.headers.get('content-length')||0);
+          if(!r.body||!total||!r.body.getReader) return r.blob();
+          var reader=r.body.getReader(), parts=[], got=0;
+          var pump=function(){ return reader.read().then(function(s){
+            if(s.done){ window.__heroPct=1; return new Blob(parts,{type:'video/mp4'}); }
+            parts.push(s.value); got+=s.value.length;
+            window.__heroPct=Math.min(0.999,got/total);
+            return pump(); }); };
+          return pump();
+        })
         .then(function(b){ return URL.createObjectURL(b); })
         .catch(function(e){
           if(tries>0) return new Promise(function(res){ setTimeout(res,1200); }).then(function(){ return load(tries-1); });
@@ -74,7 +113,6 @@
      so GSAP has to be the earlier deferred script. -->
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
-<script defer src="sequence-priority.js"></script>
 <script defer src="campus-hero.js"></script>
 <script defer src="./support.js"></script>
 </head>
@@ -87,6 +125,14 @@
 <script src="campus-hero.js"></script>
 <style>
   html{scroll-behavior:smooth}
+  /* THE PROJECTS PAGE BELOW THE NAV IS ONE SURFACE, and its colour is not a
+     design-system token -- it is the globe embed's own background, taken from
+     projects-map-prototype.html. The wall has to match the iframe EXACTLY or
+     the seam the flat colour exists to remove comes straight back. The page
+     used to run deep-navy hero, deep-navy globe, WHITE wall, deep-navy footer:
+     a white block sandwiched between three dark ones, which is what made the
+     globe look bolted on. */
+  :root{--lm-projects-bg:#061424}
   html,body{margin:0;padding:0;background:var(--surface-page)}
   *{box-sizing:border-box}
   a{color:var(--text-link);text-decoration:none}
@@ -101,6 +147,11 @@
   /* responsive: fixed desktop grids collapse by class; snap sections release their
      100vh/hidden-overflow lock so content can never clip on small screens */
   @media(max-width:900px){.lm-g3,.lm-g4{grid-template-columns:repeat(2,1fr)!important}}
+  /* the globe is a figure on the page, never the page: a fixed ratio it cannot
+     grow out of, and a taller one on phones where 16:9 leaves a letterbox strip */
+  .lm-globeframe{display:block;width:100%;aspect-ratio:16/9;border:1px solid rgba(180,214,240,.20);
+    border-radius:10px;background:#02080f}
+  @media(max-width:820px){.lm-globeframe{aspect-ratio:4/5}}
   .lm-snapsec,.lm-project-section,.lm-scroll-stop{scroll-snap-stop:always}
   @media(max-width:760px){
     .lm-split2,.lm-foot{grid-template-columns:1fr!important}
@@ -179,14 +230,11 @@
     border:1px solid rgba(0,176,240,.55);border-radius:var(--radius-sm);padding:5px 9px;
     font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.12em;
     text-transform:uppercase;color:var(--lm-cyan-300);pointer-events:none}
-  .lm-3dbtn{margin-top:10px;align-self:flex-start;display:inline-flex;align-items:center;gap:9px;
-    font-family:var(--font-display);font-weight:700;font-size:.78rem;letter-spacing:.06em;
-    text-transform:uppercase;color:var(--color-brand);background:transparent;
-    border:2px solid var(--color-brand);border-radius:var(--radius-sm);padding:8px 14px;
-    transition:background .15s,color .15s}
-  .lm-pcard:hover .lm-3dbtn{background:var(--color-brand);color:#fff}
-  .lm-3dbtn svg{transition:transform .15s}
-  .lm-pcard:hover .lm-3dbtn svg{transform:translateX(3px)}
+  /* .lm-3dbtn is gone. It said "Open 3D viewer" on all twenty cards, under a
+     "3D" badge that was also on all twenty -- the same claim twice per card,
+     forty times down the page, distinguishing nothing. The badge stays because
+     it sits ON the photograph where the eye already is; the button went because
+     the whole card has always been the click target. */
   /* Selected projects is an editorial proof-of-delivery surface. The paired
      site/model cards support the story; the company and its work stay primary. */
   .lm-project-section{position:relative;background:#071f39;color:#fff;padding:clamp(78px,8vw,118px) var(--gutter);scroll-snap-align:start;overflow:hidden}
@@ -208,6 +256,9 @@
   .lm-swapcard{position:absolute;top:16px;left:50%;width:min(82vw,960px);aspect-ratio:8/5;overflow:hidden;border:1px solid rgba(210,237,250,.48);border-radius:18px;background:#0d2a45;box-shadow:0 28px 76px rgba(0,5,18,.48),0 7px 20px rgba(0,5,18,.28);will-change:transform,filter;backface-visibility:hidden;color:#fff}
   .lm-swapcard picture,.lm-swapcard img{width:100%;height:100%;display:block}
   .lm-swapcard img{object-fit:cover}
+  .lm-swap-label{position:absolute;bottom:0;z-index:2;box-sizing:border-box;display:flex;align-items:center;width:50%;height:clamp(38px,5.4vw,54px);padding:0 14px;background:#0a2a46;color:#fff;font-family:var(--font-mono);font-size:clamp(9px,.8vw,11px);font-weight:700;letter-spacing:.1em;text-transform:uppercase;box-shadow:0 -1px 0 rgba(255,255,255,.16);pointer-events:none}
+  .lm-swap-label--built{left:0}
+  .lm-swap-label--design{left:50%;background:#00b0f0;color:#06203b}
   .lm-swap-index{position:absolute;top:14px;right:14px;padding:6px 9px;border:1px solid rgba(255,255,255,.34);border-radius:4px;background:rgba(6,27,48,.8);font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.13em}
   .lm-work-current{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:clamp(18px,3vw,34px);align-items:center;max-width:960px;margin:10px auto 0;padding-top:22px;border-top:1px solid rgba(137,190,225,.3)}
   .lm-work-count{align-self:start;padding-top:6px;color:#53cefa;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.17em;white-space:nowrap}
@@ -218,15 +269,15 @@
   .lm-work-arrow:hover{border-color:#53cefa;background:rgba(0,176,240,.12);transform:translateY(-2px)}
   .lm-work-portfolio:focus-visible,.lm-work-arrow:focus-visible,.lm-work-deck:focus-visible{outline:3px solid #53cefa;outline-offset:4px}
   @media (max-width:1050px){.lm-work-head{grid-template-columns:1fr;gap:26px}.lm-work-copy{max-width:820px}.lm-work-heading{max-width:15ch}.lm-work-intro-panel{max-width:760px;padding:24px 0 0;border-left:0;border-top:1px solid rgba(137,190,225,.3)}.lm-work-deck{height:clamp(390px,64vw,640px)}.lm-swapcard{width:min(86vw,900px)}}
-  @media (max-width:760px){.lm-project-section{padding:70px var(--gutter)}.lm-work-heading{font-size:clamp(38px,11vw,56px)}.lm-work-intro{font-size:15px}.lm-work-deck{height:clamp(285px,72vw,430px);border-radius:10px}.lm-swapcard{top:12px;width:calc(100% - 46px);border-radius:12px}.lm-swap-index{top:9px;right:9px}.lm-work-current{grid-template-columns:auto minmax(0,1fr);gap:14px 18px;margin-top:4px;padding-top:18px}.lm-work-actions{grid-column:1/-1;justify-content:flex-end}.lm-work-title{font-size:clamp(23px,7vw,32px)}}
-  @media (prefers-reduced-motion:reduce){.lm-3dbtn svg,.lm-work-portfolio,.lm-work-arrow{transition:none!important}.lm-work-portfolio:hover,.lm-work-arrow:hover{transform:none}}
+  @media (max-width:760px){.lm-project-section{padding:70px var(--gutter)}.lm-work-heading{font-size:clamp(38px,11vw,56px)}.lm-work-intro{font-size:15px}.lm-work-deck{height:clamp(285px,72vw,430px);border-radius:10px}.lm-swapcard{top:12px;width:calc(100% - 46px);border-radius:12px}.lm-swap-label{padding:0 8px;font-size:9px;letter-spacing:.04em}.lm-swap-index{top:9px;right:9px}.lm-work-current{grid-template-columns:auto minmax(0,1fr);gap:14px 18px;margin-top:4px;padding-top:18px}.lm-work-actions{grid-column:1/-1;justify-content:flex-end}.lm-work-title{font-size:clamp(23px,7vw,32px)}}
+  @media (prefers-reduced-motion:reduce){.lm-work-portfolio,.lm-work-arrow{transition:none!important}.lm-work-portfolio:hover,.lm-work-arrow:hover{transform:none}}
 </style>
 </helmet>
 <div style="min-height:100%;display:flex;flex-direction:column;background:var(--surface-page);color:var(--text-body);font-family:var(--font-sans)">
 
   <header ref="{{ headerRef }}" style="position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border-subtle);transform:translateY(-100%);transition:transform .6s cubic-bezier(.22,1,.36,1)">
     <div style="max-width:var(--container-max);margin:0 auto;padding:0 var(--gutter);height:72px;display:flex;align-items:center;justify-content:space-between;gap:24px">
-      <a ref="{{ brandRef }}" onClick="{{ goHome }}" style="cursor:pointer;font-family:var(--font-display);font-weight:800;font-size:26px;letter-spacing:.02em;color:var(--color-brand);text-decoration:none;transition:opacity .2s linear;display:inline-flex;align-items:center;gap:6.5px"><svg viewBox="0 0 228 240" style="height:42px;width:40px;display:block;flex-shrink:0"><rect x="0" y="0" width="48" height="240" fill="#0f52a0"></rect><rect x="56" y="0" width="172" height="58" fill="#00b0f0"></rect><rect x="56" y="58" width="36" height="104" fill="#00b0f0"></rect><rect x="114" y="58" width="38" height="104" fill="#00b0f0"></rect><rect x="174" y="58" width="54" height="104" fill="#00b0f0"></rect><rect x="0" y="192" width="228" height="48" fill="#0f52a0"></rect></svg><span style="display:inline-block;line-height:.78;font-size:25.5px"><span style="display:block">LONG</span><span style="display:block">MOTIVE</span></span></a>
+      <a ref="{{ brandRef }}" onClick="{{ goHome }}" style="cursor:pointer;font-family:var(--font-display);font-weight:800;font-size:26px;letter-spacing:.02em;color:var(--color-brand);text-decoration:none;transition:opacity .2s linear;display:inline-flex;align-items:center;gap:6.5px"><img src="assets/lm-mark-c4c78d61.svg" alt="" style="height:42px;width:40px;display:block;flex-shrink:0"><span style="display:inline-block;line-height:.78;font-size:25.5px"><span style="display:block">LONG</span><span style="display:block">MOTIVE</span></span></a>
       <nav class="lm-nav" style="display:flex;gap:4px;align-items:center">
         <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="4">
           <a onClick="{{ n.onClick }}" style="{{ n.style }}">{{ n.label }}</a>
@@ -253,9 +304,9 @@
         <svg viewBox="0 0 228 240" style="{{ logoMarkStyle }}">
           <rect x="0" y="0" width="48" height="240" fill="#0f52a0" style="animation:lmPieceL .55s cubic-bezier(.22,1,.36,1) .15s both"></rect>
           <rect x="56" y="0" width="172" height="58" fill="#00b0f0" style="animation:lmPieceT .55s cubic-bezier(.22,1,.36,1) .4s both"></rect>
-          <rect x="56" y="58" width="36" height="104" fill="#00b0f0" style="animation:lmPieceD .5s cubic-bezier(.22,1,.36,1) .62s both"></rect>
-          <rect x="114" y="58" width="38" height="104" fill="#00b0f0" style="animation:lmPieceD .5s cubic-bezier(.22,1,.36,1) .74s both"></rect>
-          <rect x="174" y="58" width="54" height="104" fill="#00b0f0" style="animation:lmPieceD .5s cubic-bezier(.22,1,.36,1) .86s both"></rect>
+          <rect x="56" y="58" width="48" height="104" fill="#00b0f0" style="animation:lmPieceD .5s cubic-bezier(.22,1,.36,1) .62s both"></rect>
+          <rect x="118" y="58" width="48" height="104" fill="#00b0f0" style="animation:lmPieceD .5s cubic-bezier(.22,1,.36,1) .74s both"></rect>
+          <rect x="180" y="58" width="48" height="104" fill="#00b0f0" style="animation:lmPieceD .5s cubic-bezier(.22,1,.36,1) .86s both"></rect>
           <rect x="0" y="192" width="228" height="48" fill="#0f52a0" style="animation:lmPieceR .55s cubic-bezier(.22,1,.36,1) 1.1s both"></rect>
         </svg>
         <span style="{{ logoRestA }}"><span style="display:block">LONG</span><span style="display:block">MOTIVE</span></span>
@@ -274,6 +325,17 @@
           <sc-if value="{{ isVideoScrub }}" hint-placeholder-val="{{ false }}"><video class="lm-hero-media" ref="{{ heroVideoRef }}" poster="uploads/campus-v2-merged16-poster-eae9bed7.jpg" muted="{{ true }}" playsinline="{{ true }}" preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video></sc-if><sc-if value="{{ isVideoScrub }}" hint-placeholder-val="{{ false }}"><canvas class="lm-hero-media" ref="{{ heroCanvasRef }}" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none"></canvas></sc-if>
           <sc-if value="{{ is3dHero }}" hint-placeholder-val="{{ true }}"><lm-campus-hero class="lm-hero-media" ref="{{ campusRef }}" style="position:absolute;inset:0"></lm-campus-hero></sc-if>
           <div ref="{{ heroTintRef }}" style="position:absolute;inset:0;background:rgba(7,36,72,.45);pointer-events:none"></div>
+          <!-- Preload gate. Desktop pulls 50.7MB of frames; on a slow line the hero
+               used to sit blank while they arrived and the scrub felt broken rather
+               than loading. This states what is happening and gets out of the way.
+               It only ever covers the hero stage, never the page. -->
+          <div ref="{{ heroLoadRef }}" style="position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:linear-gradient(180deg,#0a2038 0%,#061424 100%);transition:opacity .55s ease;pointer-events:none">
+            <div style="font:700 10px/1 var(--font-mono);letter-spacing:.22em;color:#53cefa;text-transform:uppercase">Campus growth</div>
+            <div style="width:min(260px,52vw);height:2px;background:rgba(255,255,255,.14);border-radius:2px;overflow:hidden">
+              <i ref="{{ heroLoadBarRef }}" style="display:block;height:100%;width:0;background:#53cefa;transition:width .25s linear"></i>
+            </div>
+            <div ref="{{ heroLoadPctRef }}" style="font:600 10px/1 var(--font-mono);letter-spacing:.18em;color:rgba(232,242,251,.55)">Preparing 0%</div>
+          </div>
           <img class="lm-hero-media" ref="{{ heroPhotoRef }}" src="uploads/frames/f10-1920.jpg" srcset="uploads/frames/f10-960.webp 960w, uploads/frames/f10-1280.webp 1280w, uploads/frames/f10-1920.webp 1920w" sizes="100vw" alt="Aerial view of the completed DAY ONE data centre" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:opacity,transform"/>
           
           <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,36,72,.6) 0%,rgba(7,36,72,0) 15%,rgba(7,36,72,0) 85%,rgba(7,36,72,.6) 100%),linear-gradient(180deg,rgba(7,36,72,.6) 0%,rgba(7,36,72,0) 15%,rgba(7,36,72,0) 85%,rgba(7,36,72,.6) 100%);pointer-events:none"></div>
@@ -385,6 +447,8 @@
                     <source type="image/webp" srcset="{{ c.cardSrcSet }}" sizes="(max-width:760px) calc(100vw - 70px), min(82vw, 960px)"/>
                     <img data-src="{{ c.cardFallback }}" alt="{{ c.accessibleLabel }}" loading="lazy" decoding="async"/>
                   </picture>
+                  <span class="lm-swap-label lm-swap-label--built" aria-hidden="true">Completed installation</span>
+                  <span class="lm-swap-label lm-swap-label--design" aria-hidden="true">Coordinated design</span>
                   <span class="lm-swap-index">{{ c.index }}</span>
                 </div>
               </sc-for>
@@ -526,29 +590,48 @@
 
     <sc-if value="{{ isProjects }}">
     <div>
-      <section style="background:var(--lm-gradient-deep);padding:76px var(--gutter) 64px">
+      <!-- Tightened in the deploy repo, where a change cannot survive an export.
+           Ported here so it does. -->
+      <section class="lm-projects-hero" style="background:var(--lm-projects-bg);padding:clamp(24px,2.5vw,30px) var(--gutter)">
         <div data-reveal="0" style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;gap:12px;max-width:64ch">
           <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--lm-cyan-400)"><span style="width:28px;height:2px;background:currentColor"></span>Portfolio</span>
           <h1 style="margin:0;font-size:var(--fs-display-lg);color:#fff">Our Projects</h1>
           <p style="margin:0;font-size:18px;color:var(--lm-blue-100);line-height:1.6">Representative MEP works from the data-center projects we have delivered &#8212; plant rooms, power distribution, data halls and controls.</p>
         </div>
       </section>
-      <section style="background:var(--surface-page);padding:44px var(--gutter) var(--section-y)">
+      <!-- WHERE WE BUILD. An iframe, not a port into this component: the globe
+           needs an import map for three.js's post-processing addons, and an import
+           map has to precede every module on the document -- on a page whose
+           production <head> lives in the DEPLOY repo and is preserved across
+           exports, that would be a second place to keep in step forever. This page
+           also carries scroll-snap and a scroll-scrubbed hero; a separate document
+           means the globe's rAF loop, ResizeObserver and pointer capture cannot
+           reach any of it. postMessage is the seam when a site click has to open
+           project material. Nothing below this block moved -- the MEP portfolio is
+           unchanged, it just starts lower. -->
+      <section style="background:var(--lm-projects-bg);padding:0 var(--gutter) clamp(22px,3vw,36px)">
+        <div style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;gap:12px">
+          <iframe class="lm-globeframe" src="projects-globe-embed.html" loading="lazy"
+                  title="Where Longmotive builds — interactive site map"></iframe>
+          <p style="margin:0;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--lm-blue-100);opacity:.75">
+            Four countries, one delivery team · drag to turn · click a site</p>
+        </div>
+      </section>
+      <section style="background:var(--lm-projects-bg);padding:38px var(--gutter) var(--section-y)">
         <div style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;gap:30px">
           <div style="display:flex;gap:10px;flex-wrap:wrap">
             <sc-for list="{{ filters }}" as="f" hint-placeholder-count="6">
-              <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}</button>
+              <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}<span style="{{ f.countStyle }}">{{ f.count }}</span></button>
             </sc-for>
           </div>
           <div class="lm-g3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px">
             <sc-for list="{{ filteredProjects }}" as="p" hint-placeholder-count="6">
-              <div class="lm-pcard" data-comment-anchor="project-card-{{ p.title }}" onClick="{{ p.onOpen }}" style="{{ p.cardStyle }}" style-hover="box-shadow:var(--shadow-md);transform:translateY(-3px);border-color:var(--lm-blue-200)">
-                <div style="position:relative;height:200px;overflow:hidden;background:var(--lm-blue-50)"><img data-src="{{ p.img }}" alt="{{ p.title }}" style="width:100%;height:100%;object-fit:cover;display:block"/><sc-if value="{{ p.viewer3d }}" hint-placeholder-val="{{ false }}"><span class="lm-3dbadge">{{ cubeIcon }} 3D</span></sc-if></div>
-                <div style="padding:16px 18px 18px;display:flex;flex-direction:column;gap:6px">
-                  <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent)">{{ p.cat }}</span>
-                  <h3 style="margin:0;font-size:18px;color:var(--text-strong)">{{ p.title }}</h3>
-                  <p style="margin:0;font-size:13.5px;color:var(--text-muted);line-height:1.5">{{ p.meta }}</p>
-                  <sc-if value="{{ p.viewer3d }}" hint-placeholder-val="{{ false }}"><span class="lm-3dbtn">Open 3D viewer {{ arrowIcon }}</span></sc-if>
+              <div class="lm-pcard" data-comment-anchor="project-card-{{ p.title }}" onClick="{{ p.onOpen }}" style="{{ p.cardStyle }}" style-hover="background:#0c2338;border-color:rgba(83,206,250,.5);transform:translateY(-2px);box-shadow:0 10px 26px rgba(0,0,0,.35)">
+                <div style="position:relative;aspect-ratio:3/2;overflow:hidden;background:#02080f"><img data-src="{{ p.img }}" alt="{{ p.title }}" style="width:100%;height:100%;object-fit:cover;display:block"/><sc-if value="{{ p.viewer3d }}" hint-placeholder-val="{{ false }}"><span class="lm-3dbadge">{{ cubeIcon }} 3D</span></sc-if></div>
+                <div style="padding:15px 18px 17px;display:flex;flex-direction:column;gap:6px">
+                  <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#53cefa">{{ p.disciplineLabel }}</span>
+                  <h3 style="margin:0;font-size:18px;color:#e8f2fb">{{ p.title }}</h3>
+                  <p style="margin:0;font-size:12.5px;color:#8aa4bd;line-height:1.6">{{ p.meta }}</p>
                 </div>
               </div>
             </sc-for>
@@ -650,9 +733,9 @@
                 <input type="email" name="email" value="{{ form.email }}" onChange="{{ setEmail }}" placeholder="Email" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
               </div>
               <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
-                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Job Title <span style="color:var(--lm-danger)">*</span></label>
-                <select name="jobTitle" value="{{ form.jobTitle }}" onChange="{{ setJobTitle }}" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff">
-                  <sc-for list="{{ jobTitles }}" as="o" hint-placeholder-count="11"><option value="{{ o }}">{{ o }}</option></sc-for>
+                <label for="career-interest" style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Position / Area of Interest <span style="color:var(--lm-danger)">*</span></label>
+                <select id="career-interest" name="jobTitle" value="{{ form.jobTitle }}" onChange="{{ setJobTitle }}" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff">
+                  <sc-for list="{{ jobTitles }}" as="o" hint-placeholder-count="12"><option value="{{ o }}">{{ o }}</option></sc-for>
                 </select>
               </div>
               <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
@@ -681,7 +764,7 @@
   <footer style="background:var(--lm-blue-900);color:var(--lm-blue-100)">
     <div class="lm-foot" style="max-width:var(--container-max);margin:0 auto;padding:56px var(--gutter) 32px;display:grid;grid-template-columns:1.6fr 1fr 1.4fr;gap:40px">
       <div>
-        <div style="display:inline-flex;align-items:center;gap:6.5px;padding:9px 13px;border-radius:10px;background:#fff"><svg viewBox="0 0 228 240" aria-hidden="true" style="height:42px;width:40px;display:block;flex-shrink:0"><rect x="0" y="0" width="48" height="240" fill="#0f52a0"></rect><rect x="56" y="0" width="172" height="58" fill="#00b0f0"></rect><rect x="56" y="58" width="36" height="104" fill="#00b0f0"></rect><rect x="114" y="58" width="38" height="104" fill="#00b0f0"></rect><rect x="174" y="58" width="54" height="104" fill="#00b0f0"></rect><rect x="0" y="192" width="228" height="48" fill="#0f52a0"></rect></svg><div style="font-family:var(--font-display);font-weight:800;font-size:25.5px;letter-spacing:.02em;color:var(--color-brand);line-height:.78"><span style="display:block">LONG</span><span style="display:block">MOTIVE</span></div></div>
+        <div style="display:inline-flex;align-items:center;gap:6.5px;padding:9px 13px;border-radius:10px;background:#fff"><img src="assets/lm-mark-c4c78d61.svg" alt="" style="height:42px;width:40px;display:block;flex-shrink:0"><div style="font-family:var(--font-display);font-weight:800;font-size:25.5px;letter-spacing:.02em;color:var(--color-brand);line-height:.78"><span style="display:block">LONG</span><span style="display:block">MOTIVE</span></div></div>
         <p style="margin-top:16px;font-size:14px;line-height:1.6;max-width:40ch;color:var(--lm-blue-200)">Electromechanical construction contractor delivering standardized, safe and efficient MEP works for the data-center industry across Malaysia and China.</p>
         <div style="font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;color:var(--lm-blue-300);margin-top:18px">LONGMOTIVE (M) SDN. BHD. · 202201027398 (1473095-A)</div>
       </div>
@@ -811,30 +894,124 @@ const FILTERS=['All','HVAC & Cooling','Electrical','ELV & Controls','Fire Protec
 const IMG='assets/img/';
 // Must stay in step with the <head> preloader's own query, or the two disagree
 // about which file this screen wants and the phone pays for both.
-// Native JPEG sequence extracted one-for-one from campus-v2-merged16.mp4:
-// 136 frames, 1920x1080, FFmpeg q2, 70.33 MB. Each scroll position paints an
-// independently decoded image, avoiding inter-frame video seek artefacts.
-// The existing loader decodes before use, warms neighbouring frames, limits
-// concurrency and draws the nearest available frame if the target is not ready.
-// Keep this desktop-only: phones retain the compact scrub video and reduced
-// motion/data-saving users retain the static/video fallback.
-const SEQ_N=136, SEQ_DIR='assets/frames/', SEQ_VERSION='q2-20260820';
-const SEQ_STARTUP=20, SEQ_AHEAD=28, SEQ_BEHIND=3;
+// Hero image sequence. The scrubbed clip spends 48.8 KB per frame, a sharpness
+// ceiling no encoder setting can lift; stills cost more and buy it back.
+// FRAME COUNT BEATS PER-FRAME PIXELS on a scrubbed hero: 136 frames (every frame
+// the master holds) at 1600w beats 68 at 2560w, because motion hides pixel
+// detail and stepping never does.
+// FORMAT IS A DECODE DECISION, NOT JUST A SIZE ONE. A pass with AVIF at 1920w
+// was 37.1 MB and felt laggy. Bytes were not the problem -- decode was. 136
+// frames at 1920x1080 is 1.13 GB of decoded pixels, far past what any browser
+// keeps, so frames are certainly evicted and re-decoded mid-scroll, and AV1
+// intra decode is much heavier than WebP. WebP at 1600w is SMALLER (29.8 MB),
+// cheaper to decode, and drops the decoded footprint to 0.73 GB. 1600 still
+// exceeds the ~1425px the canvas is actually drawn at.
+// 271 frames = 59.5 MB, so this is DESKTOP ONLY -- phones keep the 2.5MB video
+// below, which is also the documented advice for anything above the fold. If the
+// frames fail to arrive (including a browser with no AVIF support) the video
+// path takes over.
+// THE TRACK LENGTH IS THE OTHER HALF OF SMOOTHNESS. Stepping is
+// (scrollable distance / frames). Shortening the track speeds the hero up and
+// smooths it at once, for no bytes -- but it was tried and walked back:
+//   500vh  3600px scroll  26.5 px/frame  caption 60vh each   <- here, original
+//   400vh  2700px         19.9           45vh                   still too fast
+//   300vh  1800px         13.2           30vh                   hurried
+// At 136 frames the stepping is fine at 500vh anyway, so the track is back where
+// it started. Everything downstream is proportional -- p is normalised over
+// (rect.height - innerHeight), and the 0..0.75 scrub window, the photo crossfade,
+// the ending hold and the auto-tour duration all derive from it.
+const SEQ_N=271, SEQ_DIR='uploads/hero-seq-1440/', SEQ_TIER=8;
+// DECIDED ONCE PER LOAD, AND REMEMBERED FOR THE SESSION.
+//
+// This picks between two hero sources that do not look alike: 271 stills at
+// 1440x810 and 192KB each, or merged16-scrub-desktop.mp4, which is nominally
+// 1600x900 but spends 9.6 Mbps at 24fps -- about 50KB a frame, a quarter of the
+// stills. That gap is an encoding ceiling, not a setting.
+//
+// It used to be recomputed at all four call sites, and navigator.connection
+// .effectiveType is a LIVE MEASUREMENT that moves with the network. So the same
+// machine on the same URL got the sharp version on one load and the soft one on
+// the next, and -- worse -- the four sites could disagree inside a single load:
+// _heroVideoRef seeing true skips loading the video, _heroCanvasRef seeing false
+// declines to start the sequence, and the hero is then simply blank.
+//
+// Now: one verdict per load. And once the frames have actually worked here, a
+// later momentary 3g reading does not downgrade the session -- saveData and
+// reduced-motion are user PREFERENCES and are still honoured every time; only
+// the network guess is made sticky.
+// THE HERO IS THE VIDEO. Flip this to 'frames' to put the 271-frame WebP
+// sequence back; nothing else has to change and the frames are still deployed.
+//
+// The sequence was sharper per frame -- 192KB against roughly 50KB -- and it cost
+// too much for that: 50.7MB, and the scrub decoded a 1440x810 still on the main
+// thread at every step. The auto-tour was the worst of it, because it moves at a
+// fixed rate and never stops to let a decode land.
+const HERO_SOURCE='video';
+const SEQ_PROVEN_KEY='longmotive.hero-frames.v1';
+let SEQ_OK_MEMO=null;
 const SEQ_OK=()=>{
-  if(typeof matchMedia==='undefined') return false;
-  if(matchMedia('(max-width: 1024px)').matches) return false;
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+  if(SEQ_OK_MEMO!==null) return SEQ_OK_MEMO;
+  const settle=(r)=>(SEQ_OK_MEMO=r);
+  if(HERO_SOURCE!=='frames') return settle(false);
+  if(typeof matchMedia==='undefined') return settle(false);
+  if(matchMedia('(max-width: 1024px)').matches) return settle(false);
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return settle(false);
   const c=typeof navigator!=='undefined'&&navigator.connection;
-  if(c&&(c.saveData||/(^|-)(2g|3g)$/.test(c.effectiveType||''))) return false;
-  return true;
+  if(c&&c.saveData) return settle(false);
+  let proven=false;
+  try{ proven=sessionStorage.getItem(SEQ_PROVEN_KEY)==='1'; }catch(e){}
+  if(!proven&&c&&/(^|-)(2g|3g)$/.test(c.effectiveType||'')) return settle(false);
+  return settle(true);
 };
-const SEQ_URL=(i)=>globalThis.LMSequencePriority.frameUrl(SEQ_DIR,i,SEQ_VERSION);
-const SEQ_PREVIEW_URL=SEQ_URL;
-// The 271-frame sequence used two source samples per master frame. Sampling
-// every second point from its motion-weighted scroll map restores the exact
-// 136-frame master cadence while preserving extra scroll for low-motion shots
-// and less scroll for fast drone moves.
-const SEQ_CUM=[0,128,248,364,458,534,603,674,740,801,859,897,934,971,1008,1045,1090,1148,1203,1258,1306,1347,1385,1459,1521,1602,1730,1858,1965,2092,2220,2343,2412,2540,2668,2795,2923,3042,3150,3266,3378,3461,3531,3575,3643,3753,3800,3847,3907,3953,4004,4058,4119,4174,4243,4318,4368,4428,4514,4580,4620,4668,4729,4786,4846,4911,4983,5066,5153,5257,5308,5374,5441,5506,5572,5636,5735,5803,5858,5931,6016,6080,6175,6302,6415,6505,6569,6637,6706,6766,6815,6869,6952,7047,7130,7175,7237,7302,7374,7459,7549,7624,7691,7736,7774,7815,7869,7918,7981,8066,8160,8258,8370,8425,8477,8527,8570,8613,8661,8718,8771,8832,8889,8943,9007,9068,9124,9184,9254,9334,9429,9527,9631,9747,9872,10000];
+const SEQ_URL=(i)=>SEQ_DIR+'f'+('00'+(i+1)).slice(-3)+'.webp';
+// BUILT FROM THE SIX ORIGINAL CLIPS, USING THE MASTER AS THE EDIT MAP (2026-08-20).
+// The six clips are separate drone passes flown on DIFFERENT DAYS. Within each
+// the camera glides along a path; at a naive join it snaps back to the next
+// pass's start and the light changes. The merged master is the editor's answer
+// to exactly that: each clip trimmed (f7-f188 etc.), compressed uniformly
+// (1 master frame per 8 source frames), cut at five chosen points, dissolves
+// over the cuts. A previous rebuild sampled the clips full-range and cut at
+// f193->f1 -- discarding all of those decisions -- and looked worse than the
+// dissolve problem it fixed.
+// So the master is now the EDIT MAP and the clips are the PIXEL SOURCE. Every
+// master frame was matched to (clip, frame) by 48x27 thumbnail MAD -- the map
+// came out perfectly monotonic, uniform step 8, residual 0.5-2.0 -- and the
+// sequence takes every 4th source frame across exactly the master-used ranges,
+// ending each segment on the very frame the editor ended on. 271 frames at the
+// clips' NATIVE 1920x1080 (a 1440w frame is upscaled ~33% on a 1920 viewport,
+// which is where "not sharp" came from), q76, 59.5 MB. 2x the master density,
+// zero dissolve frames by construction.
+// THE FIVE CUTS ARE HARD CUTS AT THE MASTER'S OWN CUT POINTS. Measured MAD at
+// them: 4.9-17.3 against an in-clip median of 5.0. The largest (clip1->clip2,
+// now f038->f039) is near-identical camera position with the piles appearing --
+// it reads as a chapter turn, which is what the phase captions say it is. A
+// hard cut scrubs cleanly; a dissolve scrubbed is a double exposure.
+// Dissolve scan after rebuild: one flag (f023, 0.89 of neighbours), confirmed
+// clean motion by eye. Zero real dissolves.
+// SCROLL IS ALLOCATED BY MOTION, NOT EVENLY.
+// The master runs its 136 frames in 5.67s -- 24fps -- and looked fine as video.
+// Spread evenly over a 3600px track at 270px/s the hero plays those same frames
+// in 13.3s, i.e. 10.2fps: the footage is being slow-motioned to 43 per cent
+// speed with no intermediate frames to fill in. Slow-motioning a fast camera
+// move is exactly when the eye starts resolving individual frames, which is the
+// judder through the drone pull-back around f012-f017.
+// So fast passages now take LESS scroll (they pass nearer their native speed)
+// and calm passages take MORE (nothing is moving, low fps is invisible there).
+// Weight is 1/motion, clamped to the 10th..90th percentile so nothing is starved.
+// Total scroll and total duration are unchanged; only the distribution moves.
+//   fastest passage  10.1 -> 19.4 fps
+//   slowest passage  10.1 ->  5.7 fps   (near-static frames)
+// SEQ_CUM[k] is where frame k starts, in ten-thousandths of the scrub range.
+// REGENERATE if the frame set changes: 48x27 grey thumbnails, mean absolute
+// difference between consecutive frames, weight 1/m, clamp, cumulative sum.
+// THEN RESCALE THE TAIL. Phase 05 is an aerial drift over the finished campus:
+// real motion (8-12 per frame, above the 7.79 median), so 1/motion happily gave
+// it 16.1% of the sequence. Composed with _mapScrub -- which stretches the last
+// 14% of frames across 28% of the scrub window -- that put 22.4% of the hero
+// track on the closing fly-over, and the ending photo held for 18.5% more. Two
+// full screens of ending. Phase 05 is now scaled to 8.5% and the rest of the
+// sequence absorbs it proportionally; total scroll is unchanged.
+const SEQ_CUM=[0,70,140,208,270,333,397,450,500,543,582,621,658,697,735,771,807,840,874,906,937,958,978,998,1019,1038,1059,1080,1099,1120,1140,1161,1189,1222,1252,1285,1312,1343,1372,1398,1424,1448,1469,1490,1511,1530,1591,1612,1659,1702,1747,1817,1887,1957,2027,2096,2143,2213,2282,2352,2421,2491,2556,2600,2631,2701,2770,2840,2910,2979,3049,3118,3188,3258,3318,3378,3436,3500,3562,3631,3684,3734,3775,3821,3851,3879,3899,3930,3973,4024,4093,4124,4145,4165,4196,4229,4261,4292,4312,4332,4367,4399,4426,4458,4493,4522,4553,4592,4628,4674,4710,4739,4764,4797,4830,4877,4923,4962,4995,5015,5039,5064,5091,5127,5158,5194,5220,5255,5286,5322,5356,5392,5435,5481,5526,5565,5620,5664,5734,5754,5790,5822,5861,5901,5935,5966,6005,6044,6077,6110,6147,6200,6255,6301,6329,6359,6389,6428,6469,6520,6562,6588,6632,6668,6735,6804,6874,6934,6997,7061,7095,7116,7165,7219,7239,7282,7314,7346,7380,7407,7433,7471,7492,7542,7583,7630,7686,7733,7777,7801,7826,7873,7893,7920,7964,8004,8043,8090,8136,8178,8234,8279,8316,8356,8389,8417,8438,8460,8479,8502,8524,8551,8583,8605,8636,8668,8705,8750,8798,8848,8900,8954,9007,9069,9129,9150,9169,9184,9196,9210,9223,9236,9245,9257,9268,9280,9294,9308,9324,9337,9352,9367,9384,9399,9414,9429,9442,9459,9476,9493,9508,9523,9538,9553,9569,9588,9606,9627,9649,9673,9699,9725,9750,9777,9805,9834,9867,9899,9932,9966,10000];
 // frame index for a scrub position, by binary search over SEQ_CUM
 // PHASE CAPTIONS MUST LINE UP WITH THE CLIP BOUNDARIES.
 // Each clip is one build stage shot on one day, so a caption window that
@@ -844,7 +1021,7 @@ const SEQ_CUM=[0,128,248,364,458,534,603,674,740,801,859,897,934,971,1008,1045,1
 // correct only while frames were spread evenly in it. SEQ_CUM deliberately is
 // not even, so the split has to be derived from it rather than assumed.
 // Last frame of each phase, 1-based: clip1 | clip2+clip3 | clip4 | clip5 | clip6
-const SEQ_PHASE_END=[24,70,91,113,136];
+const SEQ_PHASE_END=[47,139,182,225,271];
 // mp at the START of the next phase's first frame
 const PHASE_TH=SEQ_PHASE_END.slice(0,4).map(f=>SEQ_CUM[f]/10000);
 const SEQ_AT=(p)=>{
@@ -866,11 +1043,77 @@ const SEQ_AT=(p)=>{
 // Crossfade was added when the hero had 68 frames and stepped every 56px of
 // scroll. 136 frames at 26.5px already solved that; the blend outlived its
 // reason and only contributed artefacts.
+// KEYFRAME DENSITY, NOT FILE SIZE, DECIDES WHETHER A VIDEO CAN BE SCRUBBED.
+// Seeking lands on a keyframe and then decodes forward to the target, so a sparse
+// GOP makes every drag pay for frames nobody sees. Measured over the whole 136
+// frame clip:
+// AND THE HOST DOES NOT SERVE RANGES, which makes size the only lever that
+// matters. Cloudflare Pages answers a Range request for these files with 200 and
+// the whole body, and no Accept-Ranges header -- measured. A plain <video src>
+// therefore gets nothing at all: 2.5s in, readyState 0, duration 0, seekable and
+// buffered both empty. That is why the clip is fetched as a blob, and it means
+// NOTHING moves on screen until the last byte lands.
+//
+//   merged16-scrub-desktop.mp4  1600x900    6.5MB   5 kf   sharpness 19.85
+//   merged16-scrub-1080p.mp4    1920x1080  19.1MB  22 kf   sharpness 20.48
+//   merged16-scrub-1600-g8.mp4  1600x900    8.6MB  16 kf   sharpness 20.42
+//
+// The 1080p cut was 19.1MB and measured over twenty seconds of dead poster on
+// this connection before the tour could start. The 1600 g8 cut holds its
+// sharpness to within 0.3% at 45% of the bytes -- 1600x900 at CRF 26 with a
+// fixed GOP of 8, which is what scroll-scrub-video prescribes for aerial
+// footage. Seek cost is not the constraint: measured on a bare page, every one
+// of these seeks in about 1ms.
+// The <head> preloader MUST name the same file or the browser fetches both.
+// Whoever is actually downloading reports here. Normally that is the <head>
+// preloader, which starts before this script parses; Component._heroPct only
+// carries it when the component had to fetch the clip itself.
+const HERO_PCT=()=>Math.max(
+  (typeof window!=='undefined'&&window.__heroPct)||0,
+  Component._heroPct||0);
+// TWO TIERS, because the host will not serve ranges and the clip therefore has
+// to arrive whole before a single frame can show. 8.6MB is about five seconds of
+// nothing; 2.4MB is about one and a half.
+//   LO  merged16-scrub-mobile.mp4   960x540   2.4MB
+//   HI  merged16-scrub-1600-g8.mp4  1600x900  8.6MB
+// Both are 136 frames at 24fps with the same time_base and duration
+// (5.666667s), and sampled at four points their frames are identical to within
+// compression noise -- so currentTime carries across the swap frame-accurately.
+// That equality is the whole reason this is safe; re-encode one and check it
+// again before trusting it.
+// ONE CLIP. The two-tier version loaded the 2.4MB cut first and upgraded to the
+// 8.6MB one behind it, and it cost more than it bought: the bar reached 100% at
+// the small clip while the one that would actually play was still arriving, and
+// the upgrade landing mid-tour is what made the video stop half way. Both of
+// those were the same lie -- progress that did not mean the video was ready.
+// Now the bar measures the clip that plays, all of it, and reaching 100% means
+// exactly that. It costs about five seconds on this connection (measured: 9.07MB
+// in 5.03s), and the host serves no ranges so it has to arrive whole regardless.
 const HERO_VIDEO=()=> (typeof matchMedia!=='undefined'&&matchMedia('(max-width: 760px)').matches)
   ? 'uploads/merged16-scrub-mobile.mp4'
-  : 'uploads/merged16-scrub-desktop.mp4';
-const HOME_AUTO_SCROLL_VH_PER_SEC=.3;
+  : 'uploads/merged16-scrub-1600-g8.mp4';
+// THE SCRUB CURVE, in one place. _mapScrub maps track position to sequence
+// position and the auto-tour inverts it; they were two hand-written copies of the
+// same two numbers and they drifted the moment one was tuned.
+// c is where the curve bends, v is how much of the sequence is spent before the
+// bend. v=.79 puts the last 21% of frames across the last 28% of the window --
+// a 0.75 tail rate. At .86 it was 0.50, and that was half of why the ending felt
+// long.
+const SCRUB_C=.72, SCRUB_V=.79;
+// SPEED AND THE STUTTER ARE THE SAME NUMBER.
+// The tour sets playbackRate = clip duration / tour duration. At .3 viewport
+// heights a second the scrub ran ten seconds, so a 5.67s clip played at 0.57x --
+// 24fps footage arriving as 13.7 distinct pictures a second, each held for about
+// four and a half display frames. That reads as judder without a single video
+// frame being dropped, and it is why the hero felt slow AND rough at once.
+// At .68 the scrub is 4.4s, playbackRate 1.29, about 31 distinct frames a second
+// on screen -- and nobody is held in the hero for eleven seconds any more: about
+// five, plus the logo hand-off.
+const HOME_AUTO_SCROLL_VH_PER_SEC=.68;
+// Kept only so the retired sessionStorage key still has a name in one place;
+// nothing reads or writes it now. Hero-seen state lives for one page load.
 const HOME_HERO_SEEN_KEY='longmotive.hero-intro-seen.v1';
+let HERO_SEEN_THIS_LOAD=false;
 const HOME_HERO_END_PROGRESS=.75;
 // Where a returning visitor is dropped back into the track. Separate from the
 // threshold above, which decides whether the hero counts as watched at all and
@@ -893,7 +1136,11 @@ class Component extends DCLogic {
   _target=null; _cur=null;
   _heroTrackRef=(el)=>{ this._track=el; if(el) this._updateHero(); };
   _heroVideoRef=(el)=>{
-    if(this._video===el) return;
+    // Guard on the TEMPLATE element, not on this._video: after an upgrade
+    // this._video points at B, and guarding on it would let a re-fire of this
+    // ref quietly hand the hero back to the emptied A.
+    if(this._videoA===el) return;
+    this._videoA=el;
     this._video=el;
     if(el){
       // The template's playsinline="{{ true }}" never reaches the element — the
@@ -911,30 +1158,59 @@ class Component extends DCLogic {
       // The sequence owns the hero on desktop. Do not also pull 6.5MB of video;
       // _seqFail() below starts this same load if the frames never arrive.
       if(SEQ_OK()){ this._seqVideoSrc=src; return; }
+
       if(!Component._heroBlobUrl){
+        // Streamed, so the loading gate can show real progress instead of a
+        // spinner over a 19MB download. Falls back to .blob() when the response
+        // has no length or no readable body -- the gate then just sits at 0 and
+        // hides on canplay, which is what it did before.
         const load=(tries)=>fetch(src)
-          .then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.blob(); })
+          .then(r=>{
+            if(!r.ok) throw new Error('http '+r.status);
+            const total=+(r.headers.get('content-length')||0);
+            if(!r.body||!total||!r.body.getReader) return r.blob();
+            const reader=r.body.getReader(), parts=[]; let got=0;
+            const pump=()=>reader.read().then(({done,value})=>{
+              if(done){ Component._heroPct=1; return new Blob(parts,{type:'video/mp4'}); }
+              parts.push(value); got+=value.length;
+              Component._heroPct=Math.min(0.999,got/total);
+              return pump();
+            });
+            return pump();
+          })
           .then(b=>URL.createObjectURL(b))
           .catch(e=>{ if(tries>0) return new Promise(res=>setTimeout(res,1200)).then(()=>load(tries-1)); Component._heroBlobUrl=null; throw e; });
         const preloaded=typeof window!=='undefined'&&window.__heroBlobUrl;
         Component._heroBlobUrl = preloaded ? preloaded.catch(()=>load(3)) : load(3);
       }
-      Component._heroBlobUrl.then(u=>{ if(this._video===el){ el.src=u; el.load(); this._heroBlobReady=true; } })
-        .catch(()=>{ if(this._video===el&&!el.getAttribute('src')){ el.src=src; el.load(); } });
+      // the gate is showing this download; poll it while it runs
+      if(!this._pctTimer) this._pctTimer=setInterval(()=>{ this._loadSync(); },200);
+
+      // GUARD ON THE TEMPLATE ELEMENT. this._video points at B after an upgrade,
+      // and on a warm load the upgrade can land BEFORE this resolves: LO and HI
+      // are both in the HTTP cache, so HI no longer arrives five seconds later
+      // the way it does on a first visit. Guarded on this._video, the whole
+      // handler was then skipped -- el never got its src, _heroBlobReady stayed
+      // false, so the loading gate never hid and the tour never armed. First
+      // visit fine, every refresh after it stuck behind a bar at "Preparing".
+      Component._heroBlobUrl.then(u=>{ if(this._videoA===el){
+          el.src=u; el.load(); this._heroBlobReady=true; Component._heroPct=1;
+          // READ THE BAR, THEN PLAY -- no fixed delay between the two. canplay is
+          // the first moment the tour can actually run, so it is also the moment
+          // the gate has nothing left to cover.
+          const go=()=>{ this._loadSync(); if(this._auto) this._autoAt=performance.now(); };
+          if(el.readyState>=3) go(); else el.addEventListener('canplay',go,{once:true});
+          // and never strand it if canplay does not come
+          setTimeout(go,4000);
+        } })
+        .catch(()=>{ if(this._videoA===el&&!el.getAttribute('src')){ el.src=src; el.load(); } });
     }
   };
   _heroCanvasRef=(el)=>{
     this._cvs=el;
     if(!el||!SEQ_OK()||this._seqStarted) return;
     this._seqStarted=true;
-    const plan=typeof window!=='undefined'&&window.LMSequencePriority;
-    if(!plan){ this._seqFail(); return; }
     this._seqImg=new Array(SEQ_N); this._seqOk=new Array(SEQ_N); this._seqDone=0;
-    this._seqPreviewOk=new Array(SEQ_N); this._seqFullOk=new Array(SEQ_N);
-    this._seqPreviewQ=new plan.SequencePriorityQueue(SEQ_N);
-    this._seqFullQ=new plan.SequencePriorityQueue(SEQ_N);
-    this._seqPlan=plan; this._seqPreviewActive=0; this._seqFullActive=0; this._seqFullLimit=1;
-    this._seqStartup=new Set(plan.startupIndices(SEQ_N,SEQ_STARTUP));
     this._seqCtx=el.getContext('2d',{alpha:false});
     this._seqResize();
     if(!this._seqResizeBound){ this._seqResizeBound=()=>this._seqResize(); addEventListener('resize',this._seqResizeBound); }
@@ -943,81 +1219,90 @@ class Component extends DCLogic {
     if(typeof ResizeObserver!=='undefined'&&!this._seqRO){
       this._seqRO=new ResizeObserver(()=>this._seqResize()); this._seqRO.observe(el);
     }
-    // Frames are <img>, never ImageBitmap: the browser owns the decoded cache and
-    // may evict under pressure. Direct URLs also let the four <head> requests be
-    // reused from HTTP cache; fetch(blob) created a second resource identity.
-    this._seqOne=(kind,i)=>new Promise((res,rej)=>{ const im=new Image();
-      im.decoding='async';
-      if('fetchPriority' in im) im.fetchPriority=kind==='full'?'low':i<SEQ_STARTUP?'high':'auto';
-      im.onload=()=>{
-        // Decode before marking a frame usable so canvas never pays that cost
-        // synchronously during autoplay or a user's first scrub.
-        let settled=false;
-        const visibleP=Math.min(1,Math.max(0,this._cur!=null?this._cur:(this._target||0)));
-        const visibleK=SEQ_AT(visibleP);
-        const beforeIndex=this._seqNearest(visibleK);
-        const beforeImage=beforeIndex>=0?this._seqImg[beforeIndex]:null;
-        const ready=()=>{ if(settled) return; settled=true;
-          if(kind==='full'){
-            this._seqFullOk[i]=true; this._seqImg[i]=im;
-          }else{
-            this._seqPreviewOk[i]=true; if(!this._seqFullOk[i]) this._seqImg[i]=im;
-          }
-          if(!this._seqOk[i]){ this._seqOk[i]=true; this._seqDone++; }
-          this._seqStartup.delete(i);
-          if(!this._seqStartup.size&&!this._seqReady){
-            this._seqReady=true;
-            if(this._cvs) this._cvs.style.display='block';
-            if(this._video) this._video.style.display='none';
-            this._seqResize();
-          }
-          const afterIndex=this._seqNearest(visibleK);
-          const afterImage=afterIndex>=0?this._seqImg[afterIndex]:null;
-          if(this._seqPlan.shouldRepaint(beforeIndex,beforeImage,afterIndex,afterImage)){
-            this._seqSig=''; this._seqDraw();
-          }
-          if(this._seqNativeRequested) this._seqEnableNative();
-          res(); };
-        if(im.decode){ im.decode().then(ready,ready); setTimeout(ready,400); } else ready();
+    // Frames are <img>, never ImageBitmap: 68 decoded 2560x1440 bitmaps would pin
+    // ~960MB of pixels. As <img> the browser owns the cache and can evict.
+    const one=(i,lo)=>fetch(SEQ_URL(i),lo?{priority:'low'}:undefined)
+      .then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.blob(); })
+      .then(b=>new Promise((res,rej)=>{ const im=new Image();
+        im.onload=()=>{
+          // DECODE BEFORE MARKING THE FRAME USABLE. onload only means the bytes
+          // arrived; the first drawImage of each frame then decodes a 2560x1440
+          // WebP synchronously on the main thread. That is why the first pass
+          // down the hero stuttered and every pass after it was smooth -- the
+          // decodes were already paid for. decode() moves that cost off the
+          // scroll and into loading, where nobody is watching.
+          let settled=false;
+          const ready=()=>{ if(settled) return; settled=true;
+            this._seqImg[i]=im; this._seqOk[i]=true; this._seqDone++; this._seqDraw(); res(); };
+          // decode() can stay pending indefinitely when the document is not
+          // rendering. Never let that strand the hero -- the image is already
+          // usable, decode() is only an optimisation.
+          if(im.decode){ im.decode().then(ready,ready); setTimeout(ready,400); } else ready();
+        };
+        im.onerror=rej; im.src=URL.createObjectURL(b); }));
+    // TIER 2 MUST NOT RUN UNDER THE SCROLL. Tier 1 is 34 frames and about 6.4MB;
+    // the fill-in behind it is 237 frames and 44.4MB, and every one of them ends
+    // in a full-resolution decode() on the main thread. Fired the moment tier 1
+    // lands, that is 15 seconds of download and 237 decodes at 25 Mbps competing
+    // with the exact scroll the frames exist to serve -- which is why the hero
+    // came good "after one full pass" and stayed rough before it. By the second
+    // pass the fill-in had finished.
+    // So the fill-in yields: it waits for 500ms of no scrubbing before taking
+    // another frame. WITH A CEILING -- someone who never stops moving would
+    // otherwise never get the in-between frames at all, and the nearest-loaded
+    // fallback would keep stepping between distant ones. After 25s it stops
+    // yielding and just finishes.
+    const YIELD_MS=500, YIELD_UNTIL=performance.now()+25000;
+    const clear=()=>new Promise(res=>{
+      const t=()=>{
+        const q=performance.now();
+        if(q>YIELD_UNTIL || q-(this._scrubAt||0)>YIELD_MS) return res();
+        setTimeout(t,180);
       };
-      im.onerror=rej; im.src=kind==='full'?SEQ_URL(i):SEQ_PREVIEW_URL(i);
+      t();
     });
-    // Six workers establish the 20-frame master-quality startup buffer; after the
-    // first paint, two workers maintain the rolling buffer without decode spikes.
-    this._seqPump=(kind)=>{
-      const preview=kind==='preview', q=preview?this._seqPreviewQ:this._seqFullQ;
-      const activeKey=preview?'_seqPreviewActive':'_seqFullActive';
-      const limit=preview?this._seqPlan.previewWorkerLimit(this._seqReady):this._seqFullLimit;
-      while(this[activeKey]<limit){
-        const i=q.next(); if(i==null) break;
-        this[activeKey]++;
-        this._seqOne(kind,i).catch(()=>{
-          // A failed master request must not strand autoplay: retry through the fallback queue.
-          if(preview){ this._seqFullQ.add([i],0); this._seqPump('full'); }
-        }).finally(()=>{
-          q.complete(i); this[activeKey]--;
-          this._seqPump(kind);
-        });
-      }
+    // Bounded concurrency, not a strict chain. Sequentially this pulled 33MB one
+    // frame at a time, so late frames were still missing on the first scroll and
+    // the nearest-loaded fallback jumped between distant frames.
+    const run=(list,par,lo)=>{
+      let k=0;
+      const step=()=>k<list.length ? one(list[k++],lo).catch(()=>{}).then(next) : Promise.resolve();
+      const next=()=>k<list.length ? (lo?clear().then(step):step()) : Promise.resolve();
+      return Promise.all(Array.from({length:Math.min(par||6,list.length)},next));
     };
-    const opening=plan.startupIndices(SEQ_N,SEQ_STARTUP);
-    this._seqPreviewQ.add(opening,0);
-    this._seqPreviewQ.add(Array.from({length:SEQ_N-SEQ_STARTUP},(_,i)=>i+SEQ_STARTUP),1000);
-    this._seqPump('preview');
+    const t1=[],t2=[];
+    for(let i=0;i<SEQ_N;i++) (i%SEQ_TIER===0?t1:t2).push(i);
+    run(t1).then(()=>{
+      if(this._seqDone<t1.length) throw new Error('tier1 incomplete');
+      this._seqReady=true; this._loadHide();
+      // the frames work on this connection; a later dip in effectiveType must not
+      // drop the rest of the session onto the soft video
+      try{ sessionStorage.setItem(SEQ_PROVEN_KEY,'1'); }catch(e){}
+      if(this._cvs) this._cvs.style.display='block';
+      if(this._video) this._video.style.display='none';
+      // size it HERE, explicitly. Until this point the canvas was display:none,
+      // so it measured 0x0 and kept the default 300x150 backing store. Relying on
+      // the ResizeObserver to catch the 0 -> 1425 change is not safe: a document
+      // that is not compositing never delivers one, and the hero would then paint
+      // a 300x150 buffer stretched across the viewport.
+      this._seqResize();
+      return run(t2,4,true).catch(()=>{}); // fill-in failures are survivable: nearest frame is drawn
+    }).catch(()=>this._seqFail());
   };
-  _seqEnableNative=()=>{
-    this._seqNativeRequested=true;
-    if(!this._seqPlan||!this._seqPlan.nativeUpgradeNeeded(SEQ_PREVIEW_URL(0),SEQ_URL(0))) return;
-    if(!this._seqReady||!this._seqFullQ||this._seqNativeStarted) return;
-    this._seqNativeStarted=true; this._seqFullLimit=1;
-    const p=Math.min(1,Math.max(0,this._cur!=null?this._cur:(this._target||0)));
-    const k=SEQ_AT(p);
-    this._seqFullQ.add(this._seqPlan.rollingIndices(SEQ_N,k,4,2),0);
-    this._seqPump('full');
-  };
+
   // If the frames cannot be had, put the original video path back exactly as it was.
   _seqFail=()=>{
     this._seqReady=false; this._seqStarted=false;
+    // THIS CALLED _loadHide DIRECTLY, on the reasoning that falling back to the
+    // video leaves nothing to wait for. On the video path the video IS the thing
+    // to wait for, so that reasoning is inverted -- and _loadHide is the raw
+    // hide, which walks straight past the rule that the bar reaching 100% means
+    // the whole clip has arrived. Measured on a throttled load: the bar vanished
+    // at 1280ms while the clip was not down until 4080ms and not playable until
+    // 4141ms. Somebody was told the loading had finished and then watched a
+    // still frame for nearly three seconds.
+    // _loadSync applies the rule and hides the bar the moment it is honest to.
+    this._loadSync();
     if(this._cvs) this._cvs.style.display='none';
     const el=this._video, src=this._seqVideoSrc;
     if(!el||!src) return;
@@ -1025,8 +1310,8 @@ class Component extends DCLogic {
     if(!Component._heroBlobUrl){
       Component._heroBlobUrl=fetch(src).then(r=>r.blob()).then(b=>URL.createObjectURL(b));
     }
-    Component._heroBlobUrl.then(u=>{ if(this._video===el){ el.src=u; el.load(); this._heroBlobReady=true; } })
-      .catch(()=>{ if(this._video===el&&!el.getAttribute('src')){ el.src=src; el.load(); } });
+    Component._heroBlobUrl.then(u=>{ if(this._videoA===el||this._video===el){ el.src=u; el.load(); this._heroBlobReady=true; } })
+      .catch(()=>{ if((this._videoA===el||this._video===el)&&!el.getAttribute('src')){ el.src=src; el.load(); } });
   };
   _seqResize=()=>{
     const el=this._cvs; if(!el) return;
@@ -1063,14 +1348,6 @@ class Component extends DCLogic {
     if(!this._seqCtx||!this._cvs) return;
     const p=Math.min(1,Math.max(0,this._cur!=null?this._cur:(this._target||0)));
     const k=SEQ_AT(p);
-    if(this._seqPlan&&this._seqPreviewQ){
-      this._seqPreviewQ.add(this._seqPlan.rollingIndices(SEQ_N,k,SEQ_AHEAD,SEQ_BEHIND),5);
-      this._seqPump('preview');
-      if(this._seqNativeStarted&&this._seqReady){
-        this._seqFullQ.add(this._seqPlan.rollingIndices(SEQ_N,k,3,1),0);
-        this._seqPump('full');
-      }
-    }
     const a=this._seqNearest(k); if(a<0) return;
     // DECODE-AHEAD. At 1920x1080 the browser will evict decoded frames under
     // memory pressure, and a mid-scrub re-decode is a synchronous stall on the
@@ -1099,11 +1376,90 @@ class Component extends DCLogic {
     else this._cur+=(this._target-this._cur)*0.18;
     this._seqDraw();
   };
+  _heroLoadRef=(el)=>{
+    this._load=el;
+    // A re-render hands us a FRESH element in its visible initial state. Without
+    // this, _loadHide's _loadGone guard refuses to touch it and the gate stays on
+    // screen for good -- the bar that never goes away.
+    if(el&&this._loadGone){ this._loadGone=false; this._loadHide(); return; }
+    // Restoring from the back/forward cache re-shows whatever was on screen when
+    // the page froze. If that was mid-load, the gate comes back with it and no
+    // fetch is ever going to resolve again, so hide it on restore.
+    // ...and ONLY a restore. pageshow also fires on every ordinary load, right
+    // after `load`, so this was hiding the gate the moment the page's images
+    // finished -- which says nothing at all about the clip. Measured on a
+    // throttled load: the bar vanished 4ms after load at 1160ms while the video
+    // was not playable until 3975ms. The bar reached the end and then the
+    // visitor watched a still frame for another 2.8 seconds, which is the
+    // opposite of what a progress bar is for. e.persisted is the case this was
+    // written for, and it is the only one it should act on.
+    if(el&&!this._loadPageShow){ this._loadPageShow=(e)=>{ if(e&&e.persisted) this._loadHide(); };
+      addEventListener('pageshow',this._loadPageShow); }
+    this._loadSync();
+    // Never let the gate outlive its reason. If the sequence never starts (3D
+    // hero mode, a browser that fails SEQ_OK, frames that never resolve) the
+    // page must still be usable -- a stuck loading bar is worse than no bar.
+    // A BACKSTOP, NOT A DEADLINE. The bar is now tied to a download that takes
+    // about five seconds, so six was short enough to hide it mid-load and lie
+    // again. 25s only exists so a clip that never arrives cannot leave the page
+    // unusable behind a bar.
+    if(el&&!this._loadTimer) this._loadTimer=setTimeout(()=>this._loadHide(),25000);
+  };
+  _heroLoadBarRef=(el)=>{ this._loadBar=el; };
+  _heroLoadPctRef=(el)=>{ this._loadPct=el; };
+  // The gate reports TIER 1, and says so. Holding the hero for all 271 frames is
+  // a 50MB wait, and a person scrolling by hand does not need them -- they move
+  // slowly and the nearest-loaded frame covers the gaps. What DID need them is
+  // the auto-tour, and that now waits on its own (see _autoAt above) instead of
+  // starting the moment this gate lifts.
+  // It used to read "0%..100%", which was a lie at 34 of 271 frames: it said
+  // loaded and handed you a hero that was 44MB short.
+  _loadSync=()=>{
+    if(!this._load) return;
+    let pct;
+    if(!SEQ_OK()){
+      // VIDEO PATH. The gate covers the blob download, which is the only thing
+      // standing between arriving and the tour starting. It used to hide itself
+      // here immediately, which meant the bar vanished and then nothing happened
+      // for as long as the video took.
+      // 100% MEANS THE WHOLE CLIP IS IN, and both conditions are needed to say
+      // so: the blob resolving means every byte arrived, readyState>=3 means the
+      // element can actually play from it. Reporting done on either alone is how
+      // this bar came to mean nothing twice already.
+      const ready=this._heroBlobReady
+        && this._video && this._video.readyState>=3;
+      if(!ready){
+        pct=Math.round(HERO_PCT()*100);
+        if(this._loadBar) this._loadBar.style.width=pct+'%';
+        if(this._loadPct) this._loadPct.textContent='Preparing '+pct+'%';
+        return;
+      }
+      if(this._pctTimer){ clearInterval(this._pctTimer); this._pctTimer=null; }
+      this._loadHide(); return;
+    }
+    const total=Math.ceil(SEQ_N/SEQ_TIER);
+    pct=Math.max(0,Math.min(100,Math.round((this._seqDone||0)/total*100)));
+    if(this._loadBar) this._loadBar.style.width=pct+'%';
+    if(this._loadPct) this._loadPct.textContent=pct<100?'Preparing '+pct+'%':'Ready';
+    if(pct>=100) this._loadHide();
+  };
+  _loadHide=()=>{
+    if(!this._load||this._loadGone) return;
+    this._loadGone=true;
+    this._load.style.opacity='0';
+    setTimeout(()=>{ if(this._load) this._load.style.display='none'; },600);
+  };
   _heroCopyRef=(el)=>{ this._copy=el; };
   _campusRef=(el)=>{ this._campus=el; if(el) this._heroUpdate(); };
   // scroll→scrub remap: the last growth stage (video 0.86..1, the finished campus)
   // gets the final 28% of the track so it holds on screen longer before the logo hand-off
-  _mapScrub(p){ const c=.72,v=.86; return p<c?(p/c)*v:v+((p-c)/(1-c))*(1-v); }
+  // THE TAIL SLOW-DOWN WAS THE SECOND HALF OF THE LONG ENDING. This maps track
+  // position to sequence position, and at v=.86 it put the last 14% of frames
+  // across the last 28% of the window -- half rate, exactly where phase 05 sits,
+  // so 8.5% of the sequence became 12.7% of the track. At .79 the tail runs at
+  // 0.75 rate instead of 0.50. The head pays for it (1.19 -> 1.10), which means
+  // the BUILD gets the 22vh the ending gives up, and that is the right way round.
+  _mapScrub(p){ const c=SCRUB_C,v=SCRUB_V; return p<c?(p/c)*v:v+((p-c)/(1-c))*(1-v); }
   _principlesVideoRef=(el)=>{
     if(this._bgVideoObs){ this._bgVideoObs.disconnect(); this._bgVideoObs=null; }
     if(el){
@@ -1222,12 +1578,17 @@ class Component extends DCLogic {
     window.removeEventListener('touchmove',this._blockEv,{passive:false});
     window.removeEventListener('keydown',this._blockKey,{passive:false});
   }
+  // IN MEMORY, NOT sessionStorage, which survives a reload: once the hero had
+  // been watched, every later refresh in that tab dropped you at 94% of the track
+  // with the tour already dead. Held for one page load instead -- going
+  // Home -> Projects -> Home still skips the intro, which is what this was for,
+  // and a refresh is a new visit again.
   _heroSeen(){
-    try{ return window.sessionStorage.getItem(HOME_HERO_SEEN_KEY)==='1'; }catch(e){ return false; }
+    return !!HERO_SEEN_THIS_LOAD;
   }
   _rememberHeroSeen(p){
     if(p<HOME_HERO_END_PROGRESS) return;
-    try{ window.sessionStorage.setItem(HOME_HERO_SEEN_KEY,'1'); }catch(e){}
+    HERO_SEEN_THIS_LOAD=true;
   }
   _returnHomeToHeroEnd=()=>{
     const track=this._track;
@@ -1384,12 +1745,59 @@ class Component extends DCLogic {
     const t=Math.min(0.999,Math.max(0,this._cur))*(v.duration-0.05);
     if(Math.abs(v.currentTime-t)>0.008){ try{ v.currentTime=t; }catch(e){} }
   }
-  _haltAuto(){ this._auto=false; this._autoY=null; const v=this._video;
+  // THE TOUR OWNS THE SCROLLER WHILE IT RUNS. html carries scroll-behavior:smooth
+  // AND scroll-snap-type:y (measured on the live page), and the tour writes a new
+  // scroll position every frame: smooth scrolls cancel each other, and the snap
+  // engine re-decides after every one of them. This used to be handled by
+  // reading, overwriting and restoring scrollBehavior INSIDE the loop -- two
+  // style writes and a read per frame -- and the snapping was never addressed at
+  // all. Set both once, put both back on the way out.
+  // ASSERT, DO NOT REMEMBER. This returned early whenever _tourStyled already
+  // matched, which trusts our own bookkeeping over the actual DOM -- and three
+  // places in this file save html's inline scrollBehavior at one moment and write
+  // it back at a later one (_sectionStep, its pending variant, and this
+  // function's own restore). Any of them landing after the tour has started puts
+  // scroll-behavior:smooth back on the scroller, and the flag says it is already
+  // handled, so it is never taken off again.
+  // Every scrollTo then animates instead of jumping, and the tour computes its
+  // next position from its own last target while the page crawls behind on a
+  // smooth animation. The two separate: measured on a live load, _autoY at 2812
+  // with the window still at 762 and the clip looping, because the scrub follows
+  // a scroll position that never arrives. From the sofa that is a hero that
+  // plays for a second and then sticks. It failed on 5 of 14 throttled loads.
+  // Reading an inline style property is a string read on the CSSOM -- no layout,
+  // no reflow -- so checking it on the frames the tour scrolls costs nothing.
+  _tourStyle(on){
+    const de=document.documentElement; if(!de) return;
+    if(on){
+      // capture once, and only what was there before we touched anything
+      if(!this._preTour) this._preTour={b:de.style.scrollBehavior,s:de.style.scrollSnapType};
+      if(de.style.scrollBehavior!=='auto') de.style.scrollBehavior='auto';
+      if(de.style.scrollSnapType!=='none') de.style.scrollSnapType='none';
+    }else if(this._preTour){
+      de.style.scrollBehavior=this._preTour.b; de.style.scrollSnapType=this._preTour.s;
+      this._preTour=null;
+    }
+    this._tourStyled=!!on;
+  }
+  _haltAuto(){ this._auto=false; this._autoY=null; this._tourStyle(false); const v=this._video;
     if(this._autoV&&v){ v.pause(); this._autoV=false; if(Number.isFinite(v.duration)&&v.duration>0) this._cur=v.currentTime/(v.duration-0.05); } }
   _startHeroLoop(){
     if(this._rafId) return;
-    const loop=()=>{
-      this._rafId=requestAnimationFrame(loop);
+    // ONE CHAIN AT A TIME. Re-arming used to schedule a fresh rAF and overwrite
+    // _rafId -- which does not stop the chain already running, because by the
+    // time a re-arm happens the live callback has usually re-armed ITSELF and
+    // that id is the one being cancelled. Two chains then advance the tour every
+    // frame and it runs at double speed: measured 1212 px/s against the 615 the
+    // setting asks for. The first play() then computes its start position from a
+    // scroll that has already run away, seeks the clip to its end, and the video
+    // never plays at all -- a still last frame while the page scrolls past it.
+    // Each arm takes a token; a chain whose token is stale returns without
+    // re-arming, so the count can only ever go back to one.
+    const loop=(tok)=>{
+      if(tok!==this._loopTok) return;
+      this._rafId=requestAnimationFrame(()=>loop(tok));
+      this._loopAt=performance.now();   // the watchdog below reads this
       let y=window.scrollY;
       if(this._pin&&Math.abs(y-this._lockY)>0.5){ window.scrollTo(0,this._lockY); y=this._lockY; }
       // fling cap: while the hero scrub is pinned, limit downward scroll speed so a
@@ -1403,11 +1811,38 @@ class Component extends DCLogic {
       }
       // auto-play: play the video natively (smooth decoded frames) and let the
       // scroll position follow the video; px/s advance covers the photo/logo phase
+      // THE CEILING IS A BACKSTOP, NOT A SCHEDULE. _autoAt is set to mount+6s so a
+      // clip that never reports ready cannot hold the tour forever, and the
+      // video-ready callback is meant to pull it in. It does not always: measured
+      // on ten live loads the bar finished at 3s and the tour still started at
+      // mount+6s, so a visitor watched a still picture for five seconds after
+      // being told the loading was done. Whatever that callback misses, the
+      // condition it was checking is true right here on every frame -- the gate
+      // is gone, which already means the whole clip arrived, and the element
+      // reports it can play -- so check it here instead of relying on a callback.
+      if(this._auto&&this._autoAt!==Infinity&&performance.now()<this._autoAt
+         &&this._loadGone&&this._video&&this._video.readyState>=3){
+        this._autoAt=performance.now();
+      }
       if(this._auto&&!this._pin&&!this._logoSeq&&this._track&&this._track.isConnected&&performance.now()>(this._autoAt||0)){
         const r=this._track.getBoundingClientRect();
         if(r.top<=0&&r.bottom>window.innerHeight+1){
-          // a big jump means the user grabbed the scrollbar — hand over control
-          if(this._autoY!=null&&Math.abs(this._autoY-y)>40){ this._haltAuto(); this._seqEnableNative(); }
+          // A BIG JUMP USED TO MEAN THE USER GRABBED THE SCROLLBAR. It does not:
+          // it means the page moved without the tour asking, and the visitor is
+          // only one of the things that can do that. Handing over is permanent,
+          // so paying for a stray programmatic scroll with the whole intro is
+          // the wrong trade -- and that is exactly how a head-script scroll
+          // reset killed it. A scrollbar drag has a pointer held down; a wheel
+          // or a key raises _gestAt. If neither happened, nobody asked for this,
+          // so re-sync to where the page actually is and keep going.
+          const _n=performance.now();
+          const _human=(_n-(this._ptrAt||0)<600)||(_n-(this._gestAt||0)<600);
+          if(this._autoY!=null&&Math.abs(this._autoY-y)>40){
+            // Nobody asked for this jump, so re-sync -- and re-assert the
+            // scroller, because a page that will not go where it is told is the
+            // shape smooth scrolling makes.
+            if(_human) this._haltAuto(); else { this._tourStyle(true); this._autoY=y; }
+          }
           else{
             const range=r.height-window.innerHeight, top=y+r.top;
             const v=this._video, dur=(v&&v.readyState>=1&&Number.isFinite(v.duration)&&v.duration>0)?v.duration-0.05:0;
@@ -1454,7 +1889,12 @@ class Component extends DCLogic {
                 const now=performance.now();
                 if(v.currentTime===this._vtLast){ if(now-this._vtAt>1000&&ahead<0.3) v.pause(); }
                 else{ this._vtLast=v.currentTime; this._vtAt=now; }
-                const m=v.currentTime/dur, c=.72, k=.86; // inverse of _mapScrub
+                // INVERSE OF _mapScrub, and it must use the same two numbers.
+                // It was a second hand-written copy and it was left at k=.86 when
+                // the forward map went to .79, so on the video path the scroll
+                // position stopped agreeing with the frame on screen and the phase
+                // captions desynced from it. Shared constants now: it cannot drift.
+                const m=v.currentTime/dur, c=SCRUB_C, k=SCRUB_V;
                 const pv=m<k?(m/k)*c:c+((m-k)/(1-k))*(1-c);
                 ny=top+pv*0.75*range;
                 this._cur=m; this._target=m;
@@ -1463,19 +1903,7 @@ class Component extends DCLogic {
               if(this._autoV&&v){ v.pause(); this._autoV=false; }
               const dt=Math.min(50,performance.now()-(this._lastTick||performance.now()));
               const from=(this._autoY==null?y:this._autoY);
-              // Ease the tour down as its decoded look-ahead shrinks. This trades a
-              // barely perceptible speed change for continuous motion instead of
-              // running at full pace until the next frame is missing, then stopping.
-              let seqRate=1;
-              if(seqDrives&&this._seqPlan){
-                const pNow=Math.min(1,Math.max(0,(from-top)/range));
-                if(pNow<0.75){
-                  const kNow=SEQ_AT(this._mapScrub(Math.min(1,pNow/0.75)));
-                  const ahead=this._seqPlan.bufferedAhead(this._seqOk,kNow,SEQ_AHEAD);
-                  seqRate=this._seqPlan.playbackScale(ahead,SEQ_STARTUP,0.35);
-                }
-              }
-              let cand=from+window.innerHeight*HOME_AUTO_SCROLL_VH_PER_SEC*seqRate*dt/1000;
+              let cand=from+window.innerHeight*HOME_AUTO_SCROLL_VH_PER_SEC*dt/1000;
               // DO NOT LET THE TOUR OUTRUN THE FRAMES. It advances on a clock, which
               // knows nothing about loading; early on it would march past frames that
               // had not arrived and _seqNearest would substitute whatever was closest,
@@ -1496,23 +1924,62 @@ class Component extends DCLogic {
               ny=cand;
             }
             this._autoY=ny; y=ny;
-            // bypass html{scroll-behavior:smooth} — per-frame smooth scrolls cancel each other
-            const de=document.documentElement, sb=de.style.scrollBehavior;
-            de.style.scrollBehavior='auto';
+            this._tourStyle(true);
             window.scrollTo(0,Math.round(y));
-            de.style.scrollBehavior=sb;
           }
         }
       }else if(this._autoY!=null){ const a=this._auto; this._haltAuto(); this._auto=a; }else this._autoY=null;
+      // NEVER TRAP THE VISITOR. Everything above can fail -- a tour that never
+      // arms, a video that never reports ready, a rAF chain that dies -- and each
+      // of those failures looks the same from the sofa: a still picture you cannot
+      // scroll past, because the first-visit lock is holding you inside a 500vh
+      // section for a tour that is not coming. Measured on a real machine: seven
+      // seconds with frame-to-frame change of 0.00 in the hero.
+      // So the lock gets a deadline of its own. If the hero has been mounted for
+      // twelve seconds and the tour has still not moved the page once, give up on
+      // it and let the visitor out. The tour is a nicety; being stuck is not a
+      // trade anyone would take.
+      if(!this._heroFree&&!this._logoSeq){
+        if(this._heroSince==null) this._heroSince=performance.now();
+        else if(this._autoY==null&&performance.now()-this._heroSince>12000){
+          this._heroFree=true; this._auto=false; this._tourStyle(false);
+        }
+      }
       if(y!==this._lastY){ this._lastY=y; this._heroUpdate(); }
       this._lastTick=performance.now();
       this._seekStep();
       this._seqStep();
     };
     this._lastTick=performance.now();
-    this._rafId=requestAnimationFrame(loop);
+    const arm=()=>{
+      const tok=this._loopTok=(this._loopTok||0)+1;
+      if(this._rafId){ try{ cancelAnimationFrame(this._rafId); }catch(e){} }
+      this._rafId=requestAnimationFrame(()=>loop(tok));
+    };
+    arm();
+    // A LOOP THAT NEVER GOT ITS FIRST FRAME USED TO STAY DEAD FOREVER.
+    // _rafId is assigned HERE, outside loop(), so it is truthy the moment the
+    // frame is requested rather than when one is delivered -- and the guard at
+    // the top is `if(this._rafId) return`. A page that starts hidden, in a
+    // background tab or prerendered, never gets that first callback, so nothing
+    // stamps _loopAt, the tour never advances, and every later call to restart
+    // returns immediately because _rafId looks alive. Verified that the symptom
+    // is exactly this: with the window occluded, rAF never fires at all while
+    // _rafId reads as set.
+    if(!this._loopWatch) this._loopWatch=setInterval(()=>{
+      if(typeof document!=='undefined'&&document.visibilityState!=='visible') return;
+      if(this._loopAt&&performance.now()-this._loopAt<2000) return;   // ticking, leave it
+      arm();
+    },1500);
+    if(!this._loopVis){ this._loopVis=()=>{
+        if(document.visibilityState==='visible'&&(!this._loopAt||performance.now()-this._loopAt>500)) arm();
+      };
+      document.addEventListener('visibilitychange',this._loopVis);
+    }
   }
-  _stopHeroLoop(){ if(this._rafId){ cancelAnimationFrame(this._rafId); this._rafId=null; } }
+  _stopHeroLoop(){ this._loopTok=(this._loopTok||0)+1;   // orphans the live chain
+    if(this._rafId){ cancelAnimationFrame(this._rafId); this._rafId=null; }
+    if(this._loopWatch){ clearInterval(this._loopWatch); this._loopWatch=null; } }
   _heroUpdate(){
     const track=this._track;
     if(!track||!track.isConnected) return;
@@ -1520,13 +1987,24 @@ class Component extends DCLogic {
     const range=rect.height-window.innerHeight;
     const p=range>0?Math.min(1,Math.max(0,-rect.top/range)):0;
     this._rememberHeroSeen(p);
-    // first-visit scroll lock: don't let the user overshoot past the hero until
-    // the ending image + logo hand-off have played (auto-advance releases it)
-    if(!this._heroFree&&range>0&&rect.top<-range){
-      window.scrollTo(0,window.scrollY+rect.top+range);
-    }
+    // THE FIRST-VISIT SCROLL LOCK IS GONE, and that is a decision rather than
+    // a fix. It existed to keep someone inside the hero until the tour had
+    // played -- so every way the tour can fail turns into a page that cannot
+    // be scrolled. It has now failed on more than one machine in a way that
+    // does not reproduce here across browsers, window sizes, and cold and warm
+    // caches, so there is no honest claim that the next attempt would catch it.
+    // Against that, the lock buys a guaranteed viewing of a five-second intro.
+    // Nobody would take that trade. The tour still runs when it can, and still
+    // hands over the moment somebody scrolls.
     // phase windows across the track: video scrub 0..0.75, photo crossfade .75...,
     // ending photo holds until .965, then the logo hand-off sequence
+    // A PERSON, not the tour. The auto-tour drives window.scrollTo from the rAF
+    // loop, so it lands here every frame; stamping on that held the fill-in off
+    // for the entire tour and left the tour scrubbing 271 positions across the
+    // 34 frames of tier 1. The gate exists to keep 44MB of decodes off a HUMAN's
+    // scroll -- when nobody is touching anything, the fill-in should have the
+    // machine to itself, which is exactly when the tour is running.
+    if(!this._auto) this._scrubAt=performance.now();
     const pv=Math.min(1,p/0.75);
     const mp=this._mapScrub(pv);
     this._target=mp; // seek happens in the rAF loop (_seekStep), scrub-engine style
@@ -1566,7 +2044,11 @@ class Component extends DCLogic {
       this._photo.style.transform='none';
       this._photo.style.filter='none';
     }
-    if(p>=0.965) this._startLogoSeq();
+    // .965 -> .92 -> .84. The still fades in at .78, so this is how long it sits
+    // there: 70vh, then 40, now 30 -- a beat rather than a dwell. Moving it earlier
+    // is free: _startLogoSeq calls _lockScroll and runs on timers, so every bit of
+    // track past this point is never scrolled by anyone.
+    if(p>=0.84) this._startLogoSeq();
     const idx=mp<PHASE_TH[0]?0:(mp<PHASE_TH[1]?1:(mp<PHASE_TH[2]?2:(mp<PHASE_TH[3]?3:4)));
     // staggered handoff: outgoing snaps out fast, incoming fades in after it — the
     // captions share one slot, so they must never both be readable at once
@@ -1576,6 +2058,49 @@ class Component extends DCLogic {
     this._caps.forEach((c,i)=>{ if(c) c.style.opacity=(p>0.02&&i===idx)?'1':'0'; });
   }
   componentDidMount(){
+    // EVERY REFRESH IS A NEW VISIT. Browsers restore the scroll position on
+    // reload by default, which on this page means landing back inside a 500vh
+    // hero with the intro already behind you -- the other half of "it remembers
+    // where I was", and the half no flag of ours controls. A deep link still
+    // wins: #Projects and friends are an explicit destination.
+    try{
+      if('scrollRestoration' in history) history.scrollRestoration='manual';
+      if(!location.hash) window.scrollTo(0,0);
+    }catch(e){}
+    // DIAGNOSTIC HOOK, off unless ?debug is in the URL. The hero's state lives in
+    // private fields on this instance and the DC runtime does not hang it off a
+    // React fiber stateNode, so there is otherwise no way to ask a running page
+    // why the tour has not started. Costs one property assignment.
+    try{ if(location.search.indexOf('debug')>-1){ window.__hero=this;
+      window.__heroes=(window.__heroes||[]); window.__heroes.push(this);
+      // ON-PAGE READOUT. Every failure this hero has had looks identical from
+      // outside: a tour that never armed, one waiting on a download, and one
+      // that has already finished all present as a still picture. The state is
+      // in private fields, so with ?debug it goes on the screen instead -- then
+      // 'it is stuck' is answered by looking at it rather than by guessing.
+      const dbg=document.createElement('pre');
+      dbg.style.cssText='position:fixed;left:8px;bottom:8px;z-index:99999;margin:0;'
+        +'padding:8px 10px;background:rgba(2,10,20,.88);color:#7fe4ff;'
+        +'font:11px/1.5 ui-monospace,monospace;border:1px solid #2a5c80;'
+        +'border-radius:5px;pointer-events:none;white-space:pre;max-width:46ch';
+      document.body.appendChild(dbg);
+      const NL=String.fromCharCode(10);
+      setInterval(()=>{
+        const v=this._video,A=this._videoA,n=performance.now();
+        dbg.textContent=[
+          'auto '+(!!this._auto)+'  autoV '+(!!this._autoV)+'  noPlay '+(!!this._autoNoPlay),
+          'autoAt '+(this._autoAt===Infinity?'Inf':Math.round((this._autoAt||0)-n)+'ms')
+            +'  loop '+(this._loopAt?Math.round(n-this._loopAt)+'ms ago':'NEVER'),
+          'gate '+(this._loadGone?'hidden':'SHOWING')+'  pct '+Math.round((HERO_PCT()||0)*100)+'%'
+            +'  blobReady '+(!!this._heroBlobReady),
+          'rs '+(v?v.readyState:'-')+'  rate '+(v?v.playbackRate.toFixed(2):'-')
+            +'  el '+(v===A?'A':'?'),
+          'ct '+(v?v.currentTime.toFixed(2):'-')+'  paused '+(v?v.paused:'-')+'  y '+Math.round(scrollY),
+          'free '+(!!this._heroFree)+'  locked '+(!!this._locked)+'  pin '+(!!this._pin)
+            +'  logo '+(!!this._logoSeq)
+        ].join(NL);
+      },250);
+    } }catch(e){}
     // deep link from viewer pages: index.html#Projects / #About / #Contact
     const h=decodeURIComponent((location.hash||'').slice(1));
     const deepLinked=['About','Projects','Contact'].indexOf(h)!==-1;
@@ -1589,9 +2114,64 @@ class Component extends DCLogic {
     window.addEventListener('scroll',this._updateHero,{passive:true});
     window.addEventListener('wheel',this._stepSectionWheel,{passive:false});
     // only real scroll input hands control to the user — clicks/taps don't end the tour
-    this._auto=true; this._autoAt=performance.now()+2000;
-    this._stopAuto=(e)=>{ if(e.type==='keydown'&&['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].indexOf(e.key)===-1) return; this._haltAuto(); this._seqEnableNative(); };
+    this._heroFree=true;   // nothing may hold the page hostage to the tour
+    // FROM HERE THE APP OWNS THE SCROLL POSITION. The deployed page carries a
+    // head script that forces the window back to the top on load and pageshow,
+    // to defeat the browser restoring a position inside a 500vh hero. `load`
+    // waits for every subresource, so on a slow load it fires AFTER the tour has
+    // started -- it then yanks the page to 0 under a tour that is mid-flight,
+    // the drift check below reads that as somebody grabbing the scrollbar, and
+    // the intro dies with the video parked at frame 0. Measured: the tour arms
+    // at 4248ms and load fired at 2804ms, a margin of 1.4s and nothing else.
+    // This latch tells that script to stand down once we are here; scroll
+    // restoration is already off, so it has nothing left to defend against.
+    try{ window.__lmScrollOwned=true; }catch(e){}
+    this._auto=true;
+    // WAIT FOR THE FRAMES, NOT FOR TWO SECONDS. The gate lifts at tier 1 -- 34 of
+    // 271 frames -- which is enough for a person scrolling by hand, because they
+    // move slowly and the nearest-loaded frame covers the gaps. It is NOT enough
+    // for the tour: that scrubs the whole hero at a fixed 0.3 viewport-heights a
+    // second, about ten seconds, and on a stride-8 set it visibly steps. Starting
+    // it two seconds after tier 1 meant it always ran at the worst possible
+    // moment. It now waits for the sequence to be substantially in, with a
+    // ceiling so it always eventually plays.
+    // On the video path this is a ceiling, not a delay: whichever of canplay or
+    // this comes first arms the tour, and canplay normally comes first.
+    this._autoAt=performance.now()+(SEQ_OK()?2000:6000);
+    if(this._heroBlobReady||(this._video&&this._video.readyState>=3)) this._autoAt=performance.now();
+    if(SEQ_OK()){
+      this._autoAt=Infinity;
+      const need=Math.round(SEQ_N*0.9), giveUp=performance.now()+20000;
+      const armWhenReady=()=>{
+        if(!this._auto) return;                       // user took over, or unmounted
+        if((this._seqDone||0)>=need || performance.now()>giveUp){
+          this._autoAt=performance.now()+400; return;
+        }
+        setTimeout(armWhenReady,300);
+      };
+      armWhenReady();
+    }
+    // HANDING CONTROL OVER IS PERMANENT, so it must take a real gesture. This
+    // listener is installed at mount, before the tour has started, and it used to
+    // halt on ANY wheel event -- a trackpad still coasting from before the
+    // reload, or a single notch while the page was still loading, killed the tour
+    // before it ran and there is no path back from _haltAuto. Require a delta
+    // worth calling a scroll, and ignore anything that arrives before the tour
+    // has actually moved the page: there is nothing to opt out of yet.
+    this._stopAuto=(e)=>{
+      if(e.type==='keydown'&&['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].indexOf(e.key)===-1) return;
+      if(e.type==='wheel'&&Math.abs(e.deltaY||0)<12&&Math.abs(e.deltaX||0)<12) return;
+      if(this._autoY==null&&e.type!=='keydown') return;   // tour has not moved anything yet
+      this._gestAt=performance.now();
+      this._haltAuto();
+    };
     ['wheel','touchmove','keydown'].forEach(t=>window.addEventListener(t,this._stopAuto,{passive:true}));
+    // A SCROLLBAR DRAG RAISES NO WHEEL EVENT, which is the whole reason the
+    // drift check above exists. What it does raise is a pointer going down, so
+    // that is what tells the drift check a person is behind the movement.
+    this._ptrDown=()=>{ this._ptrAt=performance.now(); };
+    ['pointerdown','pointerup','mousedown','mouseup'].forEach(t=>
+      window.addEventListener(t,this._ptrDown,{passive:true}));
     this._startHeroLoop();
     this._heroUpdate();
     this._revealScan();
@@ -1609,7 +2189,6 @@ class Component extends DCLogic {
     });
   }
   componentWillUnmount(){
-    this._swapStopAuto();
     this._unlockScroll();
     if(this._stopAuto) ['wheel','touchmove','keydown'].forEach(t=>window.removeEventListener(t,this._stopAuto,{passive:true}));
     window.removeEventListener('resize',this._updateHero);
@@ -1641,8 +2220,9 @@ class Component extends DCLogic {
    };
 
   /* ---- CardSwap deck (ported from React Bits): stacked 3D slots, front card
-     drops below and returns to the back; auto-cycle + arrows + swipe ---- */
+     drops below and returns to the back; user-controlled arrows + swipe ---- */
   _swapEls=[];
+  _reduce=typeof matchMedia!=='undefined'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
   _swapWrapRef=(el)=>{ this._swapWrap=el; if(el) this._swapInitSoon(); };
   _swapTitleRef=(el)=>{ this._swapTitleEl=el; };
   _swapFadeTitle(){ const g=window.gsap; if(g&&this._swapTitleEl&&!this._reduce) g.fromTo(this._swapTitleEl,{opacity:0,y:10},{opacity:1,y:0,duration:.5,ease:'power2.out'}); }
@@ -1670,11 +2250,8 @@ class Component extends DCLogic {
     this._swapOrder=Array.from({length:SWAP.length},(_,i)=>i);
     els.forEach((el,i)=>{ el._lmPlaced=true; this._swapPlace(el,this._swapSlot(i,els.length),i); });
     if(this.state.swapFront!==0) this.setState({swapFront:0});
-    this._swapStartAuto();
     if(!wrap._lmWired){
       wrap._lmWired=true;
-      wrap.addEventListener('mouseenter',()=>this._swapStopAuto());
-      wrap.addEventListener('mouseleave',()=>this._swapStartAuto());
       wrap.addEventListener('pointerdown',(e)=>{ this._swapPx=e.clientX; this._swapMoved=false; });
       wrap.addEventListener('pointerup',(e)=>{
         const dx=e.clientX-(this._swapPx??e.clientX);
@@ -1684,11 +2261,9 @@ class Component extends DCLogic {
   }
   _swapAlive(){
     const els=this._swapEls;
-    if(!this._swapOrder||!els.every(e=>e&&e.isConnected)){ this._swapStopAuto(); this._swapReady=false; return false; }
+    if(!this._swapOrder||!els.every(e=>e&&e.isConnected)){ this._swapReady=false; return false; }
     return true;
   }
-  _swapStartAuto(){ if(this._reduce) return; this._swapStopAuto(); this._swapIv=setInterval(()=>this._swapNext(),5000); }
-  _swapStopAuto(){ if(this._swapIv){ clearInterval(this._swapIv); this._swapIv=null; } }
   // manual input never gets dropped: kill any running timeline, settle the deck
   // into its resting slots, then run the requested swap
   _swapSettle(){
@@ -1700,7 +2275,6 @@ class Component extends DCLogic {
   _swapGate(manual){
     if(!window.gsap||!this._swapAlive()||this._swapOrder.length<2) return false;
     if(this._swapBusy){ if(!manual) return false; this._swapSettle(); }
-    if(manual) this._swapStartAuto(); // push the auto timer back after user input
     return true;
   }
   _swapNext=(e)=>{
@@ -1841,7 +2415,11 @@ class Component extends DCLogic {
     const openChilledTank=()=>{ window.location.href='outdoor-chilled-water-tank-viewer.dc.html'; };
     const openChillerPiping=()=>{ window.location.href='chiller-piping-viewer.dc.html'; };
     const VIEWERS={'Chiller Plant Room':openViewer,'Data Hall':openHall,'Main Switchboard (MSB)':openMsb,'Air Handling Unit Room':openAhu,'Rooftop Diesel Generators':openRooftopGenerator,'Rooftop AC Outdoor Units':openRooftopAc,'Rooftop Fluorine-Pump System':openRooftopFluorinePump,'Level 3 Chiller Room':openCooling,'ECC Monitoring Room':openEcc,'CRAH Room':openCrah,'ELV Room':openElv,'Generator Plant':openGen,'AC Makeup-Water Pump Room':openMakeup,'Pre-Action Sprinkler Valve Room':openPreaction,'BA Control Room':openBa,'Fluorine-Pump Cooling Towers':openFpct,'Open Cooling Towers':openOc,'Outdoor Chilled-Water Storage Tank':openChilledTank,'Chiller Piping':openChillerPiping,'Telecom Operator Access Room':openTelecom};
-    const baseCard={background:'var(--surface-card)',border:'1px solid var(--border-subtle)',borderRadius:'var(--radius-lg)',overflow:'hidden',boxShadow:'var(--shadow-xs)',display:'flex',flexDirection:'column',transition:'box-shadow .25s,transform .25s,border-color .25s'};
+    // EVERY VALUE HERE IS COPIED FROM projects-map-prototype.html, not picked to
+    // look similar to it: the panel fill is that page's `.below div`, the border
+    // is its `--line`. A near-miss of the globe's palette reads worse than the
+    // white card did, because it looks like the same idea done badly.
+    const baseCard={background:'#08192b',border:'1px solid rgba(180,214,240,.20)',borderRadius:'var(--radius-lg)',overflow:'hidden',display:'flex',flexDirection:'column',transition:'background .25s,transform .25s,border-color .25s,box-shadow .25s'};
     const projects = PROJECTS.map(p=>{
       const open=VIEWERS[p.title];
       const code=p.tags[0]==='Electrical'?'ELEC':p.tags[0]==='ELV & Controls'?'ELV':p.tags[0]==='Fire Protection'?'FIRE':p.tags[0]==='Data Hall'?'DATA':'HVAC';
@@ -1849,6 +2427,11 @@ class Component extends DCLogic {
       return {...p,img:p.abs?p.img:IMG+p.img,
         onOpen:open,
         disciplineCode:code,disciplineClass,accessibleLabel:p.title+' — Open 3D model',
+        // The card used to print `cat` -- Cooling / HVAC / ELV / Fire -- while the
+        // chip above it said HVAC & Cooling / ELV & Controls / Fire Protection, so
+        // no card ever carried the same words as the chip that produced it.
+        // tags[0] IS the chip's label, so the two can no longer drift.
+        disciplineLabel:p.tags[0],
         cardStyle:open?{...baseCard,cursor:'pointer'}:baseCard};
     });
     const featured = projects.slice(0,6).map(p=>({...p,onOpen:p.onOpen||(()=>this.go('Projects'))}));
@@ -1856,9 +2439,18 @@ class Component extends DCLogic {
     const swapFront=SWAP[this.state.swapFront]||SWAP[0];
     const swapCards=SWAP.map((s,i)=>({...s,cardRef:swapRefs[i],
       index:('0'+(i+1)).slice(-2),accessibleLabel:s.title+' project: completed installation and coordinated design'}));
-    const chipBase={fontFamily:'var(--font-mono)',fontSize:'11px',fontWeight:600,letterSpacing:'.08em',textTransform:'uppercase',padding:'8px 16px',borderRadius:'999px',border:'1px solid var(--border-default)',background:'var(--surface-card)',color:'var(--text-body)',cursor:'pointer',appearance:'none',transition:'all .15s'};
-    const filters=FILTERS.map(f=>({label:f,onClick:()=>this.setState({filter:f}),
-      style:this.state.filter===f?{...chipBase,background:'var(--color-brand)',borderColor:'var(--color-brand)',color:'#fff'}:chipBase}));
+    // Shaped like the globe's own #views buttons -- 4px radius, mono 10px at
+    // .14em, cyan fill when active -- because they sit forty pixels under them.
+    const chipBase={fontFamily:'var(--font-mono)',fontSize:'10px',fontWeight:700,letterSpacing:'.14em',textTransform:'uppercase',padding:'9px 13px',borderRadius:'4px',border:'1px solid rgba(180,214,240,.20)',background:'rgba(8,22,38,.7)',color:'#8aa4bd',cursor:'pointer',appearance:'none',transition:'all .15s'};
+    // A COUNT ON THE CHIP IS THE WHOLE FIX FOR THE DEAD FILTER. Fire Protection
+    // returns one card and Data Hall returns one card; printing the 1 before the
+    // click means nobody is surprised by it, and nothing has to be hidden,
+    // merged or re-grouped to make the row look fuller than the work is.
+    const countOf=f=>f==='All'?PROJECTS.length:PROJECTS.filter(p=>p.tags.indexOf(f)!==-1).length;
+    const countBase={marginLeft:'7px',fontWeight:700};
+    const filters=FILTERS.map(f=>({label:f,onClick:()=>this.setState({filter:f}),count:countOf(f),
+      countStyle:this.state.filter===f?{...countBase,color:'#04121f',opacity:.65}:{...countBase,color:'#53cefa'},
+      style:this.state.filter===f?{...chipBase,background:'#53cefa',borderColor:'#53cefa',color:'#04121f'}:chipBase}));
     const filteredProjects=projects.map(p=>({...p,viewer3d:!!p.onOpen}))
       .filter(p=>this.state.filter==='All'||p.tags.indexOf(this.state.filter)!==-1);
     return {
@@ -1886,7 +2478,7 @@ class Component extends DCLogic {
       ],
       galleryVideoRef: this._galleryVideoRef,
       salutations: ['~ Please select one. ~','Mr.','Ms.','Mdm.','Dr.'],
-      jobTitles: ['~ Please select one. ~','QS Engineer','Civil Engineer','Mechanical Engineer','Safety Engineer','Electric Engineer','Fire Engineer','Project Engineer','Internship Engineer','QAQC Engineer','ELV Engineer'],
+      jobTitles: ['~ Please select one. ~','QS Engineer','Civil Engineer','Mechanical Engineer','Safety Engineer','Electric Engineer','Fire Engineer','Project Engineer','Internship Engineer','QAQC Engineer','ELV Engineer','General Application / Other'],
       isHome: scr==='Home', isAbout: scr==='About', isProjects: scr==='Projects', isContact: scr==='Contact',
       isStats: this.props.showStats!==false,
       heroSrc: IMG + (this.props.heroImage || 'datacenter-aerial.jpg'),
@@ -1906,6 +2498,7 @@ class Component extends DCLogic {
       showLogoOverlay: _ls===1||_ls===15||_ls===2,
       logoFlyStyle, logoRestA, logoMarkStyle, logoSheetStyle, flyRef: this._flyRef,
       heroTrackRef: this._heroTrackRef, heroVideoRef: this._heroVideoRef, heroCanvasRef: this._heroCanvasRef,
+      heroLoadRef: this._heroLoadRef, heroLoadBarRef: this._heroLoadBarRef, heroLoadPctRef: this._heroLoadPctRef,
       heroCopyRef: this._heroCopyRef, heroBarRef: this._heroBarRef,
       heroScrimRef: this._heroScrimRef, heroScrimBottomRef: this._heroScrimBottomRef, heroPatchRef: this._heroPatchRef,
       heroPhotoRef: this._heroPhotoRef, heroTintRef: this._heroTintRef,
@@ -1920,10 +2513,10 @@ class Component extends DCLogic {
       showEnquiry:()=>this.switchContactTab('enquiry'), showCareers:()=>this.switchContactTab('careers'),
       enquiryTabStyle:isEnquiryTab?tabActive:tabIdle, careersTabStyle:isCareersTab?tabActive:tabIdle,
       contactEyebrow:isEnquiryTab?'Get In Touch':'Join Our Team',
-      contactHeading:isEnquiryTab?'Submit Your Enquiry':'Build the Data-Center Backbone With Us',
+      contactHeading:isEnquiryTab?'Submit Your Enquiry':'Build Your Future With Us',
       contactDescription:isEnquiryTab
         ?"We welcome project enquiries and feedback. Submit the form below or email info@longmotive.com — we'll reply as soon as possible."
-        :"We're hiring engineers across every MEP discipline. Pick your role, attach your CV and tell us how to reach you — or email us directly at info@longmotive.com.",
+        :"We're always looking for talented and committed people to join our growing team. Whatever your background or experience level, tell us where you'd like to contribute, attach your CV and contact details — or email humanresource@longmotive.com.",
       successTitle:isEnquiryTab?'Enquiry received':'Application received',
       successMessage:isEnquiryTab?'— thank you, we\'ll get back to you as soon as possible.':'— thank you, our team will be in touch as soon as possible.',
       enquiry: this.state.enquiry,

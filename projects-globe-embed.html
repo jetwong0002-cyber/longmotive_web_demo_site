@@ -1,0 +1,1845 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Where we build — Longmotive sites</title>
+<!--
+  The interactive map embedded in the Projects page. Clicking a site shows its
+  card; it does not drill into project material yet.
+
+  WHY IT IS FRAMED, NOT A FREE-SPINNING GLOBE
+  The portfolio's geography is hostile to the obvious answer:
+    Johor <-> Batam            59 km   -- the same pixel at world zoom
+    Nusajaya A..E              1 park  -- five buildings on one site
+    Finland <-> Australia   15,201 km  -- 126 deg apart, they CANNOT share a screen
+  A free-spinning globe therefore always hides part of the portfolio, and six
+  pins on a whole sphere reads as "we have six pins" -- it makes the company look
+  smaller than it is. So the map works the way every viewer on this site already
+  works: a small set of SOLVED camera positions, each a composed frame, rather
+  than free orbit. Drag is allowed but clamped; you cannot get lost.
+
+  WHY WIREFRAME COASTLINES AND NO FILLED LAND
+  The house language is objects in a navy void with cyan hairlines (see any of
+  the 22 viewers). A photographic earth texture would be the only photographic
+  thing on the page and would fight it. Coastlines are Natural Earth 50m, taken
+  from world-atlas, decoded at build time, quantised to 0.05 deg and simplified
+  at 0.04 deg into uploads/world-coast-50m.json (1,422 polylines, 26,699
+  vertices, 98 KB gzipped). City lights are Natural Earth populated places, real
+  coordinates. Both are vendored, so the page makes no third-party data request
+  at runtime -- three.js and its post-processing addons are the only CDN
+  dependency, the same library the site already uses.
+
+  WHY IT IS A BLOCK ON THE PAGE, NOT A FULL-BLEED CANVAS
+  The first pass took the whole viewport. That turns Projects into a globe page
+  with some text on it, and the rest of the site's proportions stop applying the
+  moment you arrive. The globe is now a 16:9 block inside the normal page column
+  -- the page keeps its ratio, scrolls normally, and the globe is a figure in it
+  rather than the ground. Everything that used to be pinned to the viewport (the
+  card, the hint, the rail) is pinned to the block instead, and the canvas sizes
+  from the ELEMENT's box, never from innerWidth.
+
+  THE DRIFT, AND WHY IT DOES NOT FIGHT THE FRAMED VIEWS
+  At rest the camera drifts eastward at 3 deg/s -- a full turn in two minutes,
+  slow enough to read as alive rather than as an animation playing. It eases in
+  over about four seconds and cuts out within two frames of any contact, so it
+  never takes the frame away from someone who is reading it, and a selected site
+  holds the globe still until it is dismissed. The framed views are unchanged:
+  they remain how you get somewhere, the drift is only what happens when nobody
+  is steering. `?still` freezes it, which is how screenshots stay deterministic.
+
+  THIS FILE IS THE EMBED, AND IT IS GENERATED.
+  Edit projects-map-prototype.html and re-run build_embed.py. It is the same
+  globe with the prototype's page chrome removed: no intro, no explanatory
+  cards, no prototype rail -- the stage fills the frame and nothing else exists.
+
+  It is loaded in an <iframe> from the Projects section of Longmotive.dc.html
+  rather than ported into that page's component. Two reasons, and both are about
+  the host page rather than the globe. The globe needs an import map for
+  three.js's post-processing addons, and an import map has to precede every
+  module on the document -- on a page whose production <head> lives in the
+  DEPLOY repo and is preserved across exports, that is a second place to keep in
+  step forever. And Longmotive.dc.html carries scroll-snap plus a scroll-scrubbed
+  hero; giving the globe its own document means its rAF loop, its ResizeObserver
+  and its pointer capture cannot reach any of that. The cost is one extra
+  document. Nothing is shared with it yet, and when a site click has to open
+  project material, postMessage is the seam.
+
+  SCOPE, PER THE BRIEF
+  International line only: Malaysia, Indonesia, Thailand, Hong Kong, plus
+  Australia and Finland as planned. The nine China projects in the 2024 brochure
+  are deliberately not shown.
+-->
+<style>
+  :root{
+    --bg:#061424; --ink:#e8f2fb; --dim:#8aa4bd; --cyan:#53cefa;
+    --line:rgba(180,214,240,.20); --panel:rgba(4,14,26,.90);
+    --container-max:1240px;
+  }
+  *{box-sizing:border-box}
+  html{background:var(--bg)}
+  body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);
+    font-family:ui-sans-serif,system-ui,"Segoe UI",Roboto,sans-serif}
+  html,body{height:100%;overflow:hidden}   /* the HOST page scrolls, not this */
+  main{height:100%;margin:0;padding:0}
+
+  /* ---- the page keeps its own proportions; the globe is a figure in it ---- */
+  #stage{position:relative;width:100%;height:100%;overflow:hidden;
+    border:0;border-radius:0;
+    background:#02080f}   /* the gradient moved into the grade pass */
+  #c{display:block;position:absolute;inset:0;width:100%;height:100%}
+
+  .intro{display:flex;justify-content:space-between;align-items:flex-end;
+    gap:26px;flex-wrap:wrap;margin:0 0 20px}
+  h1{margin:0 0 8px;font-size:clamp(22px,2.6vw,34px);letter-spacing:-.015em}
+  .intro p{margin:0;color:var(--dim);font-size:13.5px;line-height:1.65;max-width:52ch}
+  .kicker{display:flex;align-items:center;gap:10px;color:var(--cyan);
+    font:700 11px/1 ui-monospace,monospace;letter-spacing:.16em;margin-bottom:11px}
+  .kicker:before{content:"";width:30px;height:1px;background:currentColor}
+
+  #views{position:absolute;right:20px;top:16px;z-index:6;display:flex;gap:8px}
+  #views button{background:rgba(8,22,38,.7);color:var(--dim);cursor:pointer;
+    border:1px solid var(--line);border-radius:4px;padding:9px 13px;
+    font:700 10px/1 ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase}
+  #views button:hover{color:var(--ink);border-color:rgba(83,206,250,.5)}
+  #views button.on{color:#04121f;background:var(--cyan);border-color:var(--cyan)}
+
+  /* labels are HTML, not sprites: the site's type is Barlow mono caps and
+     canvas text cannot match it at this size without looking soft */
+  #labels{position:absolute;inset:0;pointer-events:none}
+  /* pins are HTML too: a plane in the scene goes edge-on at the limb and
+     vanishes exactly where Finland and Australia sit, and a world-space marker
+     balloons as you zoom. HTML gives constant pixels and crisp edges. */
+  .pin{position:absolute;width:0;height:0;pointer-events:none;transition:opacity .18s}
+  .pin .dot{position:absolute;left:-4px;top:-4px;width:8px;height:8px;
+    background:var(--cyan);box-shadow:0 0 0 1px rgba(4,18,31,.9)}
+  .pin .rg{position:absolute;left:-11px;top:-11px;width:22px;height:22px;
+    border:1px solid var(--cyan);border-radius:50%;opacity:.5}
+  /* planned is grey, not a bluer blue -- it has to read as a different kind of
+     thing from across the room, the same way its arc does */
+  .pin.planned .dot{background:transparent;border:1px solid #8FA0AD;
+    left:-3px;top:-3px;width:6px;height:6px}
+  .pin.planned .rg{border-color:#8FA0AD;opacity:.3}
+  .pin.sel .rg{left:-15px;top:-15px;width:30px;height:30px;opacity:.9}
+  .lb{position:absolute;transform:translate(16px,calc(-50% + var(--dy,0px)));white-space:nowrap;
+    font:600 11px/1.35 ui-monospace,monospace;letter-spacing:.13em;
+    text-transform:uppercase;transition:opacity .18s}
+  .lb{text-shadow:0 1px 3px rgba(2,8,15,.95),0 0 10px rgba(2,8,15,.85)}
+  /* [emblem][name/sub] rather than a bare text stack. The emblem is a flag for a
+     place a flag exists for, and the campus's own aerial for the two that have
+     no flag -- see FLAG/EMBLEM below for why neither is fetched from anywhere. */
+  .lb{display:flex;align-items:center;gap:7px}
+  .lb .em{flex:0 0 auto;display:block;width:18px;height:12px;border-radius:1.5px;
+    box-shadow:0 0 0 1px rgba(2,8,15,.75),0 1px 3px rgba(2,8,15,.6);overflow:hidden}
+  .lb .em svg{display:block;width:100%;height:100%}
+  /* A campus emblem is a square crop of that campus from the air, so it is sized
+     square and keyed to the same optical weight as a flag rather than to its box. */
+  .lb .em.shot{width:22px;height:22px;border-radius:2px;object-fit:cover}
+  .lb .tx{display:block;min-width:0}
+  .lb b{display:block;color:var(--ink);font-weight:700}
+  .lb i{display:block;font-style:normal;color:var(--dim);font-size:10px;letter-spacing:.1em}
+  .lb.planned b{color:var(--dim)}
+  .lb.sel b{color:var(--cyan)}
+  .lb:before{content:"";position:absolute;left:-16px;top:50%;width:11px;height:1px;
+    background:var(--line)}
+
+  /* card, hint and rail belong to the BLOCK, not the viewport */
+  #card{position:absolute;left:22px;bottom:22px;width:320px;z-index:5;
+    transition:opacity .22s,transform .22s,left .28s,right .28s;
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:17px 19px;opacity:0;transform:translateY(8px);
+    transition:opacity .22s,transform .22s;pointer-events:none}
+  #card.on{opacity:1;transform:none}
+  #card .c-eyebrow{color:var(--cyan);font:700 10px/1 ui-monospace,monospace;
+    letter-spacing:.16em;text-transform:uppercase}
+  /* Delivered load, right-aligned at the head of the panel so it is the first
+     number read. Gold on purpose: on this map gold is what has been built, and
+     this is the load actually arriving at the end of one of those routes. */
+  #card .c-power{position:absolute;right:19px;top:15px;text-align:right;line-height:1}
+  #card .c-power b{display:block;color:#FFC24A;letter-spacing:-.01em;
+    font:700 26px/1 ui-monospace,monospace}
+  /* THE UNIT IS PART OF THE NUMBER. 891.6 on its own is not a fact about
+     anything -- megawatts is what makes it one, so it sits on the same line, in
+     the same colour, and it is on screen from the first frame of the count
+     rather than arriving at the end of it. */
+  #card .c-power b u{text-decoration:none;margin-left:5px;font-size:15px;
+    letter-spacing:.02em;opacity:.85}
+  #card .c-power i{display:block;margin-top:5px;font-style:normal;color:#8FA0AD;
+    font:600 9px/1 ui-monospace,monospace;letter-spacing:.13em;text-transform:uppercase}
+  #card h2{margin:9px 0 2px;font-size:19px;letter-spacing:-.01em;padding-right:98px}
+  #card .c-sub{color:var(--dim);font-size:12px;margin-bottom:12px}
+  #card dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:5px 16px;
+    font-size:12px;border-top:1px solid var(--line);padding-top:11px}
+  #card dt{color:var(--dim);font:600 10px/1.5 ui-monospace,monospace;letter-spacing:.1em;
+    text-transform:uppercase}
+  #card dd{margin:0;color:var(--ink)}
+  #card .soon{margin-top:12px;padding-top:11px;border-top:1px solid var(--line);
+    color:var(--dim);font-size:11px;line-height:1.55}
+
+  #hint{position:absolute;right:22px;bottom:22px;z-index:5;color:var(--dim);
+    font:11px/1.7 ui-monospace,monospace;text-align:right;letter-spacing:.06em;
+    pointer-events:none}
+  #rail{position:absolute;left:22px;top:20px;z-index:4;display:flex;gap:9px;
+    align-items:center;color:var(--dim);
+    font:600 10px/1 ui-monospace,monospace;letter-spacing:.14em;pointer-events:none}
+  #rail:before{content:"";width:22px;height:1px;background:var(--cyan)}
+
+  .below{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+    background:var(--line);border:1px solid var(--line);border-top:0;
+    border-radius:0 0 10px 10px;overflow:hidden;margin:0}
+  .below div{background:#08192b;padding:18px 20px}
+  .below dt{color:var(--cyan);font:700 10px/1 ui-monospace,monospace;
+    letter-spacing:.16em;text-transform:uppercase;margin-bottom:8px}
+  .below dd{margin:0;color:var(--dim);font-size:12.5px;line-height:1.6}
+  .note{margin:34px 0 0;color:var(--dim);font:11px/1.8 ui-monospace,monospace;
+    letter-spacing:.1em;display:flex;justify-content:space-between;gap:20px;
+    border-top:1px solid var(--line);padding-top:14px}
+
+  /* ---- KTP capture-timeline rail -------------------------------------
+     Johor only. Every other marker keeps the behaviour it already had: the
+     progression pack is one site's survey record, and nothing in it describes
+     Batam, Bangkok, Hong Kong or Australia, so nothing in it may stand in for
+     them. This is the one marker on the map with real material behind it, and
+     the way it says so is by being the only one that grows a rail. */
+  #tl{position:absolute;left:0;top:0;right:0;bottom:0;z-index:6;
+    pointer-events:none;opacity:0;transition:opacity .22s}
+  #tl.on{opacity:1}
+  /* the scrim carries type over the limb; it never covers the whole frame */
+  #tl .tl-scrim{position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(to right,rgba(4,14,26,.92) 0,rgba(4,14,26,.72) 300px,transparent 470px)}
+  #tl .tl-axis{position:absolute;left:76px;top:88px;bottom:84px;width:1px;
+    background:#1E3E55;pointer-events:none}
+  #tl .tl-nodes{position:absolute;left:76px;top:88px;bottom:84px;width:300px;
+    display:flex;flex-direction:column;justify-content:space-between;pointer-events:auto}
+  #tl .tl-head{position:absolute;left:76px;top:56px;color:#53CEFA;
+    font:600 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.18em;
+    text-transform:uppercase;white-space:nowrap}
+  #tl .tl-head span{color:#3F5A70;margin-left:9px}
+  /* TWO CAMPUSES ON ONE MARKER. Johor holds Nusajaya Tech Park and Kempas Tech
+     Park, about 20 km apart, and each has its own survey with its own manifest.
+     They are not merged into one chronology -- interleaving two construction
+     sites by date would describe a project that does not exist. The switch is
+     shaped like the globe's own #views buttons because that is what it is. */
+  #tl .tl-parks{display:inline-flex;gap:5px;margin:0;pointer-events:auto;vertical-align:middle}
+  #tl .tl-parks button{margin:0;padding:4px 8px;border:1px solid rgba(180,214,240,.20);
+    border-radius:3px;background:rgba(8,22,38,.75);color:#6F8CA5;cursor:pointer;
+    font:700 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.16em;
+    text-transform:uppercase;transition:color .15s,border-color .15s,background .15s}
+  #tl .tl-parks button:hover{color:#CFE3F2;border-color:rgba(83,206,250,.5)}
+  #tl .tl-parks button[aria-pressed="true"]{background:#53CEFA;border-color:#53CEFA;color:#04121F}
+  #tl .tl-parks button:focus-visible{outline:2px solid #53CEFA;outline-offset:2px}
+
+  #tl .tl-node{position:relative;display:flex;align-items:center;gap:13px;
+    margin-left:-3px;padding:2px 0;cursor:pointer;background:none;border:0;
+    text-align:left;font:inherit;color:inherit}
+  #tl .tl-node:focus{outline:none}
+  #tl .tl-node:focus-visible .tl-dot{box-shadow:0 0 0 3px rgba(83,206,250,.45)}
+  #tl .tl-dot{flex:0 0 auto;width:7px;height:7px;border:1px solid #53CEFA;
+    background:#06131F;transition:width .18s,height .18s,box-shadow .18s,background .18s}
+  #tl .tl-node.arch{opacity:.55}
+  #tl .tl-node.arch .tl-dot{border-color:#3F5A70}
+  #tl .tl-node.sel .tl-dot{width:13px;height:13px;background:#53CEFA;border-color:#53CEFA;
+    box-shadow:0 0 0 5px rgba(83,206,250,.18);margin-left:-3px}
+  #tl .tl-txt{display:flex;flex-direction:column;gap:3px;min-width:0}
+  #tl .tl-date{font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;
+    text-transform:uppercase;color:#ADB8C3;white-space:nowrap}
+  #tl .tl-node.sel .tl-date{font-size:12px;font-weight:600;color:#E4ECF3}
+  #tl .tl-meta{font:400 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.10em;
+    text-transform:uppercase;color:#3F5A70;white-space:nowrap}
+  #tl .tl-node.sel .tl-meta{color:#53CEFA}
+  /* mixed confidence gets one dot, not a sentence */
+  #tl .tl-mix{display:inline-block;width:3px;height:3px;border-radius:50%;
+    background:#E0A05A;margin-left:7px;vertical-align:middle}
+  #tl .tl-divide{position:relative;height:1px;background:#1E3E55;margin-left:-3px;width:172px}
+  #tl .tl-divide i{position:absolute;left:0;top:-13px;font-style:normal;
+    font:400 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em;
+    text-transform:uppercase;color:#3F5A70;background:#081F36;padding-right:8px}
+
+  /* preview card: 256 wide, image then caption, square corners like the rest */
+  #tl .tl-prev{position:absolute;width:256px;border:1px solid #1E3E55;
+    background:rgba(8,24,38,.9);pointer-events:none;opacity:0;
+    transform:scale(.96);transform-origin:left center;
+    transition:opacity .22s cubic-bezier(.2,.7,.3,1),transform .22s cubic-bezier(.2,.7,.3,1)}
+  #tl .tl-prev.on{opacity:1;transform:none}
+  /* No .tl-empty rule any more, and no element to hang it on: a node that had
+     nothing to show is not built at all, so nothing renders a caption where a
+     picture belongs. */
+  #tl .tl-prev ktp-compare,#tl .tl-prev .tl-shot{display:block;width:100%;height:144px}
+  #tl .tl-prev .tl-shot{object-fit:cover}
+  /* THE FILM PANEL reuses the preview card rather than adding a second surface,
+     so it inherits the card's size, its enlarge catcher and its Esc button. The
+     video is the same box as .tl-shot at both sizes. preload is "none" until the
+     card is enlarged: the clip is 9.4MB and nobody should pay for it by hovering
+     a rail node. */
+  #tl .tl-prev .tl-film{display:block;width:100%;height:144px;object-fit:cover;
+    background:#04121F}
+  #tl .tl-prev.big .tl-film{height:383px}
+  #tl .tl-film-wrap{position:relative;display:block}
+  #tl .tl-scrub{position:absolute;left:0;right:0;bottom:0;height:2px;
+    background:rgba(180,214,240,.22)}
+  #tl .tl-scrub i{display:block;height:100%;width:0;background:#53CEFA}
+  #tl .tl-prev.big .tl-film-wrap{cursor:ew-resize}
+  #tl .tl-film-hint{position:absolute;left:9px;bottom:9px;z-index:3;display:block;
+    font:600 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.11em;
+    text-transform:uppercase;color:#CFE3F2;background:rgba(4,18,31,.78);
+    border:1px solid rgba(180,214,240,.22);border-radius:2px;padding:5px 7px;
+    pointer-events:none}
+  /* shown at both sizes: small says how to open it, big says how to drive it */
+  /* The film button sits with the campus switch because a film belongs to a
+     campus, not to a visit -- and a pack with no film simply has no button,
+     which is why there is never an empty slot to explain. */
+  #tl .tl-parks button.tl-film-btn{margin-left:7px;border-color:rgba(83,206,250,.34);
+    color:#8FB6CE}
+  #tl .tl-parks button.tl-film-btn[aria-pressed="true"]{background:#53CEFA;
+    border-color:#53CEFA;color:#04121F}
+  #tl .tl-cap{padding:11px 13px 12px;border-top:1px solid #1E3E55}
+  #tl .tl-cap b{display:block;font:600 11px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;
+    letter-spacing:.12em;text-transform:uppercase;color:#E4ECF3;margin-bottom:5px}
+  #tl .tl-cap p{margin:0;font:400 11.5px/1.55 ui-sans-serif,system-ui,sans-serif;color:#ADB8C3}
+  /* amber is reserved for exactly one thing: a pair that would not register */
+  #tl .tl-chip{display:inline-block;margin-top:8px;padding:3px 7px;
+    border:1px solid #E0A05A;color:#E0A05A;
+    font:600 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;
+    text-transform:uppercase}
+
+  #tl .tl-svg{position:absolute;inset:0;pointer-events:none;overflow:visible}
+  #tl .tl-lead{fill:none;stroke:#53CEFA;stroke-width:1;stroke-dasharray:3 3;opacity:0;
+    transition:opacity .22s}
+  #tl.prev .tl-lead{opacity:1}
+  /* a line drawn under the card it starts from says nothing; see position() */
+  #tl.prev.nolead .tl-lead{opacity:0}
+  #tl .tl-halo circle{fill:none;stroke:#53CEFA;opacity:0;transition:opacity .22s}
+  #tl.prev .tl-halo circle:nth-child(1){opacity:.55;animation:tlPulse 2s ease-in-out infinite}
+  #tl.prev .tl-halo circle:nth-child(2){opacity:.26;animation:tlPulse 2s ease-in-out .25s infinite}
+  #tl.prev .tl-halo circle:nth-child(3){opacity:.11;animation:tlPulse 2s ease-in-out .5s infinite}
+  @keyframes tlPulse{0%,100%{opacity:inherit}50%{opacity:.06}}
+
+  /* THE RAIL TAKES THE LEFT EDGE, so the two things that already lived there
+     move out of it. The site card and the timeline are both panels of dark type
+     on the same 22px margin, and stacked they read as one broken panel rather
+     than as two. The card goes to the right rail; the country strip goes, since
+     while the rail is up the frame already says which site you are looking at,
+     in more detail. Both scoped to #tl.on -- every other marker keeps the
+     layout it always had.
+     ENLARGED, THE CARD GOES TOO. The big picture takes the right of the frame
+     and the site panel is the only other thing there; two panels overlapping is
+     how this looked before the rail moved anything. Somebody who has just
+     opened a photograph to look at it is not reading a metadata table, and it
+     comes straight back on Esc. */
+  #tl.on ~ #card{left:auto;right:22px}
+  #tl.on ~ #rail{opacity:0;transition:opacity .22s}
+  #tl.on ~ #hint{opacity:0}
+  #tl.zoom ~ #card{opacity:0;pointer-events:none}
+
+  /* THE CARD GROWS; there is no second panel. A slide-out list of set titles
+     and per-set videos was a table of contents for the thing already on screen,
+     and the videos were the same footage the compare shows, pre-scrubbed. The
+     click makes the picture big instead, and at that size the slider is worth
+     dragging -- which is why the catcher over the small card comes off here. */
+  /* THE CATCHER NEEDS ITS OWN POINTER-EVENTS. .tl-prev is pointer-events:none
+     until it is .big, so this button -- the whole point of which is to be
+     clicked while the card is small -- has never actually been clickable.
+     A real mouse click on the picture left the card at 256px. */
+  #tl .tl-open{position:absolute;left:0;top:0;right:0;height:144px;z-index:2;
+    border:0;background:transparent;cursor:zoom-in;padding:0;pointer-events:auto}
+  #tl .tl-prev.big .tl-open{display:none}
+  /* on the corner, not inside it: both top corners of the compare are taken by
+     its own date labels, and a close control sitting on one of them hides the
+     thing it is labelling */
+  #tl .tl-shut{position:absolute;right:-10px;top:-10px;z-index:3;display:none;
+    background:rgba(6,19,31,.82);border:1px solid #1E3E55;color:#ADB8C3;cursor:pointer;
+    padding:5px 8px;font:600 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+    letter-spacing:.12em}
+  #tl .tl-prev.big .tl-shut{display:block}
+  #tl .tl-shut:hover{color:#E4ECF3;border-color:#53CEFA}
+
+  #tl .tl-prev{transition:opacity .22s cubic-bezier(.2,.7,.3,1),
+    transform .22s cubic-bezier(.2,.7,.3,1),
+    width .3s cubic-bezier(.2,.7,.3,1), left .3s cubic-bezier(.2,.7,.3,1),
+    top .3s cubic-bezier(.2,.7,.3,1)}
+  /* WIDTH MUST BE THE SAME EXPRESSION place() USES. It positioned the card
+     with w = min(680, stage - 268) while the CSS made it a flat 680, so on
+     a 820px stage it was placed for 552 and painted at 680 -- 104px of it
+     hanging off the right edge. One formula, in both places. */
+  #tl .tl-prev.big{width:min(680px,calc(100% - 268px));pointer-events:auto;z-index:8;
+    box-shadow:0 22px 60px rgba(2,9,17,.55)}
+  #tl .tl-prev.big ktp-compare,#tl .tl-prev.big .tl-shot{height:383px}
+  #tl .tl-prev.big .tl-cap{padding:15px 19px 17px}
+  #tl .tl-prev.big .tl-cap b{font-size:12px;margin-bottom:7px}
+  #tl .tl-prev.big .tl-cap p{font-size:13px;max-width:60ch}
+
+  /* THESE BREAKPOINTS MEASURE THE FRAME, NOT THE SCREEN, and the first version
+     forgot that. The rail lives in an iframe roughly 350px narrower than the
+     browser around it -- a 1240px page column, minus gutters, inside whatever
+     window is open. Cutting the labels and the preview below 1100px was drawn
+     against a 1440px reference viewport, and 1440 of browser is about 1200 of
+     frame; an ordinary 950px window is 884 of frame, so the whole feature
+     collapsed to a column of dots and nobody ever saw it.
+     The tiers now come from what the rail needs. Full layout wants the axis at
+     76, a date label out to about 206, and a 256 card from 212 -- 468px, with
+     the globe keeping the rest of a 1140 frame. Below that the card and its
+     offset come in together instead of the feature switching off. */
+  @media (max-width:1140px){
+    #tl .tl-prev{width:216px}
+    /* same expression as place() and as the base rule -- this one wins below
+       1140px, which is exactly where the overflow showed */
+    #tl .tl-prev.big{width:min(680px,calc(100% - 268px))}
+    #tl .tl-prev.big ktp-compare,#tl .tl-prev.big .tl-shot{height:300px}
+    #tl .tl-nodes{width:200px}
+  }
+  /* Only here is there genuinely no room to read a date beside its dot. */
+  @media (max-width:640px){
+    #tl .tl-scrim{background:linear-gradient(to right,rgba(4,14,26,.86) 0,transparent 180px)}
+    #tl .tl-nodes{width:12px}
+    #tl .tl-txt,#tl .tl-divide i{display:none}
+    #tl .tl-prev{display:none}
+    /* .tl-head USED to be hidden here with everything else, and that was right
+       while it held one line of static text. It now holds the campus switch,
+       and hiding a CONTROL is not the same as hiding a caption: this width
+       showed a rail locked to KTP with no way to reach NTP or to learn it
+       exists. The count goes, the buttons stay. */
+    #tl .tl-head{top:14px;left:14px}
+    #tl #tlCount{display:none}
+  }
+  /* BELOW THIS THERE IS NO RAIL AT ALL, and the two campus markers exist to
+     drive it. Without it they are two dots 20px apart whose labels run to 319px
+     of a 327px stage -- worse than the one honest marker they replace. So the
+     split is gated on this width as well as on zoom, and the number here and
+     the one in the script MUST agree. */
+  @media (max-width:460px){ #tl{display:none} }
+
+  @media (prefers-reduced-motion: reduce){
+    #tl .tl-prev{transition:opacity .01s}
+    /* has to match the :nth-child rules above selector for selector, or their
+       specificity keeps the pulse running with the reduce flag set */
+    #tl.prev .tl-halo circle:nth-child(1),
+    #tl.prev .tl-halo circle:nth-child(2),
+    #tl.prev .tl-halo circle:nth-child(3){animation:none}
+  }
+
+  @media (max-width:820px){
+    #card{left:12px;right:12px;bottom:12px;width:auto}
+    #hint{display:none}
+    #views{right:12px;top:12px}
+    #views button{padding:8px 10px;font-size:9px}
+    #rail{display:none}          /* the host page already names the sites */
+  }
+</style>
+</head>
+<body>
+<main>
+  <div id="stage">
+    <canvas id="c"></canvas>
+    <div id="labels"></div>
+
+    <!-- KTP capture-timeline rail. Johor only -- see the note on #tl in the CSS.
+         The shell is static so the layout is readable here; the seven nodes and
+         everything in them are built from the manifest at runtime, because a
+         date typed into markup is a date that can drift away from the survey. -->
+    <div id="tl" aria-hidden="true">
+      <div class="tl-scrim"></div>
+      <svg class="tl-svg" aria-hidden="true">
+        <path class="tl-lead"></path>
+        <g class="tl-halo"><circle r="15"></circle><circle r="26"></circle><circle r="38"></circle></g>
+      </svg>
+      <div class="tl-axis"></div>
+      <div class="tl-head"><span class="tl-parks" id="tlParks" role="group" aria-label="Campus"></span><span id="tlCount"></span></div>
+      <div class="tl-nodes" id="tlNodes" role="listbox" aria-label="Capture visits" tabindex="0"></div>
+      <div class="tl-prev" id="tlPrev"></div>
+    </div>
+    <div id="rail">NUSAJAYA · BATAM · BANGKOK · HONG KONG</div>
+    <div id="views">
+      <button data-v="region" class="on">Region</button>
+      <button data-v="johor">Johor · Batam</button>
+      <button data-v="global">Global</button>
+    </div>
+
+    <div id="card">
+      <div class="c-power" id="cPower" style="display:none"><b>—<u>MW</u></b><i>—</i></div>
+      <div class="c-eyebrow" id="cEye">Active</div>
+      <h2 id="cTitle">—</h2>
+      <div class="c-sub" id="cSub">—</div>
+      <dl>
+        <dt>Country</dt><dd id="cCountry">—</dd>
+        <dt>Buildings</dt><dd id="cSites">—</dd>
+        <dt>Since</dt><dd id="cYear">—</dd>
+      </dl>
+      <div class="soon" id="cSoon"></div>
+    </div>
+  </div>
+
+</main>
+
+<script type="importmap">
+{ "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import {EffectComposer}  from 'three/addons/postprocessing/EffectComposer.js';
+import {RenderPass}      from 'three/addons/postprocessing/RenderPass.js';
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {ShaderPass}      from 'three/addons/postprocessing/ShaderPass.js';
+import {OutputPass}      from 'three/addons/postprocessing/OutputPass.js';
+import {SMAAPass}        from 'three/addons/postprocessing/SMAAPass.js';
+
+/* ---------------------------------------------------------------------------
+   SITES. International line only, per the brief. Johor's two parks (Nusajaya
+   and Kempas) are ~10 km apart and are one marker at every sane zoom -- the
+   building count carries what the second pin would have said.
+--------------------------------------------------------------------------- */
+/* `dy` nudges a label off the pin. Johor and Batam are 59km apart -- about 12
+   screen pixels at the region view -- so without it the two labels sit on top of
+   each other. One goes up and one goes down, by the same amount at every zoom,
+   which is enough because the gap between the pins only ever grows from there.
+   `power` is delivered load, and only Johor has a figure. */
+const SITES=[
+  /* JOHOR IS A REGION, NOT A DOT, and it used to be marked at (1.48, 103.66) --
+     a midpoint somebody typed, matching no place on the ground. The two
+     campuses are 19.7 km apart and both coordinates below are the CENTRE OF THE
+     approx_bounds each pack's OWN MANIFEST declares, not a name looked up
+     somewhere: NTP 1.4234-1.4358 / 103.5973-103.6018, KTP 1.5586-1.5618 /
+     103.7149-103.7248. The Johor marker now sits at their true midpoint, which
+     is what a marker labelled "Johor" honestly is. Below SPLIT_D it hands over
+     to the two real ones -- one dot while they share a pixel, two places once
+     you are close enough to tell them apart. */
+  {id:'my', country:'Malaysia',  name:'Johor',      sub:'Nusajaya & Kempas Tech Park',
+   lat:1.4949, lon:103.6598, status:'active',  sites:'6 (A–E, Kempas A)', year:'2022',
+   dy:-21, power:'891.6', powerUnit:'delivered'},
+  {id:'ntp', parent:'my', pack:'ntp', country:'Malaysia', name:'NTP', place:'Iskandar Puteri',
+   sub:'Nusajaya Tech Park', lat:1.4296, lon:103.5996, status:'active', dy:17},
+  {id:'ktp', parent:'my', pack:'ktp', country:'Malaysia', name:'KTP', place:'Kempas Tech Park',
+   sub:'Kempas Tech Park',  lat:1.5602, lon:103.7199, status:'active', dy:-17},
+  {id:'id', country:'Indonesia', name:'Batam',      sub:'NDP-A · power, generator, cooling modules',
+   lat:1.08,  lon:104.03, status:'active',  sites:'1', year:'2024', dy:21},
+  {id:'th', country:'Thailand',  name:'Thailand',   sub:'Data centre scope',
+   lat:13.75, lon:100.50, status:'active',  sites:'—', year:'—'},
+  {id:'hk', country:'Hong Kong', name:'Hong Kong',  sub:'Data centre scope',
+   lat:22.32, lon:114.17, status:'active',  sites:'—', year:'—'},
+  {id:'au', country:'Australia', name:'Australia',  sub:'Planned',
+   lat:-33.87,lon:151.21, status:'planned', sites:'—', year:'—'},
+  {id:'fi', country:'Finland',   name:'Finland',    sub:'Planned',
+   lat:60.17, lon:24.94,  status:'planned', sites:'—', year:'—'},
+];
+const HUB='my';   // arcs originate at Johor: the company is registered there
+
+/* JOHOR AND BATAM ARE TWO PLACES, AND THE MAP SAYS SO AT EVERY ZOOM.
+   They used to collapse into one marker reading "Johor · Batam · 2 sites"
+   whenever the camera was further out than 1.45 globe radii. The reasoning was
+   about pixels and it was correct -- 59km is about 12 screen pixels at the
+   region view, and two labels that close are not a map, they are two labels
+   fighting. The conclusion was wrong. They are a Malaysian campus and an
+   Indonesian one, different countries, different years, different scope, and
+   merging them made the map say otherwise everywhere you had not zoomed in.
+   The pixels are solved by nudging one label up and one down (`dy` in SITES),
+   which costs nothing and claims nothing. The Johor view survives as a close
+   crop on the pair rather than as the only way to learn there are two. */
+
+/* Solved camera positions. Same idea as every viewer on this site: a composed
+   frame you can return to, not a free orbit you can get lost in.
+   `d` is in globe radii. */
+const VIEWS={
+  region:{lat:11.7, lon:107.3, d:2.62},   // the four active sites, ball still curving
+  johor: {lat:1.3,  lon:103.9, d:1.28},   // the 59 km cluster -- a crop on purpose
+  global:{lat:13.2, lon:88.1,  d:3.74},   // whole ball, both planned sites in frame
+};
+
+const R=1;
+const cvs=document.getElementById('c');
+// OPAQUE, and the page gradient moves into the grade pass. With alpha:true the
+// bloom pass composites glow against nothing and haloes the whole block; making
+// the canvas its own background is simpler than fighting that, and the vignette
+// below puts the gradient back where the CSS one was.
+// antialias:false because SMAA runs in the composer -- MSAA on the render target
+// would be paid for and then thrown away.
+const renderer=new THREE.WebGLRenderer({canvas:cvs,antialias:false,alpha:false});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+renderer.setClearColor(0x02080f,1);
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(38,1,0.01,100);
+
+const ll2v=(lat,lon,r=R)=>{
+  const p=(90-lat)*Math.PI/180, t=(lon+180)*Math.PI/180;
+  return new THREE.Vector3(-r*Math.sin(p)*Math.cos(t), r*Math.cos(p), r*Math.sin(p)*Math.sin(t));
+};
+
+/* ---- globe body. A flat fill read as a cut-out disc from every angle. This
+   shades it against a fixed world-space light, so there is a terminator and the
+   sphere has a near side and a far one. The CAMERA is what moves here, so
+   drifting the camera sweeps the terminator across the disc -- which is the
+   whole reason the drift reads as a globe turning rather than a picture
+   sliding. Navy to navy: it stays in the house palette, it is not a photograph
+   of Earth, and nothing else on the site would survive sitting next to one. */
+// A KEY LIGHT THAT RIDES THE CAMERA, not a fixed sun. A world-fixed sun is
+// physically the honest thing and it looked it: whichever way you turned, the
+// face you were looking at was mostly night, and the coastlines were hairlines
+// on black. This keeps the lit side toward the viewer with the terminator
+// falling on the far limb, which is what every product shot of a globe does.
+// updateSun() rewrites it each frame; the uniform holds this same vector.
+const SUN=new THREE.Vector3(0,0,1);
+scene.add(new THREE.Mesh(new THREE.SphereGeometry(R*0.997,96,64),
+  new THREE.ShaderMaterial({
+    uniforms:{uSun:{value:SUN},uDay:{value:new THREE.Color(0x071c30)},
+              uNight:{value:new THREE.Color(0x010509)}},
+    vertexShader:`varying vec3 vN;
+      void main(){ vN=normalize(mat3(modelMatrix)*normal);
+        gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+    fragmentShader:`uniform vec3 uSun,uDay,uNight; varying vec3 vN;
+      void main(){ float l=dot(normalize(vN),uSun);
+        gl_FragColor=vec4(mix(uNight,uDay,smoothstep(-0.30,0.86,l)),1.0); }`
+  })));
+
+/* ---- atmosphere: a fresnel rim, not a uniform shell. The 0.30-opacity
+   backside sphere this replaces laid the same haze over the middle of the disc
+   as over its edge, which is precisely where a real limb glow is absent. ---- */
+scene.add(new THREE.Mesh(new THREE.SphereGeometry(R*1.030,96,64),
+  new THREE.ShaderMaterial({
+    transparent:true, side:THREE.BackSide, depthWrite:false,
+    blending:THREE.AdditiveBlending,
+    uniforms:{uColor:{value:new THREE.Color(0x63d8ff)},uSun:{value:SUN}},
+    vertexShader:`varying vec3 vN; varying vec3 vV; varying vec3 vW;
+      void main(){ vN=normalize(normalMatrix*normal);
+        vW=normalize(mat3(modelMatrix)*normal);
+        vec4 mv=modelViewMatrix*vec4(position,1.0); vV=mv.xyz;
+        gl_Position=projectionMatrix*mv; }`,
+    // The rim is not a ring. On a lit sphere the limb blazes where the light
+    // grazes it and dies where the planet is in its own shadow, and that one
+    // asymmetry is most of why a rendered globe looks lit rather than outlined.
+    // An even ring reads as a sticker of a planet.
+    fragmentShader:`uniform vec3 uColor; uniform vec3 uSun;
+      varying vec3 vN; varying vec3 vV; varying vec3 vW;
+      void main(){
+        float f=pow(1.0-abs(dot(normalize(vN),normalize(-vV))),5.0);
+        float lit=smoothstep(-0.30,0.80,dot(normalize(vW),uSun));
+        gl_FragColor=vec4(uColor,f*(0.06+0.72*lit)); }`
+  })));
+
+/* The hand-rolled 1.30x fresnel shell that used to sit here is gone: there is a
+   real bloom pass now, and two glows stack into a haze. ---- */
+
+/* ---- starfield. Depth behind the globe, so the drift has something to move
+   against; without it a turning wireframe sphere reads as a rotating diagram.
+   Points with size attenuation OFF -- constant pixels stay crisp at every zoom
+   and cost nothing, and most are dimmed so a few can be bright. ---- */
+const stars=(()=>{
+  const N=2200, pos=new Float32Array(N*3), col=new Float32Array(N*3);
+  for(let i=0;i<N;i++){
+    const u=Math.random()*2-1, th=Math.random()*Math.PI*2, s=Math.sqrt(1-u*u);
+    const r=28+Math.random()*30;
+    pos[i*3]=r*s*Math.cos(th); pos[i*3+1]=r*u; pos[i*3+2]=r*s*Math.sin(th);
+    const t=0.22+Math.pow(Math.random(),3)*0.78;   // mostly faint, a few burning
+    col[i*3]=0.60*t; col[i*3+1]=0.78*t; col[i*3+2]=0.98*t;
+  }
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  g.setAttribute('color',new THREE.BufferAttribute(col,3));
+  const p=new THREE.Points(g,new THREE.PointsMaterial({size:1.7,sizeAttenuation:false,
+    vertexColors:true,transparent:true,opacity:0.95,depthWrite:false}));
+  scene.add(p); return p;
+})();
+
+/* ---- graticule every 30deg: enough to give the sphere form, not enough to
+   become texture ---- */
+{
+  const pts=[];
+  for(let lon=-180;lon<180;lon+=30)
+    for(let lat=-90;lat<90;lat+=3){
+      pts.push(ll2v(lat,lon,R*1.001),ll2v(lat+3,lon,R*1.001)); }
+  for(let lat=-60;lat<=60;lat+=30)
+    for(let lon=-180;lon<180;lon+=3){
+      pts.push(ll2v(lat,lon,R*1.001),ll2v(lat,lon+3,R*1.001)); }
+  scene.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts),
+    new THREE.LineBasicMaterial({color:0x2f5c82,transparent:true,opacity:0.26,
+      blending:THREE.AdditiveBlending,depthWrite:false})));
+}
+
+/* ---- CITY LIGHTS. 3,923 real places from Natural Earth populated places,
+   filtered to pop >= 60k, brightness on a log scale so Tokyo is not 600x Batam.
+   Coordinates are the dataset's; inventing them from memory was the alternative
+   and is not one -- a light in the wrong place on a map of where a company works
+   is a claim, not a decoration.
+   They are deliberately dim and small. The six cyan pins are the point of this
+   map and 3,923 warm dots could bury them, so the lights are warm-white, under
+   two pixels, and fade toward the limb where they would otherwise crowd the
+   silhouette. Note there is no night side to put them on: the key light rides
+   the camera, so the face you are looking at is always the lit one. On a
+   near-black stylised body they read as population rather than as nightfall. */
+fetch('uploads/city-lights.json').then(r=>r.json()).then(rows=>{
+  const n=rows.length;
+  const pos=new Float32Array(n*3), br=new Float32Array(n);
+  for(let i=0;i<n;i++){
+    const v=ll2v(rows[i][1]/20, rows[i][0]/20, R*1.0008);
+    pos[i*3]=v.x; pos[i*3+1]=v.y; pos[i*3+2]=v.z;
+    br[i]=rows[i][2]/9;
+  }
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  g.setAttribute('aB',new THREE.BufferAttribute(br,1));
+  scene.add(new THREE.Points(g,new THREE.ShaderMaterial({
+    transparent:true, depthWrite:false, blending:THREE.AdditiveBlending,
+    uniforms:{uPR:{value:Math.min(devicePixelRatio||1,2)}},
+    vertexShader:`attribute float aB; varying float vB; varying float vF;
+      uniform float uPR;
+      void main(){
+        vB=aB;
+        vec3 wn=normalize(mat3(modelMatrix)*position);
+        vec4 mv=modelViewMatrix*vec4(position,1.0);
+        vF=dot(wn,normalize(cameraPosition));       // 1 facing us, 0 at the limb
+        gl_PointSize=(0.9+aB*1.5)*uPR;
+        gl_Position=projectionMatrix*mv; }`,
+    fragmentShader:`varying float vB; varying float vF;
+      void main(){
+        if(vF<0.06) discard;                        // far side of the planet
+        float d=length(gl_PointCoord-vec2(0.5)); if(d>0.5) discard;
+        float edge=smoothstep(0.06,0.42,vF);        // thin out toward the limb
+        float a=(0.10+vB*0.26)*edge*(1.0-d*1.5);
+        gl_FragColor=vec4(1.0,0.86,0.63,max(0.0,a)); }`
+  })));
+}).catch(()=>{/* lights are texture; the map is complete without them */});
+
+/* GLIMMER, NOT A GLOW. The gold said "this route exists"; it did not say the
+   route is used. A crest of light runs each arc outward from Johor while the
+   whole band breathes under it, and the colour travels with the brightness --
+   deep amber in the trough, gold at rest, almost white at the crest. Locking it
+   to one gold would have been simpler and would have looked like a printed line.
+   Written into a per-vertex colour attribute rather than a shader: 65 vertices
+   times three layers times three arcs is 585 numbers a frame, which is nothing,
+   and it keeps the arcs ordinary THREE.Line objects that the bloom pass and the
+   depth buffer already know what to do with.
+   Both ?still and prefers-reduced-motion hold it at its resting value, so a
+   screenshot is deterministic and nobody who asked for stillness gets a pulse. */
+const arcGlow=[];
+const G_LOW=new THREE.Color(0xE08A3C), G_MID=new THREE.Color(0xFFC24A),
+      G_HI =new THREE.Color(0xFFEFC0), _gc=new THREE.Color();
+function breatheArcs(now){
+  const t=now/1000, hold=STILL||REDUCE;
+  for(const a of arcGlow){
+    const arr=a.attr.array;
+    const head=hold ? -1 : ((t/4.6)+a.phase)%1;
+    const breath=hold ? 0.5 : 0.5+0.5*Math.sin((t/6.8+a.phase)*Math.PI*2);
+    for(let i=0;i<a.n;i++){
+      let k=0.42+0.18*breath;
+      if(head>=0){ const d=(i/(a.n-1))-head; k+=0.58*Math.exp(-(d*d)/0.0055); }
+      k=Math.min(1,k)*a.amp;
+      if(k<=0.5) _gc.copy(G_LOW).lerp(G_MID,k/0.5);
+      else       _gc.copy(G_MID).lerp(G_HI,(k-0.5)/0.5);
+      const s=0.28+0.72*k;
+      arr[i*3]=_gc.r*s; arr[i*3+1]=_gc.g*s; arr[i*3+2]=_gc.b*s;
+    }
+    a.attr.needsUpdate=true;
+  }
+}
+
+/* ---- markers + arcs are added once the coastline is in, so the first paint is
+   never a half-built globe ---- */
+const labelHost=document.getElementById('labels');
+const markers=[];
+let selected=null;
+
+/* ---- marker emblems -------------------------------------------------------
+   DRAWN HERE, NOT FETCHED. Every flag below is inline SVG on a 36x24 viewBox:
+   no network request, nothing to 404, nothing whose licence anyone has to think
+   about, and the same hand-built approach as the coastline and the arcs. They
+   render at 18x12, where the honest limit is a silhouette -- Australia's Union
+   Jack and Hong Kong's bauhinia are simplified, deliberately, because detail
+   that cannot survive 18 pixels is detail that only costs bytes.
+   JOHOR GETS ITS STATE FLAG, not Malaysia's: the marker says Johor, and the
+   state flag is the one that is true of it. Malaysia's national flag is not
+   here at all because nothing on this map is labelled Malaysia. */
+const STAR='M0,-1L.2245,-.309L.9511,-.309L.3633,.118L.5878,.809L0,.382'
+          +'L-.5878,.809L-.3633,.118L-.9511,-.309L-.2245,-.309Z';
+const svg=(inner)=>'<svg viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg" '
+  +'preserveAspectRatio="none" aria-hidden="true">'+inner+'</svg>';
+const star=(x,y,r,fill)=>'<path d="'+STAR+'" fill="'+fill+'" transform="translate('
+  +x+','+y+') scale('+r+')"/>';
+
+const FLAG={
+  // Johor: dark blue field, red canton, white crescent and five-pointed star.
+  // The crescent is a white disc with a red disc bitten out of it -- the same
+  // construction the real flag uses, and cheaper than an arc path.
+  my: svg('<rect width="36" height="24" fill="#17408B"/>'
+        + '<rect width="15" height="12" fill="#CE1126"/>'
+        + '<circle cx="5.8" cy="6" r="3.5" fill="#fff"/>'
+        + '<circle cx="7.4" cy="6" r="3.0" fill="#CE1126"/>'
+        + star(11.2, 6, 2.5, '#fff')),
+  id: svg('<rect width="36" height="12" fill="#CE1126"/>'
+        + '<rect y="12" width="36" height="12" fill="#fff"/>'),
+  th: svg('<rect width="36" height="24" fill="#A51931"/>'
+        + '<rect y="4" width="36" height="16" fill="#F4F5F8"/>'
+        + '<rect y="8" width="36" height="8" fill="#2D2A4A"/>'),
+  // Hong Kong: five bauhinia petals, no stamens -- at 18px they would be noise.
+  hk: svg('<rect width="36" height="24" fill="#DE2910"/>'
+        + [0,1,2,3,4].map(k=>'<ellipse cx="18" cy="6.6" rx="3.1" ry="5.4" fill="#fff" '
+            +'transform="rotate('+(k*72)+' 18 12)"/>').join('')),
+  // Australia: navy, a simplified Union Jack in the canton, the Commonwealth
+  // Star under it, and the Southern Cross on the fly.
+  au: svg('<rect width="36" height="24" fill="#00008B"/>'
+        + '<path d="M0,0L18,12M18,0L0,12" stroke="#fff" stroke-width="2.6"/>'
+        + '<path d="M0,0L18,12M18,0L0,12" stroke="#C8102E" stroke-width="1.2"/>'
+        + '<path d="M9,0V12M0,6H18" stroke="#fff" stroke-width="4"/>'
+        + '<path d="M9,0V12M0,6H18" stroke="#C8102E" stroke-width="2.2"/>'
+        + star(9, 18.6, 2.6, '#fff')
+        + star(27.5, 5.2, 1.5, '#fff') + star(31.6, 12.4, 1.9, '#fff')
+        + star(27.2, 19.4, 1.7, '#fff') + star(23.2, 12.8, 1.5, '#fff')
+        + star(29.4, 9.2, 0.9, '#fff')),
+  fi: svg('<rect width="36" height="24" fill="#fff"/>'
+        + '<path d="M13,0V24M0,12H36" stroke="#003580" stroke-width="6.4"/>'),
+};
+
+/* The two campuses have no flag, and their emblem is not borrowed from anywhere
+   either: it is a square crop of that campus FROM ITS OWN SURVEY, generated by
+   tools/campus-emblem.py out of the frame the manifest names. A stock photograph
+   of somebody else's industrial park, standing in for the site the company
+   actually built, would be the one thing on this map that is not evidence. */
+const EMBLEM={ ntp:'uploads/ntp/media/marker.jpg', ktp:'uploads/ktp/media/marker.jpg' };
+
+function addSites(){
+  const hub=SITES.find(s=>s.id===HUB);
+  for(const s of SITES){
+    const active=s.status==='active';
+    const v=ll2v(s.lat,s.lon,R*1.006);
+
+    const pin=document.createElement('div');
+    pin.className='pin'+(active?'':' planned');
+    pin.innerHTML='<span class="rg"></span><span class="dot"></span>';
+    labelHost.appendChild(pin);
+
+    const el=document.createElement('div');
+    el.className='lb'+(active?'':' planned');
+    // the pair that shares a pixel is pushed apart here, once, at every zoom
+    if(s.dy) el.style.setProperty('--dy', s.dy+'px');
+    // second line is the country -- except where the name IS the country, which
+    // is every site we cannot yet name a city for. Repeating it read as a bug.
+    const sub2 = s.parent ? s.place : (active ? (s.name===s.country ? '' : s.country) : 'Planned');
+    const em = EMBLEM[s.id]
+      ? '<img class="em shot" src="'+EMBLEM[s.id]+'" alt="" loading="lazy">'
+      : (FLAG[s.id] ? '<span class="em">'+FLAG[s.id]+'</span>' : '');
+    el.innerHTML=em+'<span class="tx"><b>'+s.name+'</b>'+(sub2?'<i>'+sub2+'</i>':'')+'</span>';
+    labelHost.appendChild(el);
+
+    markers.push({s,v,el,pin,active});
+
+    // great-circle arc from the Johor hub -- "cross-border" is the company's own
+    // phrase for what it does, and the arcs are the only thing on the map that
+    // says the sites are one business rather than six unrelated dots
+    if(s.id!==HUB && !s.parent){
+      const a=ll2v(hub.lat,hub.lon), b=v.clone().normalize();
+      const pts=[]; const N=64;
+      const lift=0.10+0.16*a.angleTo(b)/Math.PI;   // longer hops arc higher
+      for(let i=0;i<=N;i++){
+        const t=i/N;
+        const p=new THREE.Vector3().copy(a).lerp(b,t).normalize()
+          .multiplyScalar(R*(1+lift*Math.sin(Math.PI*t)));
+        pts.push(p);
+      }
+      /* GOLD FOR BUILT, GREY FOR PLANNED, and the built ones glow.
+         These were cyan at 0.46 over a cyan coastline at 0.62 on a blue ball --
+         the same hue as everything they crossed, and dimmer than most of it, so
+         the one thing on this map that says the sites are one business rather
+         than six unrelated dots was the thing you could not see.
+         Gold is not decoration, it is the only hue on the globe that is not
+         already spoken for, and WebGL cannot draw a thick line -- a line on this
+         map glows by being ADDED to a body dark enough to sit above, exactly as
+         the coastline does. Above the bloom threshold of 0.50 it also picks up
+         the pass, which is what makes it read as lit rather than merely bright.
+         Planned stays flat and grey on purpose. Not dimmer gold, not dimmer
+         anything: a different material entirely, because the difference between
+         a route that exists and one that is intended should not be a matter of
+         degree. */
+      if(!active){
+        scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),
+          new THREE.LineBasicMaterial({color:0x8fa0ad,transparent:true,opacity:0.32})));
+      }else{
+        /* A GLOW HAS TO BE BUILT OUT OF LINES, because WebGL will not draw a
+           thick one. A single 1px additive arc is bright but it is still one
+           pixel: too little of it clears the bloom threshold for the pass to
+           make anything of it, so it reads as a thin orange scratch rather than
+           as something lit. Three copies at slightly different radii cover a
+           band instead of a line -- the flanks are dim enough to be a halo and
+           the core sits on top of both, and additive blending sums them, which
+           is what gives the bloom pass enough above 0.50 to work with.
+           AND THE COLOUR IS NOT FIXED. Each vertex carries its own, rewritten
+           every frame, so a crest of light can travel the arc and the whole
+           thing can breathe underneath it -- see breatheArcs. A flat gold line
+           is a drawn object; one that moves is the route being used. */
+        for(const [dr,amp] of [[-0.005,0.44],[0.005,0.44],[0,1]]){
+          const q=dr ? pts.map(p=>p.clone().multiplyScalar(1+dr)) : pts;
+          const g=new THREE.BufferGeometry().setFromPoints(q);
+          g.setAttribute('color',new THREE.BufferAttribute(new Float32Array((N+1)*3),3));
+          scene.add(new THREE.Line(g,new THREE.LineBasicMaterial({vertexColors:true,
+            transparent:true,opacity:0.95,
+            blending:THREE.AdditiveBlending,depthWrite:false})));
+          // hub-to-site, so the crest runs outward from Johor; each arc offset
+          // in phase so three of them never pulse as one blinking indicator
+          arcGlow.push({attr:g.getAttribute('color'),n:N+1,amp,
+                        phase:(arcGlow.length%3)*0.31+Math.floor(arcGlow.length/3)*0.17});
+        }
+      }
+    }
+  }
+}
+
+/* ---- coastline: Natural Earth 50m, not 110m. At the global view this changes
+   nothing -- the globe is ~660px across for 180 degrees, so 3.7px per degree,
+   and the old 0.1deg data was already sub-pixel there. It is the Johor view
+   that needed it: at d=1.28 the same block covers about 40 degrees, ~29px per
+   degree, where 0.1deg steps are visible faceting on a real coastline.
+   Stored at 0.05deg and Douglas-Peucker simplified at 0.04deg: 26,699 vertices
+   against 3,017, 98 KB gzipped against 12. Anything finer is spent below the
+   pixel at every camera position this map can reach. ---- */
+fetch('uploads/world-coast-50m.json').then(r=>r.json()).then(lines=>{
+  const pts=[];
+  for(const line of lines)
+    for(let i=0;i<line.length-1;i++){
+      pts.push(ll2v(line[i][1]/20,   line[i][0]/20,   R*1.0015),
+               ll2v(line[i+1][1]/20, line[i+1][0]/20, R*1.0015));
+    }
+  // Additive, and bright. WebGL cannot draw a thick line, so a coastline cannot
+  // be made to glow by weight -- it has to glow by being ADDED to a body dark
+  // enough for it to sit above. That is why the sphere underneath went darker at
+  // the same time; the two changes only work as a pair.
+  const geo=new THREE.BufferGeometry().setFromPoints(pts);
+  scene.add(new THREE.LineSegments(geo,
+    new THREE.LineBasicMaterial({color:0x63d2f5,transparent:true,opacity:0.62,
+      blending:THREE.AdditiveBlending,depthWrite:false})));
+}).catch(()=>{/* coastline is decoration; the map still works without it */})
+  .finally(addSites);
+
+/* ---- THE DRIFT. Eases in after a pause, cuts out on contact. Asymmetric on
+   purpose: 0.012 in is about four seconds of ramp, which nobody notices
+   starting, while 0.14 out stops it inside two frames -- so grabbing the globe
+   feels like catching something that was already moving rather than fighting
+   it. Nothing here touches want.lat or want.d, so the clamps that keep the
+   portfolio on screen still hold while it drifts. ---- */
+const SPIN_MAX=3.0;          // deg/s -- a full turn in two minutes
+const SPIN_DELAY=5000;       // ms of genuine stillness before it eases back in
+const STILL=/(^|[?&])still(=|&|$)/.test(location.search);
+const REDUCE=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let spin=0, idleAt=performance.now(), last=performance.now();
+function touch(){ idleAt=performance.now(); }
+
+/* ---- camera: lat/lon/distance, eased. Drag adjusts lat/lon within clamps so
+   the portfolio can never be rotated off-screen. ---- */
+const cam={lat:VIEWS.region.lat, lon:VIEWS.region.lon, d:VIEWS.region.d};
+const want={...cam};
+function place(){
+  const p=ll2v(cam.lat,cam.lon,cam.d);
+  camera.position.copy(p); camera.up.set(0,1,0); camera.lookAt(0,0,0);
+}
+function goto(v){
+  const t=VIEWS[v]; if(!t) return;
+  touch();
+  want.lat=t.lat; want.lon=t.lon; want.d=t.d;
+  for(const b of document.querySelectorAll('#views button')) b.classList.toggle('on',b.dataset.v===v);
+}
+for(const b of document.querySelectorAll('#views button'))
+  b.addEventListener('click',()=>goto(b.dataset.v));
+
+/* A view is addressable: #johor jumps straight there with no ease. Useful on its
+   own (a link can open on the Johor cluster), and it is the only way to capture
+   a deterministic screenshot -- an iframe's rAF barely runs under headless
+   virtual time, so an eased camera never arrives. */
+function jump(v){
+  const t=VIEWS[v]; if(!t) return false;
+  goto(v); cam.lat=t.lat; cam.lon=t.lon; cam.d=t.d; place();
+  return true;
+}
+if(location.hash) jump(location.hash.slice(1));
+addEventListener('hashchange',()=>jump(location.hash.slice(1)));
+addEventListener('keydown',e=>{ touch(); if(e.key==='1')goto('region'); if(e.key==='2')goto('johor'); if(e.key==='3')goto('global'); });
+
+let drag=false,px=0,py=0;
+cvs.addEventListener('pointerdown',e=>{drag=true;touch();px=e.clientX;py=e.clientY;cvs.setPointerCapture(e.pointerId);});
+cvs.addEventListener('pointermove',e=>{
+  if(!drag) return;
+  want.lon-=(e.clientX-px)*0.28; want.lat+=(e.clientY-py)*0.24;
+  want.lat=Math.max(-72,Math.min(78,want.lat));
+  px=e.clientX; py=e.clientY;
+});
+addEventListener('pointerup',()=>{drag=false;});
+/* WHEEL MUST NOT HIJACK THE PAGE. While this was a full-bleed canvas there was
+   no page to scroll, so wheel-to-zoom was free. As a block in a scrolling column
+   it is the classic map trap: put the cursor over the globe on the way down the
+   page and you zoom instead of scrolling past. Zoom now needs a modifier, and a
+   bare wheel is left alone -- no preventDefault, so the page scrolls normally.
+   The framed views are the primary way to change distance anyway. */
+cvs.addEventListener('wheel',e=>{
+  if(!(e.ctrlKey||e.metaKey)) return;          // let it through to the page
+  e.preventDefault(); touch();
+  /* The floor is 1.18 everywhere except over Johor, where the whole point is to
+     get close enough that two campuses 19.7 km apart stop being one pixel. A
+     single global floor either merges them or lets every other part of the
+     globe be zoomed to a coarse near-flat plane. */
+  const floor = (canSplit() && selected && (selected.s.id===HUB || selected.s.parent)) ? 1.06 : 1.18;
+  want.d=Math.max(floor,Math.min(4.2,want.d*(1+Math.sign(e.deltaY)*0.08)));
+},{passive:false});
+
+/* click-to-select: pick the nearest marker in screen space that is on the near
+   side of the globe. Raycasting a 32px plane on a sphere is fiddly and misses
+   more often than it hits. */
+function nearest(e,radius){
+  const r=cvs.getBoundingClientRect();
+  let best=null,bd=radius;
+  for(const m of markers){
+    if(!m.clickable) continue;
+    const d=Math.hypot(m.sx-(e.clientX-r.left), m.sy-(e.clientY-r.top));
+    if(d<bd){bd=d;best=m;}
+  }
+  return best;
+}
+/* CLICKING A SITE GOES THERE. Selecting used to change the panel and nothing
+   else, which left the reader to find the marker they had just chosen among five
+   others at a distance where a data centre is four pixels. The camera now flies
+   in and stops: `selected` already holds the idle drift off, so what it settles
+   into is a fixed frame rather than a slow pan somebody has to fight.
+   Johor is aimed off-centre on purpose. The capture rail owns the left of the
+   frame, so the site the rail belongs to is framed right of it rather than
+   underneath the preview card. */
+/* WHERE ONE DOT BECOMES TWO. The campuses are 0.1776 deg apart on the sphere,
+   so at fov 38 on an 805px stage their screen separation is
+       px = 0.0031 rad * H / ((d-1) * 2*tan(19deg))  =  3.62 / (d-1)
+   which is 6.6px at the old fly-to of 1.55 and still only 20px at 1.18, the
+   wheel's floor -- two 11px two-line labels on top of each other either way.
+   PARKS_D is set from that arithmetic and then CHECKED on screen, because a
+   formula about a projection is a hypothesis until something measures it. */
+const SITE_D=1.55;
+const PARKS_D=1.10;      // ~36px apart, plus the dy nudges the labels carry
+const SPLIT_D=1.16;      // above this the region reads as one place, and is one marker
+/* AND BELOW THIS STAGE WIDTH THE SPLIT DOES NOT HAPPEN AT ALL.
+   Two separate things go wrong as the stage narrows, and only the second sets
+   this number:
+     1. Separation is proportional to stage HEIGHT -- 43px at 900 tall, 27 at
+        560, 24 at 500, 20 at 409. Uncomfortable, but the dy nudges keep the
+        labels apart, so this alone would not disqualify a narrow stage.
+     2. The pair collides with the page's own chrome. Swept, clicking Johor at
+        each width and measuring the overlap against every panel that is
+        actually on screen:
+            1440  clear      1200  clear      1040  clear      1010  clear
+             990  card 5x24   970  card 15x29  950  card 25x35  930  card 34x40
+             900  card 49x48  820  prev 10x79 + card 148x43
+             700  prev 76x93
+        1024 sits just above the last clean measurement with a little margin.
+   Below it the region stays ONE marker -- the same fallback already used below
+   460, where `@media (max-width:460px){#tl{display:none}}` removes the rail
+   entirely and the campuses would be driving nothing.
+   NOT SOLVED, only avoided: between 460 and 1024 the split would be legible if
+   the camera aimed at the free area rather than the stage centre, deriving the
+   aim from the visible panels' rects the way the clear-band check measures it.
+   That is the fix if this band matters; a wider cliff is the honest stand-in
+   until then. */
+const SPLIT_W=1024;
+const canSplit = () => innerWidth > SPLIT_W;
+
+/* NO AIM OFFSET, AND THE MEASUREMENT THAT SETTLED IT. `lon - 9` used to push the
+   selected site right so the capture rail on the left would not cover it. On a
+   1424x805 stage with the rail open, that push lands the subject at x 1063 --
+   and the site CARD, which moves to the RIGHT of the frame whenever the rail is
+   up, occupies 1082-1402. The offset was dodging one panel by driving into
+   another, which is exactly how it looked: two campus markers pinned against
+   the edge of the card.
+       rail preview   212 - 468
+       site card     1082 - 1402
+       clear band     468 - 1082,  centre 712 = the middle of the stage
+   So the correct aim is the thing you clicked, centred -- which is also what
+   anyone who clicks a marker expects to happen. The honest value is zero, so
+   there is no parameter here any more, only this note. */
+function flyTo(m){
+  if(!m) return;
+  touch();
+  // No point flying to the distance that separates two markers that will not
+  // be drawn. Narrow stages get the ordinary site framing.
+  const hubbish = (m.s.id===HUB || !!m.s.parent) && canSplit();
+  want.d  = hubbish ? PARKS_D : SITE_D;
+  want.lat= m.s.lat;
+  want.lon= m.s.lon;
+  // a framed view is no longer what you are looking at
+  for(const b of document.querySelectorAll('#views button')) b.classList.remove('on');
+}
+cvs.addEventListener('click',e=>{
+  const m=nearest(e,44);
+  /* A campus marker is not a seventh site. Its card is Johor's card -- same
+     country, same year, same 891.6 MW, because that is one figure for the
+     region and splitting it across two parks would be inventing a number
+     nobody has given us. What it does change is which survey the rail shows. */
+  if(m && m.s.parent){
+    const parent=markers.find(x=>x.s.id===m.s.parent);
+    select(parent||m); flyTo(m); TL.setPack(m.s.pack);
+    return;
+  }
+  select(m); flyTo(m);
+});
+
+/* HOVERING JOHOR IS ENOUGH TO OPEN THE RAIL. Requiring a click meant the
+   material was behind two guesses rather than one: you had to work out that the
+   dates were the way in, and before that that the marker was worth clicking at
+   all. Passing over it is a thing people do without deciding to.
+   Only opening, never closing. A rail that vanished when the pointer drifted off
+   would flicker every time somebody crossed the globe on the way to something
+   else; it comes down when another site is actually selected, which is a
+   decision rather than an accident. */
+cvs.addEventListener('mousemove',e=>{
+  // MOVING THE POINTER OVER THE GLOBE IS AN ACTION. It was not counted as one,
+  // so the idle clock ran out while somebody was plainly using the map and the
+  // ball started turning under their cursor.
+  touch();
+  const m=nearest(e,40);
+  if(m && m.s.id===HUB) TL.setMarker(m);
+},{passive:true});
+
+/* THE NUMBER ARRIVES, IT IS NOT JUST PRINTED. 891.6 MW is the largest claim on
+   this page and a figure that size is easier to disbelieve than to read; running
+   it up from zero makes the reader watch it accumulate, which is a different
+   thing from being told it.
+   It overshoots by about 1.5% and settles back, because a number that stops
+   dead on its value reads as a counter finishing rather than as a quantity
+   coming to rest. The overshoot is in the ANIMATION only -- it is never held,
+   never rounded from, and the last frame is written from the exact figure in
+   SITES rather than from wherever the easing landed, so what stays on screen is
+   the number and not a near miss of it.
+   The unit does not animate. It is on screen from the first frame. */
+const numEl=()=>document.getElementById('cPower').querySelector('b');
+let countRaf=0;
+function countTo(target){
+  cancelAnimationFrame(countRaf);
+  const write=v=>{ numEl().firstChild.nodeValue=v.toFixed(1); };
+  if(REDUCE){ write(target); return; }
+  const t0=performance.now(), DUR=1450;
+  const step=(now)=>{
+    const k=Math.min(1,(now-t0)/DUR);
+    if(k>=1){ write(target); return; }          // exact, from the data
+    // Ease-out-back: fast out of zero, past the value, then back onto it. c1
+    // sets how far past. The textbook 1.70158 overshoots by 8%, which on this
+    // figure is 965MW -- a different claim flashing on screen, not a bounce.
+    // 0.8 peaks around 912 and settles: visible as a spring, never as a number
+    // anybody could read as the answer.
+    const c1=0.8, c3=c1+1, u=k-1;
+    write(target*(1+c3*u*u*u+c1*u*u));
+    countRaf=requestAnimationFrame(step);
+  };
+  countRaf=requestAnimationFrame(step);
+}
+
+const card=document.getElementById('card');
+function select(m){
+  selected=m; touch();
+  TL.setMarker(m);          // the rail lives and dies with the Johor marker
+  for(const k of markers) k.el.classList.toggle('sel',k===m);
+  if(!m){ card.classList.remove('on'); return; }
+  const s=m.s;
+  document.getElementById('cEye').textContent=m.active?'Active':'Planned';
+  document.getElementById('cTitle').textContent=s.name;
+  document.getElementById('cSub').textContent=s.sub;
+  document.getElementById('cCountry').textContent=s.country;
+  document.getElementById('cSites').textContent=s.sites;
+  /* DELIVERED LOAD, and only where there is a figure for it. Gold, because gold
+     already means "built" on this map -- the arcs that carry it are the routes
+     that exist, and this is the load actually being delivered at the end of one
+     of them. A site without a number shows no number rather than a dash: an
+     empty field invites the reader to wonder what it would have said. */
+  const pw=document.getElementById('cPower');
+  pw.style.display = s.power ? '' : 'none';
+  if(s.power){ pw.querySelector('i').textContent=s.powerUnit||''; countTo(+s.power); }
+  document.getElementById('cYear').textContent=s.year;
+  document.getElementById('cSoon').textContent=m.active
+    // Batam gets its own line. It sits 59km from Johor and used to share a
+    // marker with it; now that it has its own, the thing worth saying is that
+    // the capture timeline is not about it. Every frame in that pack was taken
+    // over the Johor campus.
+    // Johor is no longer one of the sites waiting to be wired up -- it is the
+    // one that has been. Saying otherwise on the card while its timeline is
+    // open beside it would be the map contradicting itself.
+    ? (s.id===HUB
+        ? 'The capture timeline beside this marker holds the campus’s aerial record — hover a date to see that visit.'
+        : s.id==='id'
+          ? 'No survey imagery for Batam — the capture timeline belongs to the Johor campus, 59 km north.'
+          : 'Project material for this site is not wired into the map yet — this round is the map itself.')
+    : 'No site yet. Shown so the map reflects where the business is heading.';
+  card.classList.add('on');
+}
+
+/* ---- POST. This is the whole reason the live globe can be argued against a
+   rendered one. Bloom, antialiasing and a grade are most of what "rendered"
+   means; without them a real-time frame is a clean, hard, flat picture and the
+   eye reads it instantly as a diagram.
+   THRESHOLD IS THE WHOLE SETTING. At 0.20 it caught the coastlines, the limb,
+   the pins AND enough of the body that the globe became one cyan haze and the
+   labels stopped being readable -- bloom that lifts everything lifts nothing.
+   At 0.46 only the limb and the brightest coastline runs cross it, which is
+   what glow is for. ---- */
+const composer=new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene,camera));
+const bloom=new UnrealBloomPass(new THREE.Vector2(1,1),0.30,0.22,0.50);
+composer.addPass(bloom);
+
+// grade + vignette + grain, in one pass
+const GRADE={
+  uniforms:{tDiffuse:{value:null},uTime:{value:0},uRes:{value:new THREE.Vector2(1,1)}},
+  vertexShader:`varying vec2 vUv;
+    void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader:`uniform sampler2D tDiffuse; uniform float uTime; uniform vec2 uRes;
+    varying vec2 vUv;
+    void main(){
+      vec4 c=texture2D(tDiffuse,vUv);
+      // The cool lift the CSS gradient used to provide, now inside the render.
+      // vUv.y=0 is the BOTTOM of the frame -- the first version of this was
+      // upside down, brightening the floor instead of the sky.
+      c.rgb+=vec3(0.010,0.028,0.052)*smoothstep(0.0,1.0,vUv.y);
+      vec2 d=vUv-0.5;
+      c.rgb*=1.0-dot(d,d)*0.62;                      // vignette
+      // Grain. Offline renders carry noise and a perfectly clean gradient is one
+      // of the things that reads as computer graphics. Animated, or it is dirt
+      // on the lens rather than grain.
+      float n=fract(sin(dot(vUv*uRes+uTime,vec2(12.9898,78.233)))*43758.5453);
+      c.rgb+=(n-0.5)*0.020;
+      gl_FragColor=c; }`
+};
+// GRADE RUNS AFTER OutputPass, and that ordering is not cosmetic. Before it,
+// the pass operates on LINEAR values: adding 0.052 there arrives on screen as
+// roughly 0.25 sRGB, which is why the first version lifted the whole block to a
+// milky teal on numbers that read as tiny. After OutputPass the values mean what
+// they look like.
+composer.addPass(new OutputPass());
+const grade=new ShaderPass(GRADE);
+composer.addPass(grade);
+const smaa=new SMAAPass(1,1);
+composer.addPass(smaa);
+
+/* Size from the ELEMENT's box. innerWidth is the viewport and this canvas is a
+   block inside a column -- they are not the same number, and using the wrong
+   one is how a canvas ends up drawn at a different aspect than it is shown at. */
+const stage=document.getElementById('stage');
+function resize(){
+  const r=stage.getBoundingClientRect();
+  const w=Math.max(1,Math.round(r.width)), h=Math.max(1,Math.round(r.height));
+  if(w<2||h<2) return;                      // measured before layout
+  renderer.setSize(w,h,false);
+  composer.setSize(w,h);                 // passes size themselves off this
+  grade.uniforms.uRes.value.set(w,h);
+  camera.aspect=w/h; camera.updateProjectionMatrix();
+}
+addEventListener('resize',resize);
+// a window resize does NOT fire when the column reflows or a scrollbar appears,
+// and that is exactly when this block changes width
+if(typeof ResizeObserver!=='undefined') new ResizeObserver(resize).observe(stage);
+resize();
+
+const pv=new THREE.Vector3();
+const _kx=new THREE.Vector3(), _ky=new THREE.Vector3(), _kz=new THREE.Vector3();
+function updateSun(){
+  _kz.copy(camera.position).normalize();      // toward the viewer
+  _kx.crossVectors(new THREE.Vector3(0,1,0),_kz);
+  if(_kx.lengthSq()<1e-6) _kx.set(1,0,0);     // camera over a pole: any right will do
+  _kx.normalize();
+  _ky.crossVectors(_kz,_kx).normalize();
+  SUN.copy(_kz).multiplyScalar(0.74)
+     .addScaledVector(_kx,-0.52)
+     .addScaledVector(_ky, 0.36).normalize();
+}
+let FR=0;
+window.__map={get d(){return cam.d},get lat(){return cam.lat},get lon(){return cam.lon},
+  get wd(){return want.d},get frames(){return FR},get spin(){return spin}};
+
+function tick(){
+  requestAnimationFrame(tick); FR++;
+  const now=performance.now();
+  const dt=Math.min(0.05,(now-last)/1000); last=now;
+
+  /* NOTHING TURNS WHILE SOMETHING IS OPEN IN THE RAIL. A preview is a sweep
+     that takes 2.6 seconds and a caption that takes longer to read than that,
+     and the leader line ties it to a marker -- if the globe drifts underneath,
+     the thing the card is pointing at walks out from under the line while you
+     are reading. An idle timer cannot cover this: watching is not moving, so
+     the clock runs out exactly when somebody is paying the most attention.
+     So it is not a timer here, it is a hold. The rail only opens on Johor, and
+     it releases when another site is selected. */
+  const idle = !STILL && !drag && !selected && !TL.busy() && (now-idleAt)>SPIN_DELAY;
+  spin += ((idle?SPIN_MAX:0)-spin)*(idle?0.012:0.14);
+  want.lon -= spin*dt;
+  stars.rotation.y += 0.0035*dt;   // barely -- just enough that it is not a decal
+
+  cam.lat+=(want.lat-cam.lat)*0.12;
+  cam.lon+=(want.lon-cam.lon)*0.12;
+  cam.d  +=(want.d  -cam.d  )*0.12;
+  place(); updateSun();
+
+  // project markers to screen; hide anything on the far side so labels never
+  // read through the planet
+  const w=cvs.clientWidth,h=cvs.clientHeight;
+  const camDir=camera.position.clone().normalize();
+  for(const m of markers){
+    const facing=m.v.clone().normalize().dot(camDir);
+    pv.copy(m.v).project(camera);
+    m.sx=(pv.x*0.5+0.5)*w; m.sy=(-pv.y*0.5+0.5)*h;
+    m.onScreen=facing>0.06;
+
+    // cull anything whose pin has left the block. The stage clips overflow,
+    // so without this a marker just outside the frame leaves half a glyph of its
+    // label stuck to the border, which reads as a rendering fault rather than as
+    // a site that is off-screen.
+    const inFrame = m.sx>4 && m.sx<w-4 && m.sy>4 && m.sy<h-4;
+    // The region marker and its two campuses are the same fact at two scales,
+    // so exactly one of them is ever on screen.
+    const wide = canSplit();
+    const zoomOK = m.s.parent ? (wide && cam.d<=SPLIT_D)
+                              : (m.s.id===HUB ? (!wide || cam.d>SPLIT_D) : true);
+    const vis = m.onScreen && inFrame && zoomOK;
+    const fade = vis ? String(Math.min(1,(facing-0.06)*6)) : '0';
+
+    m.pin.style.left=m.sx+'px'; m.pin.style.top=m.sy+'px'; m.pin.style.opacity=fade;
+    m.el.style.left=m.sx+'px';  m.el.style.top=m.sy+'px';  m.el.style.opacity=fade;
+    m.clickable = vis;
+
+    m.pin.classList.toggle('sel', m===selected);
+  }
+  TL.frame();
+  breatheArcs(now);
+  grade.uniforms.uTime.value=(now%10000)/1000;
+  composer.render();
+}
+
+/* ---- KTP capture-timeline rail --------------------------------------------
+   ONE SITE. Everything in uploads/ktp is the KTP campus in Johor: every frame,
+   date, coordinate and caption. The other markers have no survey imagery, so
+   this attaches to Johor and to nothing else, and it never borrows a KTP frame
+   to illustrate somewhere it was not taken.
+
+   THE MANIFEST IS THE ONLY SOURCE OF TRUTH. No date, count or path is written
+   into this file -- they are read out of ktp-progression.json, so a re-survey
+   changes the rail by changing the data. There used to be one exception, a
+   hardcoded "7 buildings" on the merged Johor-Batam marker, kept hardcoded
+   because the manifest holds 12 sets that do not map one-to-one onto buildings
+   and deriving 7 from them would have been a coincidence dressed as a fact.
+   That marker is gone and the number with it; each site now states its own
+   count, which is the honest version of what that label was reaching for.
+
+   Nothing here runs until somebody selects Johor: the manifest, the compare
+   element and every image are fetched on that first selection, so the globe's
+   first paint is unchanged. */
+const TL=(()=>{
+  /* TWO SURVEYS, TWO MANIFESTS, NEVER MERGED. Both parks sit under the Johor
+     marker, ~20 km apart (KTP 1.560/103.720, NTP 1.430/103.600 by their own
+     bounds). Each pack is read whole from its own manifest and the rail shows
+     one at a time; interleaving them by date would describe one construction
+     project where there are two. */
+  const PACKS=[
+    {id:'ktp', label:'KTP', base:'uploads/ktp/', manifest:'data/ktp-progression.json'},
+    {id:'ntp', label:'NTP', base:'uploads/ntp/', manifest:'data/ntp-progression.json',
+     /* The only finished-campus flight in the library: 39.1s of oblique orbit
+        shot 17 Dec 2025, first 24s taken at 2x. KTP has no equivalent, so KTP
+        has no film key and therefore no button -- an absent capability shows as
+        an absent control, not as a disabled one. The path is NOT declared in a
+        progression manifest; it is a campus asset, not a visit's media. */
+     film:{src:'uploads/hero-real/campus-arc.mp4',
+           poster:'uploads/hero-real/campus-arc-poster.jpg',
+           title:'The finished campus',
+           note:'One continuous flight around NTP after handover, 17 Dec 2025. '
+               +'Enlarge it to watch.'}}
+  ];
+  const CACHE={};
+  let pack=PACKS[0], seq=0;
+  const root=document.getElementById('tl');
+  const elNodes=document.getElementById('tlNodes');
+  const elPrev=document.getElementById('tlPrev');
+  const elCount=document.getElementById('tlCount');
+  const elParks=document.getElementById('tlParks');
+  const lead=root.querySelector('.tl-lead');
+  const halo=root.querySelector('.tl-halo');
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)');
+
+  let data=null, loading=null, built=false, on=false, active=null, marker=null;
+
+  const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const label=(iso)=>{ const [y,m,d]=iso.split('-'); return (+d)+' '+MON[+m-1]+' '+y; };
+  // captions carry &mdash; and &rarr;; they are content, not markup
+  const decode=(t)=>{ const x=document.createElement('textarea'); x.innerHTML=t||''; return x.value; };
+
+  // The <ktp-compare> element is one component serving both packs -- it lives
+  // under uploads/ktp because that is where it was written, not because it is
+  // KTP's. Imported once, whichever campus asks first.
+  let elemP=null;
+  const element=()=>elemP||(elemP=import('./uploads/ktp/web/ktp-compare.js').catch(()=>null));
+  function load(){
+    const p=pack;
+    if(CACHE[p.id]){ data=CACHE[p.id]; return Promise.resolve(data); }
+    return Promise.all([
+      fetch(p.base+p.manifest).then(r=>r.json()),
+      element()
+    ]).then(([j])=>{ CACHE[p.id]=j; if(pack===p) data=j; return j; });
+  }
+
+  function paintParks(){
+    if(elParks.children.length!==PACKS.length){
+      elParks.innerHTML=PACKS.map(p=>'<button type="button" data-p="'+p.id+'">'+p.label+'</button>').join('');
+      elParks.querySelectorAll('button').forEach(b=>b.addEventListener('click',(e)=>{
+        e.stopPropagation(); selectPack(b.dataset.p); }));
+    }
+    let fb=elParks.querySelector('.tl-film-btn');
+    if(pack.film && !fb){
+      fb=document.createElement('button');
+      fb.type='button'; fb.className='tl-film-btn'; fb.textContent='Film';
+      fb.addEventListener('click',(e)=>{ e.stopPropagation(); showFilm(); });
+      elParks.appendChild(fb);
+    }else if(!pack.film && fb){ fb.remove(); }
+    elParks.querySelectorAll('button:not(.tl-film-btn)').forEach(b=>
+      b.setAttribute('aria-pressed', String(b.dataset.p===pack.id)));
+    if(fb) fb.setAttribute('aria-pressed', String(filmOn));
+  }
+
+  /* THE FILM. Rendered into the same preview card the visits use, so it gets
+     the enlarge catcher, the Esc button and the positioning for free.
+     `preload="none"` until the card is enlarged -- the poster is 0.2MB and the
+     clip is 9.4MB, and hovering a rail must never cost the clip. */
+  let filmOn=false, filmVid=null;
+  /* filmOn was set and never cleared, so the button stayed lit over a card
+     that had been replaced by a hover -- it claimed a film was showing when
+     one was not. Every exit from the film goes through here. */
+  function endFilm(){
+    if(!filmOn) return;
+    filmOn=false;
+    if(filmVid){ try{ filmVid.pause(); }catch(_){}
+      filmVid.removeAttribute('src'); try{ filmVid.load(); }catch(_){} }
+    filmVid=null;
+    paintParks();
+  }
+  function showFilm(){
+    if(!pack.film) return;
+    const f=pack.film;
+    active=null; filmOn=true;
+    elPrev.innerHTML=
+      '<span class="tl-film-wrap">'
+      +'<video class="tl-film" preload="none" muted loop playsinline'
+      +' poster="'+f.poster+'"></video>'
+      +'<span class="tl-film-hint">Drag to fly</span>'
+      +'<span class="tl-scrub"><i></i></span></span>'
+      +'<div class="tl-cap"><b>'+f.title+'</b><p>'+f.note+'</p></div>';
+    elPrev.insertAdjacentHTML('afterbegin',
+      '<button class="tl-open" type="button" aria-label="Enlarge"></button>');
+    elPrev.insertAdjacentHTML('beforeend',
+      '<button class="tl-shut" type="button" aria-label="Close">Esc</button>');
+    filmVid=elPrev.querySelector('.tl-film');
+    wireFilm(elPrev.querySelector('.tl-film-wrap'), filmVid,
+             elPrev.querySelector('.tl-scrub i'), f,
+             elPrev.querySelector('.tl-film-hint'));
+    const first=elNodes.querySelector('button');
+    if(first) position(first);
+    elPrev.classList.add('on'); root.classList.add('prev');
+    paintParks(); frame();
+  }
+
+  function wireFilm(wrap, v, bar, f, hint){
+    // Only fetch the clip once the card is big; that is also the only size at
+    // which the .tl-open catcher is gone and a drag can reach the picture.
+    const arm=()=>{
+      if(v.getAttribute('src')) return;
+      v.setAttribute('preload','auto'); v.src=f.src;
+    };
+    // A POINTER EVENT MUST NOT BE DROPPED BECAUSE A SEEK IS IN FLIGHT. Assigning
+    // currentTime only when !v.seeking loses every move made during a seek, and
+    // over a network that is most of them -- on the local disk a drag landed at
+    // 8.60s, on the deployed site the identical drag left it at 0.00s. So the
+    // pointer only records a target and a rAF loop chases it, which is the same
+    // shape the scroll hero uses and also what makes the drag feel smooth.
+    let want=null, cur=0, raf=0;
+    const chase=()=>{
+      raf=0;
+      if(!(v.duration>0)) return;
+      if(want!==null){
+        cur+=(want-cur)*0.35;
+        if(Math.abs(want-cur)<0.002) cur=want;
+        if(!v.seeking) v.currentTime=cur*(v.duration-0.05);
+        bar.style.width=(cur*100).toFixed(1)+'%';
+        if(cur!==want || v.seeking) raf=requestAnimationFrame(chase); else want=null;
+      }
+    };
+    const seek=(clientX)=>{
+      const r=wrap.getBoundingClientRect();
+      if(!r.width) return;
+      want=Math.min(1,Math.max(0,(clientX-r.left)/r.width));
+      if(!raf) raf=requestAnimationFrame(chase);
+    };
+    /* SCRUBBING NEEDS THE HOST TO SERVE HTTP RANGE, AND OURS DOES NOT.
+       Cloudflare Pages answers a Range request for /uploads/* with a plain 200
+       and no Accept-Ranges, warm or cold, so the browser marks the clip
+       unseekable: buffered runs 0-11.39 while seekable stays 0-0, and assigning
+       currentTime reads straight back as 0. Every scrub mp4 on this site is in
+       that state, including the two hero encodes that have shipped for weeks --
+       it is the host, not this card.
+       So the control is chosen from what the element can actually do, not from
+       what we hoped: drag to fly where seeking works, plain playback where it
+       does not. Delete this branch the day /uploads/* answers 206. */
+    const canSeek=()=>v.seekable && v.seekable.length>0 && v.seekable.end(0)>0.5;
+    let mode=null;
+    const setMode=()=>{
+      // Small card: the only useful action is to open it, so say that. Big card:
+      // say how to drive it, which depends on whether the host allows seeking.
+      const big=elPrev.classList.contains('big');
+      const m = !big ? 'open' : (canSeek() ? 'seek' : 'play');
+      // ENLARGING IS THE PLAY GESTURE. Where the clip cannot be scrubbed there is
+      // nothing to drive, so asking for a second click to start it was a step
+      // that carried no decision. Opening it starts it; the click is left as the
+      // pause. Muted autoplay needs no gesture of its own, and the enlarge was
+      // one anyway.
+      // Only on ENTERING play -- recomputing must not restart it, or the pause
+      // click is undone by the pause event that the click itself fires.
+      if(m!==mode && m==='play') wantPlay=true;
+      if(m!=='play'){ wantPlay=false; if(!v.paused) v.pause(); }
+      mode=m;
+      tryPlay();
+      paint();
+    };
+    /* WANTING TO PLAY AND BEING ABLE TO ARE NOT THE SAME MOMENT. Enlarging sets
+       the src and flips the class in the same beat, so the first play() lands on
+       a video that has no source yet, the promise rejects, and nothing retries --
+       the card sat there paused saying "Click to play". The intent is held and
+       re-attempted as the media becomes usable. */
+    let wantPlay=false;
+    const tryPlay=()=>{
+      if(!wantPlay || !v.paused || v.readyState<2) return;
+      v.play().catch(()=>{});
+    };
+    for(const e of ['loadeddata','canplay','canplaythrough']) v.addEventListener(e,tryPlay);
+    const paint=()=>{
+      const label = mode==='open' ? 'Click to enlarge'
+                  : mode==='seek' ? 'Drag to fly'
+                  : (v.paused ? 'Click to play' : '');
+      hint.textContent = label;
+      hint.style.display = label ? '' : 'none';
+      wrap.style.cursor = mode==='seek' ? 'ew-resize' : 'pointer';
+    };
+    // the label follows play/pause; the MODE does not change with them
+    v.addEventListener('play', paint);
+    v.addEventListener('pause', paint);
+    // the mode changes when the card is enlarged, not only when media loads
+    new MutationObserver(setMode).observe(elPrev,{attributes:true,attributeFilter:['class']});
+    setMode();
+    v.addEventListener('loadedmetadata',setMode);
+    v.addEventListener('canplay',setMode);
+    v.addEventListener('progress',setMode);
+    wrap.addEventListener('pointerdown',(e)=>{
+      if(!elPrev.classList.contains('big')) return;
+      arm(); setMode();
+      if(mode==='play'){ wantPlay=v.paused; if(v.paused) v.play().catch(()=>{}); else v.pause(); return; }
+      try{ wrap.setPointerCapture(e.pointerId); }catch(_){}
+      seek(e.clientX); e.preventDefault();
+    });
+    wrap.addEventListener('pointermove',(e)=>{
+      if(e.buttons&&wrap.hasPointerCapture(e.pointerId)) seek(e.clientX);
+    });
+    v.addEventListener('timeupdate',()=>{
+      if(v.duration>0) bar.style.width=(v.currentTime/v.duration*100).toFixed(1)+'%';
+    });
+    // Enlarging is what arms the download, whichever control did it.
+    new MutationObserver(()=>{ if(elPrev.classList.contains('big')) arm(); })
+      .observe(elPrev,{attributes:true,attributeFilter:['class']});
+  }
+
+  /* A stale fetch must not paint over a campus the reader has already switched
+     back to, so every switch takes a ticket and only the current one may build. */
+  function selectPack(id){
+    const p=PACKS.find(x=>x.id===id);
+    if(!p||p===pack) return;
+    endFilm();
+    pack=p; built=false; active=null;
+    const mine=++seq;
+    paintParks();
+    collapse(); elPrev.classList.remove('on','big'); root.classList.remove('prev');
+    elNodes.innerHTML=''; elCount.textContent='';
+    load().then(()=>{ if(mine!==seq) return; build(); openDefault(); }).catch(()=>{});
+  }
+
+  /* A node is a visit. Its preview is a pair whose AFTER is that visit -- what
+     this trip showed against the one before it. Four of the seven have none:
+     the two 2024 orthomosaics carry no obliques at all, 31 Dec 2024 is a single
+     frame, and 11 Aug 2025 is the baseline every later pair is measured from.
+     They get told what they are. Borrowing another visit's pair to fill the
+     card would make the rail look complete and be a lie. */
+  function nodeModel(sh){
+    const cmps=data.comparisons.filter(c=>c.after.date===sh.date);
+    const frames=data.frames.filter(f=>f.date===sh.date && f.media && (f.media.jpg||f.media.webp));
+    const asBefore=data.comparisons.filter(c=>c.before.date===sh.date).length;
+    const mixed=cmps.some(c=>(data.sets.find(x=>x.id===c.set)||{}).confidence==='mixed');
+    return {sh, cmps, frames, asBefore, mixed,
+      date:label(sh.date), archive:sh.date<'2025',
+      meta: sh.frames ? sh.frames+(sh.frames===1?' frame':' frames') : sh.kind};
+  }
+
+  function build(){
+    /* EVERY NODE HAS A PICTURE BEHIND IT. Seven visits are in the manifest and
+       two of them -- the November and December 2024 orthomosaics -- carry no
+       frames and no pairs, so they used to render a card with a sentence where
+       an image goes. A rail of dates that opens onto nothing is worse than a
+       shorter rail: it makes the survey look thinner than it is by drawing
+       attention to the gaps rather than to the material.
+       So a visit earns a node by having imagery -- a comparison to sweep, or
+       failing that its own frames.
+       The count is of what the rail shows, not of what the manifest holds. It
+       read "5 of 7 visits" for a while, on the reasoning that dropping two dates
+       silently overstates the survey. It does not: this rail is the imagery, and
+       a fraction in the header makes a visitor count the missing two instead of
+       looking at the five that are there. The two orthomosaic dates are still in
+       the manifest for anyone working with the data. */
+    const models=data.shoots.map(nodeModel).filter(n=>n.cmps.length||n.frames.length);
+    /* THE RATIO IS STATED ONLY WHERE FAILING TO REGISTER IS THE NORMAL CASE.
+       KTP registers 12 of 14, and a fraction in the header would make a visitor
+       count the two exceptions instead of reading the five visits -- that is why
+       it says "5 visits" and not "5 of 7". NTP registers 1 of 8, and that IS the
+       survey's headline: its manifest says so in its own `finding` field, and
+       the one pair that did register is the building that never changed. So the
+       rule is majority, not a per-campus special case. */
+    const reg=data.comparisons.filter(c=>c.registered===true).length;
+    const total=data.comparisons.length;
+    elCount.textContent=models.length+' visits'
+      +((total-reg)>reg ? ' · '+reg+' of '+total+' registered' : '');
+    elNodes.innerHTML='';
+    let dividerPlaced=false;
+    models.forEach((n,i)=>{
+      if(!n.archive && !dividerPlaced && i>0){
+        const d=document.createElement('div'); d.className='tl-divide';
+        d.innerHTML='<i>2025 survey</i>'; elNodes.appendChild(d); dividerPlaced=true;
+      }
+      const b=document.createElement('button');
+      b.type='button'; b.className='tl-node'+(n.archive?' arch':'');
+      b.setAttribute('role','option'); b.setAttribute('aria-selected','false');
+      b.tabIndex=-1;
+      b.innerHTML='<span class="tl-dot"></span><span class="tl-txt">'
+        +'<span class="tl-date">'+n.date+'</span>'
+        +'<span class="tl-meta">'+n.meta+(n.mixed?'<span class="tl-mix" title="One set in this visit is mixed confidence"></span>':'')+'</span>'
+        +'</span>';
+      // Hovering a date must not steal a film the reader asked for. Moving
+      // the cursor from the Film button toward the card crosses the rail,
+      // and every crossing used to replace the clip with a visit preview --
+      // which is why clicking Film looked like nothing happened.
+      b.addEventListener('mouseenter',()=>{ if(filmOn) return; touch(); open(n,b); });
+      b.addEventListener('focus',()=>{ touch(); open(n,b); });
+      b.addEventListener('click',()=>{ touch();
+        if(filmOn){ endFilm(); open(n,b); return; }   // explicit: take it back
+        expand(n); });
+      b.addEventListener('keydown',(e)=>{
+        if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+          e.preventDefault();
+          const all=[...elNodes.querySelectorAll('.tl-node')];
+          const at=all.indexOf(b)+(e.key==='ArrowDown'?1:-1);
+          if(all[at]) all[at].focus();
+        } else if(e.key==='Enter'||e.key===' '){ e.preventDefault(); expand(n); }
+      });
+      b.__n=n; elNodes.appendChild(b);
+    });
+    /* Leaving the rail puts it back to its opening state rather than to nothing.
+       An empty rail is the thing this was built to avoid, and it should not
+       come back the moment the pointer wanders off. */
+    elNodes.addEventListener('mouseleave',()=>{ if(filmOn) return; if(!elPrev.classList.contains('big')) openDefault(); });
+    built=true;
+  }
+
+  /* THE RAIL ARRIVES WITH A PICTURE ALREADY OPEN. A column of dates is not an
+     invitation -- nothing about it says the dates are the way in, so somebody
+     who does not think to hover one sees a list and moves on, and the whole
+     survey stays behind a gesture nobody made. Opening the newest visit puts a
+     photograph on screen the moment Johor is selected, and the sweep across it
+     says the rest: these are before and after, and the dates are how you move
+     between them.
+     The newest visit is the right default -- it is the site as it stands, and it
+     is the one with the most pairs behind it. */
+  function openDefault(){
+    const b=elNodes.querySelector('.tl-node:last-of-type');
+    if(b && b.__n) open(b.__n,b);
+  }
+
+  /* ONE PREVIEW AT A TIME, and it sweeps once. The component's own sweep is
+     already the curve this wanted -- 2600ms ease-in-out-cubic, out to the after
+     side and back to rest at 4 -- and it cuts straight to 4 under reduced
+     motion, so there is nothing to reimplement here. */
+  function open(n,btn){
+    if(active===n) return;
+    active=n;
+    for(const b of elNodes.querySelectorAll('.tl-node')){
+      const sel=b===btn; b.classList.toggle('sel',sel); b.setAttribute('aria-selected',String(sel));
+    }
+    const c=n.cmps[0];
+    if(!c){
+      // No pair, but there are frames -- show one rather than a caption in an
+      // empty box. It says what the stage is and why there is nothing to sweep.
+      const f=n.frames[0], m=f.media;
+      const note = n.asBefore
+        ? 'The baseline '+n.asBefore+' later comparison'+(n.asBefore>1?'s are':' is')
+          +' measured from. '+n.frames.length+(n.frames.length===1?' frame':' frames')
+          +' this visit, none of them paired against an earlier one.'
+        : n.frames.length+(n.frames.length===1?' frame':' frames')
+          +' this visit, with nothing earlier to compare against.';
+      elPrev.innerHTML='<img class="tl-shot" src="'+pack.base+m.jpg+'" alt="" '
+        +(m.webp?'srcset="'+pack.base+m.webp+'"':'')+'>'
+        +'<div class="tl-cap"><b>'+(f.stage||n.date)+'</b><p>'+note+'</p></div>';
+    }else{
+      const m=c.media;
+      // NTP's compare images were packed as JPEG only -- no WebP variants were
+      // ever generated for it. Asking for .webp there yields `undefined` in the
+      // srcset, which the browser fetches as a relative path and 404s, and the
+      // card silently shows nothing. Fall back to whatever the manifest has.
+      const u=(o,k,e)=>pack.base+(o[k][e]||o[k].jpg||o[k].webp);
+      elPrev.innerHTML='<ktp-compare '
+        +'before="'+u(m.before,'1600','jpg')+'" after="'+u(m.after,'1600','jpg')+'" '
+        +'before-srcset="'+u(m.before,'800','webp')+' 800w, '+u(m.before,'1600','webp')+' 1600w" '
+        +'after-srcset="'+u(m.after,'800','webp')+' 800w, '+u(m.after,'1600','webp')+' 1600w" '
+        +'sizes="(max-width: 760px) 100vw, 260px" '
+        +'before-label="'+c.before.date_label+'" after-label="'+c.after.date_label+'" '
+        +'ratio="'+(m.aspect||'1600/900')+'" no-sweep></ktp-compare>'
+        +'<div class="tl-cap"><b>'+c.title+'</b><p>'+decode(c.caption)+'</p>'
+        +(c.registered===false
+            ? '<span class="tl-chip" title="'+(c.registration&&c.registration.note||'')+'">Not registered &middot; wipe</span>'
+            : '')
+        +'</div>';
+      // Over the small card only. At 216px the slider is a fiddle and the
+      // useful action is "show me this properly"; at full size the catcher is
+      // gone and the slider is the point.
+      elPrev.insertAdjacentHTML('afterbegin',
+        '<button class="tl-open" type="button" aria-label="Enlarge"></button>');
+      const cmp=elPrev.querySelector('ktp-compare');
+      // Rest on the AFTER frame either way. The component's own reduced-motion
+      // branch reads `value > 50 ? 4 : 96`, and a fresh element sits at exactly
+      // 50, so it lands on 96 -- the before frame, the opposite of where the
+      // sweep would have left it. Set it here rather than patching a vendored
+      // file: same destination, no motion.
+      if(cmp) requestAnimationFrame(()=>{
+        if(reduce.matches) cmp.value=4; else if(cmp.sweep) cmp.sweep();
+      });
+    }
+    position(btn);
+    elPrev.insertAdjacentHTML('beforeend',
+      '<button class="tl-shut" type="button" aria-label="Close">Esc</button>');
+    elPrev.classList.add('on'); root.classList.add('prev');
+    frame();
+  }
+
+  function close(){
+    endFilm();
+    active=null; elPrev.classList.remove('on'); root.classList.remove('prev');
+    for(const b of elNodes.querySelectorAll('.tl-node')){
+      b.classList.remove('sel'); b.setAttribute('aria-selected','false');
+    }
+  }
+
+  let activeBtn=null;
+  function position(btn){
+    activeBtn=btn;
+    const st=stage.getBoundingClientRect(), r=btn.getBoundingClientRect();
+    // 212 clears the longest date label -- "14 DEC 2025" at 11px mono runs to
+    // about 196 from the axis at 76. Pulling the card in to 176 on a narrow
+    // frame bought 36px of globe and clipped that label with the card's own
+    // edge, which is the one thing the rail cannot afford to do: the date is
+    // what the picture is being attached to. The card narrows instead.
+    elPrev.style.left='212px';
+    const h=elPrev.offsetHeight||210, w=elPrev.offsetWidth||256;
+    const lo=88, hi=st.height-84-h;
+    let top=Math.max(lo,Math.min(hi,(r.top-st.top)+r.height/2-h/2));
+    /* AND IT MUST NOT SIT ON THE MARKER. Centring the card on its node is right
+       on a wide frame, where the globe has drifted the marker well clear of it.
+       On a narrower one the two collide: measured at 884x497, the card ran
+       212-428 and Johor sat at 414,327 -- inside it. The marker disappears
+       behind the card it is supposed to be tied to, and the leader line, whose
+       whole job is to say "this picture belongs to that place", is drawn
+       underneath and never seen.
+       So when they overlap, the card steps aside by the smaller of the two
+       moves, and only if there is room at the edge it steps toward. The globe
+       holds still while a site is selected, so doing this once on open is
+       enough -- the marker will not wander back underneath. */
+    if(marker && marker.sx>212-8 && marker.sx<212+w+8
+       && marker.sy>top && marker.sy<top+h){
+      const gap=26, above=marker.sy-gap-h, below=marker.sy+gap;
+      const okA=above>=lo, okB=below<=hi;
+      if(okA&&okB) top = (top+h-marker.sy) <= (marker.sy-top) ? above : below;
+      else if(okA) top=above;
+      else if(okB) top=below;
+    }
+    elPrev.style.top=top+'px';
+    /* SOMETIMES THERE IS NOWHERE TO STEP. A 497px frame leaves the rail a 325px
+       band once the top and bottom margins are taken, and the card is 279 of it;
+       with Johor sitting near the vertical middle, neither above nor below fits.
+       When that happens the leader line is drawn underneath the card and never
+       seen, which is worse than not drawing it: it is a line that claims to
+       connect two things while connecting nothing. The card is adjacent to the
+       marker at that size anyway, so the relationship still reads. */
+    root.classList.toggle('nolead', !!(marker && marker.sx>212-8 && marker.sx<212+w+8
+      && marker.sy>top && marker.sy<top+h));
+  }
+
+  /* The globe drifts, so the marker moves under a preview that is standing
+     still. The elbow is redrawn from the live screen position every frame --
+     markers already carry sx/sy for exactly this reason. */
+  function frame(){
+    if(!on||!active||!marker) return;
+    const x1=elPrev.offsetLeft+elPrev.offsetWidth, y1=elPrev.offsetTop+elPrev.offsetHeight/2;
+    const mx=marker.sx, my=marker.sy;
+    if(!(mx>=0)||!(my>=0)) return;
+    lead.setAttribute('d','M'+x1+' '+y1+' L'+mx+' '+y1+' L'+mx+' '+my);
+    halo.setAttribute('transform','translate('+mx+' '+my+')');
+  }
+
+  /* CLICKING OPENS THE PICTURE, not a list about it.
+     Clicking a node used to slide out a panel of set titles, view descriptions
+     and a video per set. It was a table of contents for a thing the reader was
+     already looking at, and the videos were the same footage the compare already
+     shows, only pre-scrubbed -- three seconds of somebody else dragging the
+     slider you have in your hand. The photograph is the material. So the click
+     does the one thing worth doing to a 216px thumbnail: it makes it big.
+     Enlarged, the slider is finally worth using, so the click-catcher that sits
+     over the small card comes off and the drag becomes the interaction. */
+  function expand(n){ if(active) big(true); }
+  function collapse(){ big(false); }
+  function big(on){
+    elPrev.classList.toggle('big', !!on);
+    root.classList.toggle('zoom', !!on);   // the site panel steps aside
+    elPrev.setAttribute('aria-expanded', on?'true':'false');
+    place(on);
+  }
+  function place(isBig){
+    const st=stage.getBoundingClientRect();
+    if(isBig){
+      const w=Math.min(680, st.width-268), h=elPrev.offsetHeight||420;
+      elPrev.style.left=Math.round(st.width-24-w)+'px';
+      elPrev.style.top=Math.round(Math.max(24,(st.height-h)/2))+'px';
+      root.classList.add('nolead');
+    }else if(activeBtn){ position(activeBtn); }
+  }
+
+  elPrev.addEventListener('click',(e)=>{
+    if(e.target.closest('.tl-open')){ touch(); big(true); return; }
+    if(e.target.closest('.tl-shut')){ touch(); big(false); }
+  });
+  addEventListener('keydown',(e)=>{
+    if(e.key!=='Escape'||!on) return;
+    if(elPrev.classList.contains('big')) big(false); else close();
+  });
+  addEventListener('resize',()=>{ if(on) place(elPrev.classList.contains('big')); });
+
+  return {
+    /* Called from select(). The rail exists for Johor and for nothing else --
+       Batam included, which shares the marker at low zoom but has no survey
+       imagery of its own, and now its own marker, so nothing about it reaches
+       this rail. */
+    setMarker(m){
+      const isJohor = !!m && m.s.id===HUB;
+      if(!isJohor){ if(on){ on=false; marker=null; root.classList.remove('on','prev');
+        root.setAttribute('aria-hidden','true'); collapse(); close(); } return; }
+      if(on) return;                    // already up; do not restart it mid-hover
+      marker=m; on=true;
+      root.classList.add('on'); root.setAttribute('aria-hidden','false');
+      paintParks();
+      const mine=++seq;
+      load().then(()=>{ if(mine!==seq) return; if(!built) build(); openDefault(); }).catch(()=>{});
+    },
+    frame,
+    /* Clicking one of the two campus markers on the globe is the same request
+       as pressing its button in the rail head, so it is the same code path.
+       No-ops when the rail is not up, which is every zoom above SPLIT_D. */
+    setPack(id){ if(on) selectPack(id); },
+    // open preview or open set list -- either means somebody is reading
+    busy(){ return on && elPrev.classList.contains('on'); },
+    close(){ big(false); close(); }
+  };
+})();
+tick();
+</script>
+</body>
+</html>
