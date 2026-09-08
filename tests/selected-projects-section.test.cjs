@@ -43,6 +43,16 @@ const railData = html.slice(railStart, railEnd);
 assert.equal((railData.match(/title:/g) || []).length, 10, 'rail must feature ten unique projects');
 assert.equal((railData.match(/photo:/g) || []).length, 10, 'each project must have a photograph');
 assert.equal((railData.match(/poster:/g) || []).length, 10, 'each project must have a coordinated-design poster');
+assert.equal(
+  (railData.match(/posters\/web\/[\w.-]+-studio-v2-(?:400w|800w)\.(?:webp|jpg)/g) || []).length,
+  30,
+  'every coordinated-design poster URL must use the fresh v2 cache-busting asset set',
+);
+assert.equal(
+  /posters\/web\/[\w.-]+-studio-(?!v2-)/.test(railData),
+  false,
+  'legacy unversioned coordinated-design posters must not remain in the live rail mapping',
+);
 
 assert.match(html, /_railStart/);
 assert.match(html, /_railStop/);
