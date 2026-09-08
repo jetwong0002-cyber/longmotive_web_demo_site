@@ -2363,8 +2363,13 @@ class Component extends DCLogic {
   };
   /* ---- Project rail: a seamless, self-pausing loop. The browser scrolls a
      duplicated track, while hover/focus tells the story inside each card. ---- */
-  _railWrapRef=(el)=>{ this._rail=el; if(el) requestAnimationFrame(this._railStart); };
+  _railWrapRef=(el)=>{ if(el!==this._rail)this._railSeeded=false; this._rail=el; if(el) requestAnimationFrame(this._railStart); };
   _railBlocked(){ return !this._rail||!this._rail.isConnected||this._reduce||this.state.railPaused||this._railHover||this._railFocused||this._railDragging||this._railVisible===false||(typeof document!=='undefined'&&document.hidden); }
+  _railSeed(){
+    const half=this._rail?this._rail.scrollWidth/2:0;
+    if(!this._railSeeded&&half>0){ this._rail.scrollLeft=half; this._railSeeded=true; }
+    return half;
+  }
   _railStart=()=>{
     if(this._railBlocked()||this._railRaf) return;
     this._railLast=0;
@@ -2377,10 +2382,11 @@ class Component extends DCLogic {
   _railTick=(now)=>{
     this._railRaf=null;
     if(this._railBlocked()) return;
+    const half=this._railSeed();
     if(this._railLast){
-      const dt=Math.min(48,now-this._railLast),half=this._rail.scrollWidth/2;
-      this._rail.scrollLeft+=dt*.032;
-      if(half>0&&this._rail.scrollLeft>=half) this._rail.scrollLeft-=half;
+      const dt=Math.min(48,now-this._railLast);
+      this._rail.scrollLeft-=dt*.018;
+      if(half>0&&this._rail.scrollLeft<=0) this._rail.scrollLeft+=half;
     }
     this._railLast=now;
     this._railRaf=requestAnimationFrame(this._railTick);

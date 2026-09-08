@@ -46,6 +46,9 @@ assert.equal((railData.match(/poster:/g) || []).length, 10, 'each project must h
 
 assert.match(html, /_railStart/);
 assert.match(html, /_railStop/);
+assert.match(html, /this\._rail\.scrollLeft=half/, 'idle rail must seed at the seamless midpoint');
+assert.match(html, /this\._rail\.scrollLeft-=dt\*\.018/, 'idle rail must drift gently from left to right');
+assert.match(html, /this\._rail\.scrollLeft<=0/, 'left-to-right loop must wrap without a visible end');
 assert.match(html, /IntersectionObserver/);
 assert.match(html, /document\.hidden/);
 assert.match(html, /prefers-reduced-motion: reduce/);
