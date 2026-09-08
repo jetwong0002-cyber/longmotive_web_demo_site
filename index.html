@@ -250,27 +250,40 @@
   .lm-work-portfolio{appearance:none;display:inline-flex;align-items:center;gap:9px;margin-top:24px;padding:12px 17px;border:1px solid transparent;border-radius:4px;background:#00b0f0;color:#06203b;font-family:var(--font-display);font-size:12px;font-weight:800;letter-spacing:.065em;text-transform:uppercase;cursor:pointer;transition:background .2s,transform .2s}
   .lm-work-portfolio:hover{background:#53cefa;transform:translateY(-2px)}
   .lm-work-showcase{position:relative}
-  .lm-work-deck{position:relative;height:clamp(390px,56vw,660px);overflow:hidden;border-radius:16px;perspective:1400px;touch-action:pan-y;isolation:isolate;cursor:grab}
-  .lm-work-deck:active{cursor:grabbing}
-  .lm-work-deck:after{content:"";position:absolute;left:12%;right:7%;bottom:22px;height:58px;background:radial-gradient(ellipse,rgba(0,0,0,.48),transparent 68%);filter:blur(10px);pointer-events:none}
-  .lm-swapcard{position:absolute;top:16px;left:50%;width:min(82vw,960px);aspect-ratio:8/5;overflow:hidden;border:1px solid rgba(210,237,250,.48);border-radius:18px;background:#0d2a45;box-shadow:0 28px 76px rgba(0,5,18,.48),0 7px 20px rgba(0,5,18,.28);will-change:transform,filter;backface-visibility:hidden;color:#fff}
-  .lm-swapcard picture,.lm-swapcard img{width:100%;height:100%;display:block}
-  .lm-swapcard img{object-fit:cover}
-  .lm-swap-label{position:absolute;bottom:0;z-index:2;box-sizing:border-box;display:flex;align-items:center;width:50%;height:clamp(38px,5.4vw,54px);padding:0 14px;background:#0a2a46;color:#fff;font-family:var(--font-mono);font-size:clamp(9px,.8vw,11px);font-weight:700;letter-spacing:.1em;text-transform:uppercase;box-shadow:0 -1px 0 rgba(255,255,255,.16);pointer-events:none}
-  .lm-swap-label--built{left:0}
-  .lm-swap-label--design{left:50%;background:#00b0f0;color:#06203b}
-  .lm-swap-index{position:absolute;top:14px;right:14px;padding:6px 9px;border:1px solid rgba(255,255,255,.34);border-radius:4px;background:rgba(6,27,48,.8);font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.13em}
-  .lm-work-current{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:clamp(18px,3vw,34px);align-items:center;max-width:960px;margin:10px auto 0;padding-top:22px;border-top:1px solid rgba(137,190,225,.3)}
-  .lm-work-count{align-self:start;padding-top:6px;color:#53cefa;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.17em;white-space:nowrap}
-  .lm-work-title{margin:0 0 6px;color:#fff;font-family:var(--font-display);font-size:clamp(24px,2.8vw,38px);line-height:1.08}
-  .lm-work-meta{margin:0;color:#9fb9cd;font-size:14px;line-height:1.5}
-  .lm-work-actions{display:flex;align-items:center;gap:10px}
-  .lm-work-arrow{appearance:none;width:44px;height:44px;border:1px solid rgba(158,204,232,.38);border-radius:50%;background:transparent;color:#d9edf8;font:inherit;font-size:18px;cursor:pointer;transition:border-color .2s,background .2s,transform .2s}
+  .lm-project-rail{position:relative;margin-inline:calc(-1 * var(--gutter));padding-inline:var(--gutter);overflow-x:auto;overflow-y:hidden;scrollbar-width:none;touch-action:pan-x pan-y;overscroll-behavior-inline:contain;cursor:grab;mask-image:linear-gradient(90deg,transparent 0,#000 var(--gutter),#000 calc(100% - var(--gutter)),transparent 100%)}
+  .lm-project-rail::-webkit-scrollbar{display:none}
+  .lm-project-rail:active{cursor:grabbing}
+  .lm-project-track{display:flex;width:max-content;gap:18px;padding:10px 0 26px}
+  .lm-rail-card{position:relative;width:clamp(300px,29vw,390px);overflow:hidden;border:1px solid rgba(173,215,239,.3);border-radius:10px;background:#0b2945;box-shadow:0 22px 54px rgba(0,5,18,.28),0 5px 14px rgba(0,5,18,.22);color:#fff;isolation:isolate;outline:none;transition:border-color .22s ease,box-shadow .22s ease}
+  .lm-rail-card:hover,.lm-rail-card:focus-visible{border-color:rgba(83,206,250,.9);box-shadow:0 26px 64px rgba(0,5,18,.4),0 7px 18px rgba(0,5,18,.3)}
+  .lm-rail-visual{position:relative;aspect-ratio:8/5;overflow:hidden;background:#dce7ed}
+  .lm-rail-layer,.lm-rail-layer picture,.lm-rail-layer img{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .lm-rail-layer{transition:opacity .42s cubic-bezier(.16,1,.3,1),clip-path .42s cubic-bezier(.16,1,.3,1)}
+  .lm-rail-layer img{object-fit:cover}
+  .lm-rail-photo{z-index:1;opacity:1;clip-path:inset(0 0 0 0)}
+  .lm-rail-poster{z-index:2;opacity:0;clip-path:inset(0 100% 0 0)}
+  .lm-rail-card:hover .lm-rail-photo,.lm-rail-card:focus-visible .lm-rail-photo{opacity:.28}
+  .lm-rail-card:hover .lm-rail-poster,.lm-rail-card:focus-visible .lm-rail-poster{opacity:1;clip-path:inset(0 0 0 0)}
+  .lm-rail-state{position:absolute;top:12px;left:12px;z-index:4;min-width:148px;height:29px;pointer-events:none}
+  .lm-rail-state span{position:absolute;inset:0;display:flex;align-items:center;width:max-content;padding:0 10px;border-radius:3px;background:rgba(6,28,49,.9);color:#e8f6fc;font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;transition:opacity .22s ease,transform .22s ease}
+  .lm-rail-state-design{opacity:0;transform:translateY(5px);background:#00b0f0!important;color:#06203b!important}
+  .lm-rail-card:hover .lm-rail-state-built,.lm-rail-card:focus-visible .lm-rail-state-built{opacity:0;transform:translateY(-5px)}
+  .lm-rail-card:hover .lm-rail-state-design,.lm-rail-card:focus-visible .lm-rail-state-design{opacity:1;transform:none}
+  .lm-rail-index{position:absolute;top:12px;right:12px;z-index:4;padding:6px 8px;border:1px solid rgba(255,255,255,.34);border-radius:3px;background:rgba(6,28,49,.82);font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.12em}
+  .lm-rail-body{min-height:118px;padding:18px 19px 20px;border-top:1px solid rgba(255,255,255,.12)}
+  .lm-rail-discipline{display:block;margin-bottom:8px;color:#53cefa;font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+  .lm-rail-title{margin:0 0 6px;color:#fff;font-family:var(--font-display);font-size:clamp(21px,2vw,27px);line-height:1.06;letter-spacing:-.018em}
+  .lm-rail-meta{margin:0;color:#a9c1d3;font-size:13px;line-height:1.45}
+  .lm-rail-footer{display:flex;align-items:center;justify-content:space-between;gap:22px;margin-top:8px;padding-top:20px;border-top:1px solid rgba(137,190,225,.28)}
+  .lm-rail-hint{margin:0;color:#91afc4;font-size:12px;line-height:1.5}
+  .lm-work-actions{display:flex;align-items:center;gap:9px;flex:0 0 auto}
+  .lm-work-arrow{appearance:none;display:grid;place-items:center;width:42px;height:42px;border:1px solid rgba(158,204,232,.38);border-radius:50%;background:transparent;color:#d9edf8;font:inherit;font-size:17px;cursor:pointer;transition:border-color .18s ease,background .18s ease,transform .18s ease}
   .lm-work-arrow:hover{border-color:#53cefa;background:rgba(0,176,240,.12);transform:translateY(-2px)}
-  .lm-work-portfolio:focus-visible,.lm-work-arrow:focus-visible,.lm-work-deck:focus-visible{outline:3px solid #53cefa;outline-offset:4px}
-  @media (max-width:1050px){.lm-work-head{grid-template-columns:1fr;gap:26px}.lm-work-copy{max-width:820px}.lm-work-heading{max-width:15ch}.lm-work-intro-panel{max-width:760px;padding:24px 0 0;border-left:0;border-top:1px solid rgba(137,190,225,.3)}.lm-work-deck{height:clamp(390px,64vw,640px)}.lm-swapcard{width:min(86vw,900px)}}
-  @media (max-width:760px){.lm-project-section{padding:70px var(--gutter)}.lm-work-heading{font-size:clamp(38px,11vw,56px)}.lm-work-intro{font-size:15px}.lm-work-deck{height:clamp(285px,72vw,430px);border-radius:10px}.lm-swapcard{top:12px;width:calc(100% - 46px);border-radius:12px}.lm-swap-label{padding:0 8px;font-size:9px;letter-spacing:.04em}.lm-swap-index{top:9px;right:9px}.lm-work-current{grid-template-columns:auto minmax(0,1fr);gap:14px 18px;margin-top:4px;padding-top:18px}.lm-work-actions{grid-column:1/-1;justify-content:flex-end}.lm-work-title{font-size:clamp(23px,7vw,32px)}}
-  @media (prefers-reduced-motion:reduce){.lm-work-portfolio,.lm-work-arrow{transition:none!important}.lm-work-portfolio:hover,.lm-work-arrow:hover{transform:none}}
+  .lm-work-pause{width:auto;min-width:92px;padding:0 14px;border-radius:4px;font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+  .lm-work-portfolio:focus-visible,.lm-work-arrow:focus-visible,.lm-project-rail:focus-visible{outline:3px solid #53cefa;outline-offset:4px}
+  @media (max-width:1050px){.lm-work-head{grid-template-columns:1fr;gap:26px}.lm-work-copy{max-width:820px}.lm-work-heading{max-width:15ch}.lm-work-intro-panel{max-width:760px;padding:24px 0 0;border-left:0;border-top:1px solid rgba(137,190,225,.3)}.lm-rail-card{width:clamp(310px,42vw,380px)}}
+  @media (max-width:760px){.lm-project-section{padding:70px var(--gutter)}.lm-work-heading{font-size:clamp(38px,11vw,56px)}.lm-work-intro{font-size:15px}.lm-project-track{gap:13px;padding-bottom:20px}.lm-rail-card{width:min(82vw,344px)}.lm-rail-body{min-height:112px;padding:16px}.lm-rail-footer{align-items:flex-start;flex-direction:column}.lm-work-actions{align-self:flex-end}.lm-rail-hint{max-width:36ch}}
+  @media (prefers-reduced-motion:reduce){.lm-work-portfolio,.lm-work-arrow,.lm-rail-card,.lm-rail-layer,.lm-rail-state span{transition:none!important}.lm-work-portfolio:hover,.lm-work-arrow:hover{transform:none}}
 </style>
 </helmet>
 <div style="min-height:100%;display:flex;flex-direction:column;background:var(--surface-page);color:var(--text-body);font-family:var(--font-sans)">
@@ -440,28 +453,41 @@
             </div>
           </div>
           <div class="lm-work-showcase">
-            <div class="lm-work-deck" ref="{{ swapWrapRef }}" onKeyDown="{{ swapKeyDown }}" tabindex="0" role="region" aria-label="Selected project gallery">
-              <sc-for list="{{ swapCards }}" as="c" hint-placeholder-count="6">
-                <div class="lm-swapcard" ref="{{ c.cardRef }}">
-                  <picture>
-                    <source type="image/webp" srcset="{{ c.cardSrcSet }}" sizes="(max-width:760px) calc(100vw - 70px), min(82vw, 960px)"/>
-                    <img data-src="{{ c.cardFallback }}" alt="{{ c.accessibleLabel }}" loading="lazy" decoding="async"/>
-                  </picture>
-                  <span class="lm-swap-label lm-swap-label--built" aria-hidden="true">Completed installation</span>
-                  <span class="lm-swap-label lm-swap-label--design" aria-hidden="true">Coordinated design</span>
-                  <span class="lm-swap-index">{{ c.index }}</span>
-                </div>
-              </sc-for>
-            </div>
-            <div class="lm-work-current" ref="{{ swapTitleRef }}" aria-live="polite">
-              <div class="lm-work-count">{{ swapCount }}</div>
-              <div>
-                <h3 class="lm-work-title">{{ swapTitle }}</h3>
-                <p class="lm-work-meta">{{ swapCat }} · {{ swapMeta }}</p>
+            <div class="lm-project-rail" ref="{{ railWrapRef }}" onMouseEnter="{{ railEnter }}" onMouseLeave="{{ railLeave }}" onFocus="{{ railFocus }}" onBlur="{{ railBlur }}" onPointerDown="{{ railPointerDown }}" onPointerUp="{{ railPointerUp }}" role="region" aria-label="Selected projects, completed installations and coordinated designs">
+              <div class="lm-project-track">
+                <sc-for list="{{ railCards }}" as="c" hint-placeholder-count="20">
+                  <article class="lm-rail-card" tabindex="{{ c.tabIndex }}" aria-hidden="{{ c.ariaHidden }}" aria-label="{{ c.accessibleLabel }}">
+                    <div class="lm-rail-visual" aria-hidden="true">
+                      <div class="lm-rail-layer lm-rail-photo">
+                        <picture>
+                          <source type="image/webp" srcset="{{ c.photoSrcSet }}" sizes="(max-width:760px) 82vw, (max-width:1050px) 42vw, 390px"/>
+                          <img data-src="{{ c.photo }}" alt="" loading="lazy" decoding="async"/>
+                        </picture>
+                      </div>
+                      <div class="lm-rail-layer lm-rail-poster">
+                        <picture>
+                          <source type="image/webp" srcset="{{ c.posterSrcSet }}" sizes="(max-width:760px) 82vw, (max-width:1050px) 42vw, 390px"/>
+                          <img data-src="{{ c.poster }}" alt="" loading="lazy" decoding="async"/>
+                        </picture>
+                      </div>
+                      <span class="lm-rail-state"><span class="lm-rail-state-built">Completed installation</span><span class="lm-rail-state-design">Coordinated design</span></span>
+                      <span class="lm-rail-index">{{ c.index }}</span>
+                    </div>
+                    <div class="lm-rail-body">
+                      <span class="lm-rail-discipline">{{ c.cat }}</span>
+                      <h3 class="lm-rail-title">{{ c.title }}</h3>
+                      <p class="lm-rail-meta">{{ c.meta }}</p>
+                    </div>
+                  </article>
+                </sc-for>
               </div>
+            </div>
+            <div class="lm-rail-footer">
+              <p class="lm-rail-hint">Hover or focus a card to reveal the coordinated design behind the completed installation.</p>
               <div class="lm-work-actions">
-                <button class="lm-work-arrow" onClick="{{ swapPrev }}" aria-label="Previous project">←</button>
-                <button class="lm-work-arrow" onClick="{{ swapNext }}" aria-label="Next project">→</button>
+                <button class="lm-work-arrow" onClick="{{ railPrev }}" aria-label="Previous projects">←</button>
+                <button class="lm-work-arrow lm-work-pause" onClick="{{ railToggle }}" aria-label="{{ railPauseLabel }}">{{ railPauseText }}</button>
+                <button class="lm-work-arrow" onClick="{{ railNext }}" aria-label="Next projects">→</button>
               </div>
             </div>
           </div>
@@ -859,15 +885,20 @@ const HERO_PHASES=[
   {number:'04',label:'M&E Fit-Out & Rooftop Plant',blurb:'Facade cladding lands while rows of rooftop cooling plant are set and piped.'},
   {number:'05',label:'Live Data Centre Campus',blurb:'Plant is commissioned and energised, and the halls go live.'}
 ];
-// CardSwap deck: six representative delivery scopes, each shown as a completed
-// installation beside the coordinated design used to communicate the work.
-const SWAP=[
-  {title:'Rooftop Diesel Generators',cat:'Electrical',meta:'Containerised standby power plant',cardSrcSet:'assets/img/project-comparisons/web/roof-diesel-generators-comparison-master-800w.webp 800w, assets/img/project-comparisons/web/roof-diesel-generators-comparison-master-1600w.webp 1600w',cardFallback:'assets/img/project-comparisons/web/roof-diesel-generators-comparison-master-1600w.jpg'},
-  {title:'Rooftop AC Outdoor Units',cat:'HVAC & Cooling',meta:'High-density condenser installation',cardSrcSet:'assets/img/project-comparisons/web/rooftop-ac-outdoor-units-comparison-master-800w.webp 800w, assets/img/project-comparisons/web/rooftop-ac-outdoor-units-comparison-master-1600w.webp 1600w',cardFallback:'assets/img/project-comparisons/web/rooftop-ac-outdoor-units-comparison-master-1600w.jpg'},
-  {title:'ECC Monitoring Room',cat:'ELV & Controls',meta:'Mission-critical operations centre',cardSrcSet:'assets/img/project-comparisons/web/ecc-monitoring-room-comparison-master-800w.webp 800w, assets/img/project-comparisons/web/ecc-monitoring-room-comparison-master-1600w.webp 1600w',cardFallback:'assets/img/project-comparisons/web/ecc-monitoring-room-comparison-master-1600w.jpg'},
-  {title:'Chiller Piping',cat:'HVAC & Cooling',meta:'Primary chilled-water distribution corridor',cardSrcSet:'assets/img/project-comparisons/web/chiller-piping-comparison-master-800w.webp 800w, assets/img/project-comparisons/web/chiller-piping-comparison-master-1600w.webp 1600w',cardFallback:'assets/img/project-comparisons/web/chiller-piping-comparison-master-1600w.jpg'},
-  {title:'Outdoor Chilled-Water Storage Tank',cat:'HVAC & Cooling',meta:'Thermal storage tank installation',cardSrcSet:'assets/img/project-comparisons/web/outdoor-chilled-water-tank-comparison-master-800w.webp 800w, assets/img/project-comparisons/web/outdoor-chilled-water-tank-comparison-master-1600w.webp 1600w',cardFallback:'assets/img/project-comparisons/web/outdoor-chilled-water-tank-comparison-master-1600w.jpg'},
-  {title:'Rooftop Fluorine-Pump System',cat:'HVAC & Cooling',meta:'Packaged rooftop cooling modules',cardSrcSet:'assets/img/project-comparisons/web/rooftop-fluorine-pump-system-comparison-master-800w.webp 800w, assets/img/project-comparisons/web/rooftop-fluorine-pump-system-comparison-master-1600w.webp 1600w',cardFallback:'assets/img/project-comparisons/web/rooftop-fluorine-pump-system-comparison-master-1600w.jpg'}
+// Ten representative scopes. Each card rests on the completed installation and
+// reveals the coordinated-design poster on hover/focus. Source masters stay at
+// full resolution; the browser receives 400/800px variants sized for this rail.
+const PROJECT_RAIL=[
+  {title:'Rooftop Diesel Generators',cat:'Electrical',meta:'Containerised standby power plant',photoSrcSet:'assets/img/project-rail/photos/web/roof-diesel-generator-400w.webp 400w, assets/img/project-rail/photos/web/roof-diesel-generator-800w.webp 800w',photo:'assets/img/project-rail/photos/web/roof-diesel-generator-800w.jpg',posterSrcSet:'assets/img/project-rail/posters/web/rooftop-diesel-generator-studio-400w.webp 400w, assets/img/project-rail/posters/web/rooftop-diesel-generator-studio-800w.webp 800w',poster:'assets/img/project-rail/posters/web/rooftop-diesel-generator-studio-800w.jpg'},
+  {title:'Data Hall',cat:'Data Hall',meta:'Rack rows, busway and containment',photoSrcSet:'assets/img/project-rail/photos/web/data-hall-rackrow-400w.webp 400w, assets/img/project-rail/photos/web/data-hall-rackrow-800w.webp 800w',photo:'assets/img/project-rail/photos/web/data-hall-rackrow-800w.jpg',posterSrcSet:'assets/img/project-rail/posters/web/data-hall-studio-400w.webp 400w, assets/img/project-rail/posters/web/data-hall-studio-800w.webp 800w',poster:'assets/img/project-rail/posters/web/data-hall-studio-800w.jpg'},
+  {title:'Chiller Plant Room',cat:'HVAC & Cooling',meta:'Chilled-water plant installation',photoSrcSet:'assets/img/project-rail/photos/web/chiller-plant-room-400w.webp 400w, assets/img/project-rail/photos/web/chiller-plant-room-800w.webp 800w',photo:'assets/img/project-rail/photos/web/chiller-plant-room-800w.jpg',posterSrcSet:'assets/img/project-rail/posters/web/chiller-plant-room-studio-400w.webp 400w, assets/img/project-rail/posters/web/chiller-plant-room-studio-800w.webp 800w',poster:'assets/img/project-rail/posters/web/chiller-plant-room-studio-800w.jpg'},
+  {title:'Main Switchboard (MSB)',cat:'Electrical',meta:'Power-distribution module interior',photoSrcSet:'assets/img/project-rail/photos/web/msb-400w.webp 400w',photo:'assets/img/project-rail/photos/web/msb-400w.jpg',posterSrcSet:'assets/img/project-rail/posters/web/main-switchboard-studio-400w.webp 400w, assets/img/project-rail/posters/web/main-switchboard-studio-800w.webp 800w',poster:'assets/img/project-rail/posters/web/main-switchboard-studio-800w.jpg'},
+  {title:'Rooftop AC Outdoor Units',cat:'HVAC & Cooling',meta:'High-density condenser installation',photoSrcSet:'assets/img/project-rail/photos/web/roof-ac-unit-400w.webp 400w, assets/img/project-rail/photos/web/roof-ac-unit-800w.webp 800w',photo:'assets/img/project-rail/photos/web/roof-ac-unit-800w.jpg',posterSrcSet:'assets/img/project-rail/posters/web/rooftop-ac-outdoor-units-studio-400w.webp 400w, assets/img/project-rail/posters/web/rooftop-ac-outdoor-units-studio-800w.webp 800w',poster:'assets/img/project-rail/posters/web/rooftop-ac-outdoor-units-studio-800w.jpg'},
+  {title:'ECC Monitoring Room',cat:'ELV & Controls',meta:'Mission-critical operations centre',photoSrcSet:'assets/img/project-rail/photos/web/ecc-room-400w.webp 400w, assets/img/project-rail/photos/web/ecc-room-800w.webp 800w',photo:'assets/img/project-rail/photos/web/ecc-room-800w.jpg',posterSrcSet:'assets/img/project-rail/posters/web/ecc-monitoring-room-studio-400w.webp 400w, assets/img/project-rail/posters/web/ecc-monitoring-room-studio-800w.webp 800w',poster:'assets/img/project-rail/posters/web/ecc-monitoring-room-studio-800w.jpg'},
+  {title:'Chiller Piping',cat:'HVAC & Cooling',meta:'Primary chilled-water distribution corridor',photoSrcSet:'assets/img/project-rail/photos/web/chiller-piping-400w.webp 400w, assets/img/project-rail/photos/web/chiller-piping-800w.webp 800w',photo:'assets/img/project-rail/photos/web/chiller-piping-800w.jpg',posterSrcSet:'assets/img/project-rail/posters/web/chiller-piping-studio-400w.webp 400w, assets/img/project-rail/posters/web/chiller-piping-studio-800w.webp 800w',poster:'assets/img/project-rail/posters/web/chiller-piping-studio-800w.jpg'},
+  {title:'Outdoor Chilled-Water Storage Tank',cat:'HVAC & Cooling',meta:'Thermal storage tank installation',photoSrcSet:'assets/img/project-rail/photos/web/chilled-water-tank-400w.webp 400w, assets/img/project-rail/photos/web/chilled-water-tank-800w.webp 800w',photo:'assets/img/project-rail/photos/web/chilled-water-tank-800w.jpg',posterSrcSet:'assets/img/project-rail/posters/web/outdoor-chilled-water-tank-studio-400w.webp 400w, assets/img/project-rail/posters/web/outdoor-chilled-water-tank-studio-800w.webp 800w',poster:'assets/img/project-rail/posters/web/outdoor-chilled-water-tank-studio-800w.jpg'},
+  {title:'Rooftop Fluorine-Pump System',cat:'HVAC & Cooling',meta:'Packaged rooftop cooling modules',photoSrcSet:'assets/img/project-rail/photos/web/fluorine-pump-system-400w.webp 400w, assets/img/project-rail/photos/web/fluorine-pump-system-800w.webp 800w',photo:'assets/img/project-rail/photos/web/fluorine-pump-system-800w.jpg',posterSrcSet:'assets/img/project-rail/posters/web/rooftop-fluorine-pump-system-studio-400w.webp 400w, assets/img/project-rail/posters/web/rooftop-fluorine-pump-system-studio-800w.webp 800w',poster:'assets/img/project-rail/posters/web/rooftop-fluorine-pump-system-studio-800w.jpg'},
+  {title:'Pre-Action Sprinkler Valve Room',cat:'Fire Protection',meta:'Pre-action valve assemblies',photoSrcSet:'assets/img/project-rail/photos/web/pre-action-valve-room-400w.webp 400w',photo:'assets/img/project-rail/photos/web/pre-action-valve-room-400w.jpg',posterSrcSet:'assets/img/project-rail/posters/web/pre-action-valve-room-studio-400w.webp 400w, assets/img/project-rail/posters/web/pre-action-valve-room-studio-800w.webp 800w',poster:'assets/img/project-rail/posters/web/pre-action-valve-room-studio-800w.jpg'}
 ];
 
 const CERTS=[
@@ -1123,7 +1154,7 @@ const SECTION_STEP_DURATION_MS=650;
 const SECTION_STEP_COOLDOWN_MS=780;
 
 class Component extends DCLogic {
-  state = { screen:null, filter:'All', contactTab:'careers', menuOpen:false, sent:false, err:false, submitting:false, errorMessage:'', openCert:null, logoStage:0, navRevealed:false, flyT:null, swapFront:0,
+  state = { screen:null, filter:'All', contactTab:'careers', menuOpen:false, sent:false, err:false, submitting:false, errorMessage:'', openCert:null, logoStage:0, navRevealed:false, flyT:null, railPaused:false,
     enquiry:{name:'',email:'',contact:'',subject:'',message:'',website:''},
     form:{salutation:'~ Please select one. ~',name:'',contact:'',email:'',jobTitle:'~ Please select one. ~',cv:'',website:''} };
 
@@ -2176,6 +2207,15 @@ class Component extends DCLogic {
     this._heroUpdate();
     this._revealScan();
     this._applySrcs();
+    document.addEventListener('visibilitychange',this._railVisibility);
+    if(this._reduce) this.setState({railPaused:true});
+    if(typeof IntersectionObserver!=='undefined'){
+      this._railObserver=new IntersectionObserver(entries=>{
+        this._railVisible=!!(entries[0]&&entries[0].isIntersecting);
+        if(this._railVisible)this._railStart(); else this._railStop();
+      },{threshold:.08});
+      requestAnimationFrame(()=>{ if(this._rail)this._railObserver.observe(this._rail); });
+    }else this._railStart();
   }
   _applySrcs=()=>{
     if(typeof document==='undefined') return;
@@ -2196,6 +2236,10 @@ class Component extends DCLogic {
     window.removeEventListener('wheel',this._stepSectionWheel,{passive:false});
     this._finishSectionStep(false);
     this._stopHeroLoop();
+    this._railStop();
+    clearTimeout(this._railRestartTimer);
+    document.removeEventListener('visibilitychange',this._railVisibility);
+    if(this._railObserver)this._railObserver.disconnect();
   }
   go(n,contactTab){
     const returnToSeenHero=n==='Home'&&this._heroSeen();
@@ -2317,6 +2361,54 @@ class Component extends DCLogic {
     if(e.key==='ArrowLeft'){ e.preventDefault(); this._swapPrev({type:'key'}); return; }
     if(e.key==='ArrowRight'){ e.preventDefault(); this._swapNext({type:'key'}); return; }
   };
+  /* ---- Project rail: a seamless, self-pausing loop. The browser scrolls a
+     duplicated track, while hover/focus tells the story inside each card. ---- */
+  _railWrapRef=(el)=>{ this._rail=el; if(el) requestAnimationFrame(this._railStart); };
+  _railBlocked(){ return !this._rail||!this._rail.isConnected||this._reduce||this.state.railPaused||this._railHover||this._railFocused||this._railDragging||this._railVisible===false||(typeof document!=='undefined'&&document.hidden); }
+  _railStart=()=>{
+    if(this._railBlocked()||this._railRaf) return;
+    this._railLast=0;
+    this._railRaf=requestAnimationFrame(this._railTick);
+  };
+  _railStop=()=>{
+    if(this._railRaf) cancelAnimationFrame(this._railRaf);
+    this._railRaf=null; this._railLast=0;
+  };
+  _railTick=(now)=>{
+    this._railRaf=null;
+    if(this._railBlocked()) return;
+    if(this._railLast){
+      const dt=Math.min(48,now-this._railLast),half=this._rail.scrollWidth/2;
+      this._rail.scrollLeft+=dt*.032;
+      if(half>0&&this._rail.scrollLeft>=half) this._rail.scrollLeft-=half;
+    }
+    this._railLast=now;
+    this._railRaf=requestAnimationFrame(this._railTick);
+  };
+  _railEnter=()=>{ this._railHover=true; this._railStop(); };
+  _railLeave=()=>{ this._railHover=false; this._railDragging=false; this._railStart(); };
+  _railFocus=()=>{ this._railFocused=true; this._railStop(); };
+  _railBlur=(e)=>{ if(!e.currentTarget.contains(e.relatedTarget)){ this._railFocused=false; this._railStart(); } };
+  _railPointerDown=()=>{ this._railDragging=true; this._railStop(); };
+  _railPointerUp=()=>{ this._railDragging=false; this._railStart(); };
+  _railNudge=(direction)=>{
+    const rail=this._rail;
+    if(!rail) return;
+    this._railStop();
+    const card=rail.querySelector('.lm-rail-card');
+    const amount=((card&&card.getBoundingClientRect().width)||340)+18;
+    if(direction<0&&rail.scrollLeft<amount*.5){
+      const half=rail.scrollWidth/2;
+      if(half>0)rail.scrollLeft=half;
+    }
+    rail.scrollBy({left:direction*amount,behavior:this._reduce?'auto':'smooth'});
+    clearTimeout(this._railRestartTimer);
+    this._railRestartTimer=setTimeout(this._railStart,this._reduce?0:650);
+  };
+  _railPrev=()=>this._railNudge(-1);
+  _railNext=()=>this._railNudge(1);
+  _railToggle=()=>this.setState(s=>({railPaused:!s.railPaused}),()=>this.state.railPaused?this._railStop():this._railStart());
+  _railVisibility=()=>{ if(document.hidden)this._railStop(); else this._railStart(); };
   submitEnquiry(e){ return this._submitContact(e,'enquiry'); }
   submitCareers(e){ return this._submitContact(e,'careers'); }
   async _submitContact(e,formType){
@@ -2435,10 +2527,12 @@ class Component extends DCLogic {
         cardStyle:open?{...baseCard,cursor:'pointer'}:baseCard};
     });
     const featured = projects.slice(0,6).map(p=>({...p,onOpen:p.onOpen||(()=>this.go('Projects'))}));
-    const swapRefs=this._swapCardRefs();
-    const swapFront=SWAP[this.state.swapFront]||SWAP[0];
-    const swapCards=SWAP.map((s,i)=>({...s,cardRef:swapRefs[i],
-      index:('0'+(i+1)).slice(-2),accessibleLabel:s.title+' project: completed installation and coordinated design'}));
+    const railCards=PROJECT_RAIL.concat(PROJECT_RAIL).map((p,i)=>({...p,
+      index:('0'+((i%PROJECT_RAIL.length)+1)).slice(-2),
+      tabIndex:i<PROJECT_RAIL.length?0:-1,
+      ariaHidden:i>=PROJECT_RAIL.length,
+      accessibleLabel:p.title+', '+p.cat+'. Completed installation; hover or focus to reveal coordinated design.'
+    }));
     // Shaped like the globe's own #views buttons -- 4px radius, mono 10px at
     // .14em, cyan fill when active -- because they sit forty pixels under them.
     const chipBase={fontFamily:'var(--font-mono)',fontSize:'10px',fontWeight:700,letterSpacing:'.14em',textTransform:'uppercase',padding:'9px 13px',borderRadius:'4px',border:'1px solid rgba(180,214,240,.20)',background:'rgba(8,22,38,.7)',color:'#8aa4bd',cursor:'pointer',appearance:'none',transition:'all .15s'};
@@ -2457,11 +2551,13 @@ class Component extends DCLogic {
       navItems, services, values, featured, filters, filteredProjects,
       menuOpen: this.state.menuOpen, menuClosed: !this.state.menuOpen,
       toggleMenu: ()=>this.setState(s=>({menuOpen:!s.menuOpen})),
-      swapCards, swapWrapRef:this._swapWrapRef,
-      swapCat:swapFront.cat, swapTitle:swapFront.title, swapMeta:swapFront.meta,
-      swapCount:('0'+(this.state.swapFront+1)).slice(-2)+' / '+('0'+SWAP.length).slice(-2),
-      swapTitleRef:this._swapTitleRef,
-      swapNext:this._swapNext, swapPrev:this._swapPrev, swapKeyDown:this._swapKeyDown,
+      railCards, railWrapRef:this._railWrapRef,
+      railEnter:this._railEnter, railLeave:this._railLeave,
+      railFocus:this._railFocus, railBlur:this._railBlur,
+      railPointerDown:this._railPointerDown, railPointerUp:this._railPointerUp,
+      railPrev:this._railPrev, railNext:this._railNext, railToggle:this._railToggle,
+      railPauseText:this.state.railPaused?'Resume':'Pause',
+      railPauseLabel:this.state.railPaused?'Resume automatic project scroll':'Pause automatic project scroll',
       stats: STATS,
       certs: CERTS.map(c=>({...c,alt:c.code+' — '+c.title+' certificate'})),
       strongPoints: [
