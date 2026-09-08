@@ -187,57 +187,39 @@
   .lm-pcard:hover .lm-3dbtn{background:var(--color-brand);color:#fff}
   .lm-3dbtn svg{transition:transform .15s}
   .lm-pcard:hover .lm-3dbtn svg{transform:translateX(3px)}
-  /* Selected Work is a cinematic discovery surface; the Projects page remains
-     the practical directory. One authored moment: the physical CardSwap deck. */
+  /* Selected projects is an editorial proof-of-delivery surface. The paired
+     site/model cards support the story; the company and its work stay primary. */
   .lm-project-section{position:relative;background:#071f39;color:#fff;padding:clamp(78px,8vw,118px) var(--gutter);scroll-snap-align:start;overflow:hidden}
-  .lm-project-section:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 74% 38%,rgba(0,176,240,.16),transparent 35%),linear-gradient(rgba(109,174,219,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(109,174,219,.055) 1px,transparent 1px);background-size:auto,72px 72px,72px 72px;mask-image:linear-gradient(to bottom,black 0 78%,transparent)}
+  .lm-project-section:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 72% 44%,rgba(0,176,240,.14),transparent 38%),linear-gradient(180deg,rgba(93,155,198,.045),transparent 28%)}
   .lm-project-shell{position:relative;z-index:1;max-width:var(--container-max);margin:0 auto}
-  .lm-work-stage{display:grid;grid-template-columns:minmax(260px,.72fr) minmax(0,1.45fr);gap:clamp(36px,6vw,88px);align-items:center;min-height:610px}
-  .lm-work-copy{align-self:center;max-width:440px}
+  .lm-work-head{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(290px,.85fr);gap:clamp(40px,8vw,118px);align-items:end;margin-bottom:clamp(34px,5vw,62px)}
+  .lm-work-copy{max-width:720px}
   .lm-work-kicker{display:flex;align-items:center;gap:10px;color:#53cefa;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
   .lm-work-kicker:before{content:"";width:30px;height:1px;background:currentColor}
-  .lm-work-heading{max-width:9ch;margin:18px 0 20px;color:#fff;font-family:var(--font-display);font-size:clamp(42px,5.4vw,76px);line-height:.94;letter-spacing:-.035em}
-  .lm-work-intro{max-width:37ch;margin:0;color:#b9cee0;font-size:16px;line-height:1.65}
-  .lm-work-current{margin-top:54px;padding-top:20px;border-top:1px solid rgba(137,190,225,.26)}
-  .lm-work-count{color:#53cefa;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.17em}
-  .lm-work-title{margin:9px 0 6px;color:#fff;font-family:var(--font-display);font-size:clamp(23px,2.45vw,36px);line-height:1.08}
+  .lm-work-heading{max-width:13ch;margin:18px 0 0;color:#fff;font-family:var(--font-display);font-size:clamp(42px,5.5vw,74px);line-height:.98;letter-spacing:-.035em}
+  .lm-work-intro-panel{padding-left:clamp(22px,3vw,38px);border-left:1px solid rgba(137,190,225,.3)}
+  .lm-work-intro{max-width:46ch;margin:0;color:#b9cee0;font-size:16px;line-height:1.65}
+  .lm-work-portfolio{appearance:none;display:inline-flex;align-items:center;gap:9px;margin-top:24px;padding:12px 17px;border:1px solid transparent;border-radius:4px;background:#00b0f0;color:#06203b;font-family:var(--font-display);font-size:12px;font-weight:800;letter-spacing:.065em;text-transform:uppercase;cursor:pointer;transition:background .2s,transform .2s}
+  .lm-work-portfolio:hover{background:#53cefa;transform:translateY(-2px)}
+  .lm-work-showcase{position:relative}
+  .lm-work-deck{position:relative;height:clamp(390px,56vw,660px);overflow:hidden;border-radius:16px;perspective:1400px;touch-action:pan-y;isolation:isolate;cursor:grab}
+  .lm-work-deck:active{cursor:grabbing}
+  .lm-work-deck:after{content:"";position:absolute;left:12%;right:7%;bottom:22px;height:58px;background:radial-gradient(ellipse,rgba(0,0,0,.48),transparent 68%);filter:blur(10px);pointer-events:none}
+  .lm-swapcard{position:absolute;top:16px;left:50%;width:min(82vw,960px);aspect-ratio:8/5;overflow:hidden;border:1px solid rgba(210,237,250,.48);border-radius:18px;background:#0d2a45;box-shadow:0 28px 76px rgba(0,5,18,.48),0 7px 20px rgba(0,5,18,.28);will-change:transform,filter;backface-visibility:hidden;color:#fff}
+  .lm-swapcard picture,.lm-swapcard img{width:100%;height:100%;display:block}
+  .lm-swapcard img{object-fit:cover}
+  .lm-swap-index{position:absolute;top:14px;right:14px;padding:6px 9px;border:1px solid rgba(255,255,255,.34);border-radius:4px;background:rgba(6,27,48,.8);font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.13em}
+  .lm-work-current{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:clamp(18px,3vw,34px);align-items:center;max-width:960px;margin:10px auto 0;padding-top:22px;border-top:1px solid rgba(137,190,225,.3)}
+  .lm-work-count{align-self:start;padding-top:6px;color:#53cefa;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.17em;white-space:nowrap}
+  .lm-work-title{margin:0 0 6px;color:#fff;font-family:var(--font-display);font-size:clamp(24px,2.8vw,38px);line-height:1.08}
   .lm-work-meta{margin:0;color:#9fb9cd;font-size:14px;line-height:1.5}
-  .lm-work-actions{display:flex;align-items:center;gap:10px;margin-top:24px;flex-wrap:wrap}
-  .lm-work-open,.lm-work-arrow,.lm-atlas-toggle{appearance:none;border:1px solid transparent;font:inherit;cursor:pointer}
-  .lm-work-open{display:inline-flex;align-items:center;gap:9px;padding:12px 17px;border-radius:4px;background:#00b0f0;color:#06203b;font-family:var(--font-display);font-size:12px;font-weight:800;letter-spacing:.065em;text-transform:uppercase;transition:background .2s,transform .2s}
-  .lm-work-open:hover{background:#53cefa;transform:translateY(-2px)}
-  .lm-work-arrow{width:42px;height:42px;border-color:rgba(158,204,232,.36);border-radius:50%;background:transparent;color:#d9edf8;font-size:18px;transition:border-color .2s,background .2s,transform .2s}
+  .lm-work-actions{display:flex;align-items:center;gap:10px}
+  .lm-work-arrow{appearance:none;width:44px;height:44px;border:1px solid rgba(158,204,232,.38);border-radius:50%;background:transparent;color:#d9edf8;font:inherit;font-size:18px;cursor:pointer;transition:border-color .2s,background .2s,transform .2s}
   .lm-work-arrow:hover{border-color:#53cefa;background:rgba(0,176,240,.12);transform:translateY(-2px)}
-  .lm-work-open:focus-visible,.lm-work-arrow:focus-visible,.lm-atlas-toggle:focus-visible,.lm-atlas-card:focus-visible{outline:3px solid #53cefa;outline-offset:4px}
-  .lm-work-deck{position:relative;height:550px;overflow:hidden;border-radius:12px;perspective:1400px;touch-action:pan-y;isolation:isolate}
-  .lm-work-deck:after{content:"";position:absolute;left:15%;right:4%;bottom:28px;height:54px;background:radial-gradient(ellipse,rgba(0,0,0,.48),transparent 68%);filter:blur(9px);pointer-events:none}
-  .lm-swapcard{position:absolute;top:26px;left:46%;width:min(61vw,790px);height:455px;overflow:hidden;border:1px solid rgba(210,237,250,.54);border-radius:14px;background:#0d2a45;box-shadow:0 24px 65px rgba(0,5,18,.48),0 6px 18px rgba(0,5,18,.28);cursor:pointer;will-change:transform,filter;backface-visibility:hidden;display:flex;color:#fff}
-  .lm-swapcard:focus-visible{outline:3px solid #53cefa;outline-offset:5px}
-  .lm-swap-photo,.lm-swap-model{position:relative;min-width:0;overflow:hidden}.lm-swap-photo{flex:0 0 53.5%}.lm-swap-model{flex:1;border-left:1px solid #53cefa}
-  .lm-swapcard img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .7s cubic-bezier(.16,1,.3,1)}
-  .lm-swapcard:hover img{transform:scale(1.025)}
-  .lm-swap-label{position:absolute;bottom:12px;left:12px;padding:5px 8px;border-radius:3px;background:rgba(6,27,48,.84);color:#fff;font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;backdrop-filter:blur(6px)}
-  .lm-swap-model .lm-swap-label{background:#00b0f0;color:#06203b}
-  .lm-swap-index{position:absolute;top:12px;right:12px;padding:5px 8px;border:1px solid rgba(255,255,255,.35);border-radius:3px;background:rgba(6,27,48,.78);font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.13em}
-  .lm-atlas-toggle-row{display:flex;justify-content:center;margin-top:18px}
-  .lm-atlas-toggle{display:inline-flex;align-items:center;gap:10px;padding:12px 17px;border-color:rgba(136,191,224,.42);border-radius:4px;background:transparent;color:#d9edf8;font-family:var(--font-display);font-size:12px;font-weight:800;letter-spacing:.065em;text-transform:uppercase;transition:border-color .2s,background .2s}
-  .lm-atlas-toggle:hover{border-color:#53cefa;background:rgba(0,176,240,.1)}
-  .lm-project-atlas{margin-top:46px;padding-top:42px;border-top:1px solid rgba(137,190,225,.25);animation:lmAtlasIn .5s cubic-bezier(.16,1,.3,1) both}
-  @keyframes lmAtlasIn{from{opacity:0;clip-path:inset(0 0 100%)}to{opacity:1;clip-path:inset(0)}}
-  .lm-atlas-head{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:28px}
-  .lm-atlas-head h3{margin:0;color:#fff;font-family:var(--font-display);font-size:clamp(28px,3.5vw,46px)}
-  .lm-atlas-head p{max-width:48ch;margin:0;color:#9fb9cd;font-size:14px;line-height:1.55}
-  .lm-atlas-row{display:grid;grid-template-columns:150px minmax(0,1fr);gap:22px;align-items:start;padding:22px 0;border-top:1px solid rgba(137,190,225,.18)}
-  .lm-atlas-row-title{display:flex;flex-direction:column;gap:5px;padding-top:7px;color:#53cefa;font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
-  .lm-atlas-rail{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(230px,280px);gap:12px;overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:x proximity;padding:0 3px 14px;scrollbar-color:#2c648b transparent}
-  .lm-atlas-card{appearance:none;position:relative;display:grid;grid-template-columns:96px minmax(0,1fr);min-height:104px;padding:0;border:1px solid rgba(158,204,232,.26);border-radius:7px;overflow:hidden;background:rgba(12,45,72,.72);color:#fff;text-align:left;cursor:pointer;scroll-snap-align:start;transition:border-color .2s,background .2s,transform .2s}
-  .lm-atlas-card:hover{border-color:#53cefa;background:#123b5f;transform:translateY(-2px)}
-  .lm-atlas-card img{width:96px;height:100%;object-fit:cover}
-  .lm-atlas-card-copy{display:flex;flex-direction:column;justify-content:center;gap:6px;padding:13px}
-  .lm-atlas-card-copy strong{font-family:var(--font-display);font-size:14px;line-height:1.22}.lm-atlas-card-copy span{color:#92b1c8;font-size:11px;line-height:1.35}
-  @media (max-width:1050px){.lm-work-stage{grid-template-columns:1fr;gap:30px}.lm-work-copy{max-width:760px}.lm-work-heading{max-width:14ch}.lm-work-current{margin-top:28px}.lm-work-deck{height:530px}.lm-swapcard{left:47%;width:min(82vw,790px)}}
-  @media (max-width:760px){.lm-project-section{padding:70px var(--gutter)}.lm-work-stage{min-height:0}.lm-work-heading{font-size:clamp(38px,12vw,58px)}.lm-work-intro{font-size:15px}.lm-work-deck{height:430px}.lm-swapcard{left:50%;top:18px;width:min(86vw,430px);height:350px;flex-direction:column}.lm-swap-photo{flex:0 0 54%!important}.lm-swap-model{border-left:0;border-top:1px solid #53cefa}.lm-swap-label{bottom:8px;left:8px}.lm-atlas-head{align-items:flex-start;flex-direction:column}.lm-atlas-row{grid-template-columns:1fr;gap:12px}.lm-atlas-rail{grid-auto-columns:minmax(220px,78vw)}}
-  @media (prefers-reduced-motion:reduce){.lm-3dbtn svg,.lm-work-open,.lm-work-arrow,.lm-atlas-toggle,.lm-swapcard img,.lm-atlas-card{transition:none!important}.lm-project-atlas{animation:none}.lm-work-open:hover,.lm-work-arrow:hover,.lm-atlas-card:hover{transform:none}}
+  .lm-work-portfolio:focus-visible,.lm-work-arrow:focus-visible,.lm-work-deck:focus-visible{outline:3px solid #53cefa;outline-offset:4px}
+  @media (max-width:1050px){.lm-work-head{grid-template-columns:1fr;gap:26px}.lm-work-copy{max-width:820px}.lm-work-heading{max-width:15ch}.lm-work-intro-panel{max-width:760px;padding:24px 0 0;border-left:0;border-top:1px solid rgba(137,190,225,.3)}.lm-work-deck{height:clamp(390px,64vw,640px)}.lm-swapcard{width:min(86vw,900px)}}
+  @media (max-width:760px){.lm-project-section{padding:70px var(--gutter)}.lm-work-heading{font-size:clamp(38px,11vw,56px)}.lm-work-intro{font-size:15px}.lm-work-deck{height:clamp(285px,72vw,430px);border-radius:10px}.lm-swapcard{top:12px;width:calc(100% - 46px);border-radius:12px}.lm-swap-index{top:9px;right:9px}.lm-work-current{grid-template-columns:auto minmax(0,1fr);gap:14px 18px;margin-top:4px;padding-top:18px}.lm-work-actions{grid-column:1/-1;justify-content:flex-end}.lm-work-title{font-size:clamp(23px,7vw,32px)}}
+  @media (prefers-reduced-motion:reduce){.lm-3dbtn svg,.lm-work-portfolio,.lm-work-arrow{transition:none!important}.lm-work-portfolio:hover,.lm-work-arrow:hover{transform:none}}
 </style>
 </helmet>
 <div style="min-height:100%;display:flex;flex-direction:column;background:var(--surface-page);color:var(--text-body);font-family:var(--font-sans)">
@@ -385,56 +367,40 @@
         </div>
         </sc-if>
         <div class="lm-project-shell">
-          <div class="lm-work-stage">
+          <div class="lm-work-head">
             <div class="lm-work-copy" data-reveal="0">
-              <span class="lm-work-kicker">Selected Work</span>
-              <h2 id="selected-work-title" class="lm-work-heading">Interactive<br/>BIM viewers</h2>
-              <p class="lm-work-intro">Six projects with both a site photograph and a BIM model. Drag across a card to compare them, or open one in the 3D viewer.</p>
-              <div class="lm-work-current" ref="{{ swapTitleRef }}" aria-live="polite">
-                <div class="lm-work-count">{{ swapCount }}</div>
-                <h3 class="lm-work-title">{{ swapTitle }}</h3>
-                <p class="lm-work-meta">{{ swapCat }} · {{ swapMeta }}</p>
-                <div class="lm-work-actions">
-                  <button class="lm-work-open" onClick="{{ swapOpenFront }}">Open current 3D model {{ arrowIcon }}</button>
-                  <button class="lm-work-arrow" onClick="{{ swapPrev }}" aria-label="Previous project">←</button>
-                  <button class="lm-work-arrow" onClick="{{ swapNext }}" aria-label="Next project">→</button>
-                </div>
-              </div>
+              <span class="lm-work-kicker">Selected Projects</span>
+              <h2 id="selected-work-title" class="lm-work-heading">Projects engineered for uptime.</h2>
             </div>
-            <div class="lm-work-deck" ref="{{ swapWrapRef }}" onKeyDown="{{ swapKeyDown }}" tabindex="0" role="region" aria-label="Compare site photograph and BIM model">
+            <div class="lm-work-intro-panel" data-reveal="1">
+              <p class="lm-work-intro">From standby power and cooling plant to control rooms, our teams coordinate, install and commission the infrastructure that keeps data centres operating.</p>
+              <button class="lm-work-portfolio" onClick="{{ goProjects }}">View all projects {{ arrowIcon }}</button>
+            </div>
+          </div>
+          <div class="lm-work-showcase">
+            <div class="lm-work-deck" ref="{{ swapWrapRef }}" onKeyDown="{{ swapKeyDown }}" tabindex="0" role="region" aria-label="Selected project gallery">
               <sc-for list="{{ swapCards }}" as="c" hint-placeholder-count="6">
-                <div class="lm-swapcard" ref="{{ c.cardRef }}" onClick="{{ c.onOpen }}" tabindex="0" role="button" aria-label="{{ c.accessibleLabel }}">
-                  <div class="lm-swap-photo"><img data-src="{{ c.img }}" alt="{{ c.title }} site photograph" loading="lazy"/><span class="lm-swap-label">Site photograph</span></div>
-                  <div class="lm-swap-model"><img data-src="{{ c.render }}" alt="{{ c.title }} BIM model" loading="lazy"/><span class="lm-swap-label">BIM model</span></div>
+                <div class="lm-swapcard" ref="{{ c.cardRef }}">
+                  <picture>
+                    <source type="image/webp" srcset="{{ c.cardSrcSet }}" sizes="(max-width:760px) calc(100vw - 70px), min(82vw, 960px)"/>
+                    <img data-src="{{ c.cardFallback }}" alt="{{ c.accessibleLabel }}" loading="lazy" decoding="async"/>
+                  </picture>
                   <span class="lm-swap-index">{{ c.index }}</span>
                 </div>
               </sc-for>
             </div>
-          </div>
-          <div class="lm-atlas-toggle-row">
-            <button class="lm-atlas-toggle" ref="{{ homeProjectToggleRef }}" onClick="{{ toggleHomeProjects }}" aria-expanded="{{ projectsExpanded }}" aria-controls="home-project-atlas">{{ homeProjectToggleLabel }} {{ chevronIcon }}</button>
-          </div>
-          <sc-if value="{{ projectsExpanded }}" hint-placeholder-val="{{ false }}">
-            <div id="home-project-atlas" class="lm-project-atlas">
-              <div class="lm-atlas-head">
-                <div><span class="lm-work-kicker">Complete portfolio</span><h3>Project atlas</h3></div>
-                <p>Fourteen further BIM environments, organised by engineering discipline. Scroll each rail to explore.</p>
+            <div class="lm-work-current" ref="{{ swapTitleRef }}" aria-live="polite">
+              <div class="lm-work-count">{{ swapCount }}</div>
+              <div>
+                <h3 class="lm-work-title">{{ swapTitle }}</h3>
+                <p class="lm-work-meta">{{ swapCat }} · {{ swapMeta }}</p>
               </div>
-              <sc-for list="{{ atlasRows }}" as="row" hint-placeholder-count="5">
-                <section class="lm-atlas-row">
-                  <div class="lm-atlas-row-title"><span>{{ row.label }}</span><span>{{ row.count }} projects</span></div>
-                  <div class="lm-atlas-rail">
-                    <sc-for list="{{ row.projects }}" as="p" hint-placeholder-count="4">
-                      <button class="lm-atlas-card" onClick="{{ p.onOpen }}" aria-label="{{ p.accessibleLabel }}">
-                        <img data-src="{{ p.img }}" alt="{{ p.title }} project" loading="lazy"/>
-                        <span class="lm-atlas-card-copy"><strong>{{ p.title }}</strong><span>{{ p.meta }}</span></span>
-                      </button>
-                    </sc-for>
-                  </div>
-                </section>
-              </sc-for>
+              <div class="lm-work-actions">
+                <button class="lm-work-arrow" onClick="{{ swapPrev }}" aria-label="Previous project">←</button>
+                <button class="lm-work-arrow" onClick="{{ swapNext }}" aria-label="Next project">→</button>
+              </div>
             </div>
-          </sc-if>
+          </div>
         </div>
       </section>
 
@@ -810,15 +776,15 @@ const HERO_PHASES=[
   {number:'04',label:'M&E Fit-Out & Rooftop Plant',blurb:'Facade cladding lands while rows of rooftop cooling plant are set and piped.'},
   {number:'05',label:'Live Data Centre Campus',blurb:'Plant is commissioned and energised, and the halls go live.'}
 ];
-// CardSwap deck (adapted from React Bits CardSwap): the 6 projects that
-// have both a reference photo and a 3D model render + a locked viewer page
+// CardSwap deck: six representative delivery scopes, each shown as a completed
+// installation beside the coordinated design used to communicate the work.
 const SWAP=[
-  {title:'Rooftop Diesel Generators',cat:'Electrical',meta:'Containerised standby power plant',img:'projects-2x/roof-diesel-generator.webp',render:'assets/img/model-posters/rooftop-diesel-generator-studio.png',href:'rooftop-diesel-generator-viewer.dc.html'},
-  {title:'Rooftop AC Outdoor Units',cat:'HVAC & Cooling',meta:'High-density condenser installation',img:'projects-2x/roof-ac-unit.webp',render:'assets/img/model-posters/rooftop-ac-outdoor-units-studio.png',href:'rooftop-ac-outdoor-unit-viewer.dc.html'},
-  {title:'ECC Monitoring Room',cat:'ELV & Controls',meta:'Mission-critical operations centre',img:'projects-2x/ecc-room.webp',render:'assets/img/model-posters/ecc-monitoring-room-studio.png',href:'ecc-room-viewer.dc.html'},
-  {title:'Chiller Piping',cat:'HVAC & Cooling',meta:'Primary chilled-water distribution corridor',img:'projects-2x/chiller-piping.webp',render:'assets/img/model-posters/chiller-piping-studio.png',href:'chiller-piping-viewer.dc.html'},
-  {title:'Outdoor Chilled-Water Storage Tank',cat:'HVAC & Cooling',meta:'Thermal storage tank installation',img:'projects-2x/chilled-water-tank.webp',render:'assets/img/model-posters/outdoor-chilled-water-tank-studio.png',href:'outdoor-chilled-water-tank-viewer.dc.html'},
-  {title:'Rooftop Fluorine-Pump System',cat:'HVAC & Cooling',meta:'Packaged rooftop cooling modules',img:'projects-2x/fluorine-pump-system.webp',render:'assets/img/model-posters/rooftop-fluorine-pump-system-studio.png',href:'rooftop-fluorine-pump-system-viewer.dc.html'}
+  {title:'Rooftop Diesel Generators',cat:'Electrical',meta:'Containerised standby power plant',cardSrcSet:'assets/img/project-comparisons/web/roof-diesel-generators-comparison-master-800w.webp 800w, assets/img/project-comparisons/web/roof-diesel-generators-comparison-master-1600w.webp 1600w',cardFallback:'assets/img/project-comparisons/web/roof-diesel-generators-comparison-master-1600w.jpg'},
+  {title:'Rooftop AC Outdoor Units',cat:'HVAC & Cooling',meta:'High-density condenser installation',cardSrcSet:'assets/img/project-comparisons/web/rooftop-ac-outdoor-units-comparison-master-800w.webp 800w, assets/img/project-comparisons/web/rooftop-ac-outdoor-units-comparison-master-1600w.webp 1600w',cardFallback:'assets/img/project-comparisons/web/rooftop-ac-outdoor-units-comparison-master-1600w.jpg'},
+  {title:'ECC Monitoring Room',cat:'ELV & Controls',meta:'Mission-critical operations centre',cardSrcSet:'assets/img/project-comparisons/web/ecc-monitoring-room-comparison-master-800w.webp 800w, assets/img/project-comparisons/web/ecc-monitoring-room-comparison-master-1600w.webp 1600w',cardFallback:'assets/img/project-comparisons/web/ecc-monitoring-room-comparison-master-1600w.jpg'},
+  {title:'Chiller Piping',cat:'HVAC & Cooling',meta:'Primary chilled-water distribution corridor',cardSrcSet:'assets/img/project-comparisons/web/chiller-piping-comparison-master-800w.webp 800w, assets/img/project-comparisons/web/chiller-piping-comparison-master-1600w.webp 1600w',cardFallback:'assets/img/project-comparisons/web/chiller-piping-comparison-master-1600w.jpg'},
+  {title:'Outdoor Chilled-Water Storage Tank',cat:'HVAC & Cooling',meta:'Thermal storage tank installation',cardSrcSet:'assets/img/project-comparisons/web/outdoor-chilled-water-tank-comparison-master-800w.webp 800w, assets/img/project-comparisons/web/outdoor-chilled-water-tank-comparison-master-1600w.webp 1600w',cardFallback:'assets/img/project-comparisons/web/outdoor-chilled-water-tank-comparison-master-1600w.jpg'},
+  {title:'Rooftop Fluorine-Pump System',cat:'HVAC & Cooling',meta:'Packaged rooftop cooling modules',cardSrcSet:'assets/img/project-comparisons/web/rooftop-fluorine-pump-system-comparison-master-800w.webp 800w, assets/img/project-comparisons/web/rooftop-fluorine-pump-system-comparison-master-1600w.webp 1600w',cardFallback:'assets/img/project-comparisons/web/rooftop-fluorine-pump-system-comparison-master-1600w.jpg'}
 ];
 
 const CERTS=[
@@ -842,7 +808,6 @@ const CERTS=[
 ];
 const NAV=['Home','About','Projects','Contact'];
 const FILTERS=['All','HVAC & Cooling','Electrical','ELV & Controls','Fire Protection','Data Hall'];
-const HOME_CURATED=['Rooftop Diesel Generators','Rooftop AC Outdoor Units','ECC Monitoring Room','Chiller Piping','Outdoor Chilled-Water Storage Tank','Rooftop Fluorine-Pump System'];
 const IMG='assets/img/';
 // Must stay in step with the <head> preloader's own query, or the two disagree
 // about which file this screen wants and the phone pays for both.
@@ -915,7 +880,7 @@ const SECTION_STEP_DURATION_MS=650;
 const SECTION_STEP_COOLDOWN_MS=780;
 
 class Component extends DCLogic {
-  state = { screen:null, filter:'All', projectsExpanded:false, contactTab:'careers', menuOpen:false, sent:false, err:false, submitting:false, errorMessage:'', openCert:null, logoStage:0, navRevealed:false, flyT:null, swapFront:0,
+  state = { screen:null, filter:'All', contactTab:'careers', menuOpen:false, sent:false, err:false, submitting:false, errorMessage:'', openCert:null, logoStage:0, navRevealed:false, flyT:null, swapFront:0,
     enquiry:{name:'',email:'',contact:'',subject:'',message:'',website:''},
     form:{salutation:'~ Please select one. ~',name:'',contact:'',email:'',jobTitle:'~ Please select one. ~',cv:'',website:''} };
 
@@ -924,15 +889,6 @@ class Component extends DCLogic {
       stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round',
       dangerouslySetInnerHTML:{__html:ICONS[name]||''}});
   }
-  _homeProjectToggleRef=(el)=>{this._homeProjectToggle=el;};
-  _toggleHomeProjects=()=>{
-    const closing=this.state.projectsExpanded;
-    this.setState({projectsExpanded:!closing},()=>{
-      if(!closing)return;
-      const button=this._homeProjectToggle;
-      if(button){button.focus({preventScroll:true});const r=button.getBoundingClientRect();if(r.top<80||r.bottom>window.innerHeight)document.getElementById('selected-work-title')?.scrollIntoView({block:'start',behavior:'smooth'});}
-    });
-  };
   _caps=[];
   _target=null; _cur=null;
   _heroTrackRef=(el)=>{ this._track=el; if(el) this._updateHero(); };
@@ -1689,24 +1645,6 @@ class Component extends DCLogic {
   _swapEls=[];
   _swapWrapRef=(el)=>{ this._swapWrap=el; if(el) this._swapInitSoon(); };
   _swapTitleRef=(el)=>{ this._swapTitleEl=el; };
-  // photo <-> model comparison: on the front card the divider follows the pointer,
-  // then eases back to the resting split on leave (desktop only)
-  _swapWireDivider(el,i){
-    if(el._lmDiv) return; el._lmDiv=true;
-    el.addEventListener('pointermove',(e)=>{
-      if(!this._swapOrder||this._swapOrder[0]!==i||this._swapBusy) return;
-      if(matchMedia('(max-width:760px)').matches) return;
-      const r=el.getBoundingClientRect();
-      const pct=Math.min(82,Math.max(18,(e.clientX-r.left)/r.width*100));
-      const p=el.firstElementChild; if(!p) return;
-      p.style.transition='none'; p.style.flex='0 0 '+pct+'%';
-    });
-    el.addEventListener('pointerleave',()=>{
-      const p=el.firstElementChild; if(!p) return;
-      p.style.transition='flex-basis .45s ease'; p.style.flex='0 0 53.5%';
-      setTimeout(()=>{ p.style.transition=''; },500);
-    });
-  }
   _swapFadeTitle(){ const g=window.gsap; if(g&&this._swapTitleEl&&!this._reduce) g.fromTo(this._swapTitleEl,{opacity:0,y:10},{opacity:1,y:0,duration:.5,ease:'power2.out'}); }
   _swapCardRefs(){ // stable ref fns so re-renders don't churn the refs
     if(!this._swapRefFns) this._swapRefFns=SWAP.map((_,i)=>(el)=>{ this._swapEls[i]=el; if(el) this._swapInitSoon(); });
@@ -1730,7 +1668,7 @@ class Component extends DCLogic {
     if(this._swapReady&&els.every(e=>e._lmPlaced)) return;
     this._swapReady=true;this._swapBusy=false;
     this._swapOrder=Array.from({length:SWAP.length},(_,i)=>i);
-    els.forEach((el,i)=>{ el._lmPlaced=true; this._swapPlace(el,this._swapSlot(i,els.length),i); this._swapWireDivider(el,i); });
+    els.forEach((el,i)=>{ el._lmPlaced=true; this._swapPlace(el,this._swapSlot(i,els.length),i); });
     if(this.state.swapFront!==0) this.setState({swapFront:0});
     this._swapStartAuto();
     if(!wrap._lmWired){
@@ -1804,7 +1742,6 @@ class Component extends DCLogic {
   _swapKeyDown=(e)=>{
     if(e.key==='ArrowLeft'){ e.preventDefault(); this._swapPrev({type:'key'}); return; }
     if(e.key==='ArrowRight'){ e.preventDefault(); this._swapNext({type:'key'}); return; }
-    if(e.key==='Enter'||e.key===' '){ e.preventDefault(); const s=SWAP[this.state.swapFront]; if(s) window.location.href=s.href; }
   };
   submitEnquiry(e){ return this._submitContact(e,'enquiry'); }
   submitCareers(e){ return this._submitContact(e,'careers'); }
@@ -1915,16 +1852,10 @@ class Component extends DCLogic {
         cardStyle:open?{...baseCard,cursor:'pointer'}:baseCard};
     });
     const featured = projects.slice(0,6).map(p=>({...p,onOpen:p.onOpen||(()=>this.go('Projects'))}));
-    const remainingProjects=projects.filter(p=>HOME_CURATED.indexOf(p.title)===-1);
-    const atlasRows=FILTERS.slice(1).map(label=>{
-      const rowProjects=remainingProjects.filter(p=>p.tags.indexOf(label)!==-1);
-      return {label,count:rowProjects.length,projects:rowProjects};
-    }).filter(row=>row.count>0);
     const swapRefs=this._swapCardRefs();
     const swapFront=SWAP[this.state.swapFront]||SWAP[0];
-    const swapCards=SWAP.map((s,i)=>({...s,img:IMG+s.img,cardRef:swapRefs[i],
-      index:('0'+(i+1)).slice(-2),accessibleLabel:s.title+': compare site photograph and BIM model',
-      onOpen:()=>{ if(!this._swapMoved) window.location.href=s.href; }}));
+    const swapCards=SWAP.map((s,i)=>({...s,cardRef:swapRefs[i],
+      index:('0'+(i+1)).slice(-2),accessibleLabel:s.title+' project: completed installation and coordinated design'}));
     const chipBase={fontFamily:'var(--font-mono)',fontSize:'11px',fontWeight:600,letterSpacing:'.08em',textTransform:'uppercase',padding:'8px 16px',borderRadius:'999px',border:'1px solid var(--border-default)',background:'var(--surface-card)',color:'var(--text-body)',cursor:'pointer',appearance:'none',transition:'all .15s'};
     const filters=FILTERS.map(f=>({label:f,onClick:()=>this.setState({filter:f}),
       style:this.state.filter===f?{...chipBase,background:'var(--color-brand)',borderColor:'var(--color-brand)',color:'#fff'}:chipBase}));
@@ -1934,15 +1865,10 @@ class Component extends DCLogic {
       navItems, services, values, featured, filters, filteredProjects,
       menuOpen: this.state.menuOpen, menuClosed: !this.state.menuOpen,
       toggleMenu: ()=>this.setState(s=>({menuOpen:!s.menuOpen})),
-      atlasRows,
-      projectsExpanded:this.state.projectsExpanded,
-      homeProjectToggleLabel:this.state.projectsExpanded?'Close project atlas':'Explore full project atlas',
-      toggleHomeProjects:this._toggleHomeProjects,homeProjectToggleRef:this._homeProjectToggleRef,
       swapCards, swapWrapRef:this._swapWrapRef,
       swapCat:swapFront.cat, swapTitle:swapFront.title, swapMeta:swapFront.meta,
       swapCount:('0'+(this.state.swapFront+1)).slice(-2)+' / '+('0'+SWAP.length).slice(-2),
       swapTitleRef:this._swapTitleRef,
-      swapOpenFront:()=>{ window.location.href=swapFront.href; },
       swapNext:this._swapNext, swapPrev:this._swapPrev, swapKeyDown:this._swapKeyDown,
       stats: STATS,
       certs: CERTS.map(c=>({...c,alt:c.code+' — '+c.title+' certificate'})),
