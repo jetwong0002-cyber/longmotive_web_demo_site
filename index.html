@@ -78,8 +78,8 @@
     // single frame can show -- the only thing worth controlling is whether the
     // bar tells the truth about it. Must match HERO_VIDEO() in the page below.
     var src=matchMedia('(max-width: 760px)').matches
-      ? 'uploads/merged16-nologo-mobile-c0c731bf.mp4'
-      : 'uploads/merged16-nologo-1600-g8-c0c731bf.mp4';
+      ? 'uploads/merged16-nologo-mobile-2077343e.mp4'
+      : 'uploads/merged16-nologo-1600-g8-2077343e.mp4';
     // Streamed against Content-Length so the hero's loading bar can show this
     // download -- it is the only thing between arriving and the tour starting,
     // and this preloader, not the component, is what normally fetches it.
@@ -1133,8 +1133,8 @@ const HERO_PCT=()=>Math.max(
 // exactly that. It costs about five seconds on this connection (measured: 9.07MB
 // in 5.03s), and the host serves no ranges so it has to arrive whole regardless.
 const HERO_VIDEO=()=> (typeof matchMedia!=='undefined'&&matchMedia('(max-width: 760px)').matches)
-  ? 'uploads/merged16-nologo-mobile-c0c731bf.mp4'
-  : 'uploads/merged16-nologo-1600-g8-c0c731bf.mp4';
+  ? 'uploads/merged16-nologo-mobile-2077343e.mp4'
+  : 'uploads/merged16-nologo-1600-g8-2077343e.mp4';
 // THE SCRUB CURVE, in one place. _mapScrub maps track position to sequence
 // position and the auto-tour inverts it; they were two hand-written copies of the
 // same two numbers and they drifted the moment one was tuned.
