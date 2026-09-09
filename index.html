@@ -116,11 +116,12 @@
 <script defer src="campus-hero.js"></script>
 <script defer src="./support.js"></script>
 <link rel="stylesheet" href="whatsapp.css">
+<script defer src="whatsapp.js"></script>
 </head>
 <body>
 <!-- Malaysia WhatsApp number migrated from the original Longmotive website.
-     Keep this outside x-dc so it works across screens and without JavaScript. -->
-<a class="lm-whatsapp" href="https://wa.me/60149916828?text=Hi%20Longmotive%2C%20I%27d%20like%20to%20enquire%20about%20a%20project."
+     Visibility follows the active screen and hero; hidden until context is ready. -->
+<a class="lm-whatsapp" hidden href="https://wa.me/60149916828?text=Hi%20Longmotive%2C%20I%27d%20like%20to%20enquire%20about%20a%20project."
    target="_blank" rel="noopener noreferrer"
    aria-label="Chat with Longmotive on WhatsApp at +6014-991 6828 (opens in a new tab)">
   <span class="lm-whatsapp__icon" aria-hidden="true">
@@ -298,7 +299,7 @@
   @media (prefers-reduced-motion:reduce){.lm-work-portfolio,.lm-work-arrow,.lm-rail-card,.lm-rail-layer,.lm-rail-state span{transition:none!important}.lm-work-portfolio:hover,.lm-work-arrow:hover{transform:none}}
 </style>
 </helmet>
-<div style="min-height:100%;display:flex;flex-direction:column;background:var(--surface-page);color:var(--text-body);font-family:var(--font-sans)">
+<div data-whatsapp-screen="{{ currentScreen }}" data-whatsapp-menu="{{ menuOpen }}" style="min-height:100%;display:flex;flex-direction:column;background:var(--surface-page);color:var(--text-body);font-family:var(--font-sans)">
 
   <header ref="{{ headerRef }}" style="position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border-subtle);transform:translateY(-100%);transition:transform .6s cubic-bezier(.22,1,.36,1)">
     <div style="max-width:var(--container-max);margin:0 auto;padding:0 var(--gutter);height:72px;display:flex;align-items:center;justify-content:space-between;gap:24px">
@@ -2593,7 +2594,7 @@ class Component extends DCLogic {
       galleryVideoRef: this._galleryVideoRef,
       salutations: ['~ Please select one. ~','Mr.','Ms.','Mdm.','Dr.'],
       jobTitles: ['~ Please select one. ~','QS Engineer','Civil Engineer','Mechanical Engineer','Safety Engineer','Electric Engineer','Fire Engineer','Project Engineer','Internship Engineer','QAQC Engineer','ELV Engineer','General Application / Other'],
-      isHome: scr==='Home', isAbout: scr==='About', isProjects: scr==='Projects', isContact: scr==='Contact',
+      currentScreen: scr, isHome: scr==='Home', isAbout: scr==='About', isProjects: scr==='Projects', isContact: scr==='Contact',
       isStats: this.props.showStats!==false,
       heroSrc: IMG + (this.props.heroImage || 'datacenter-aerial.jpg'),
       isVideoHero: this.props.videoHero!==false,
