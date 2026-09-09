@@ -51,3 +51,14 @@
 }
 @media (prefers-reduced-motion:reduce) { .lm-whatsapp__copy { transition:none; } }
 @media print { .lm-whatsapp { display:none; } }
+
+/* Permanent contact options remain available where the floating shortcut hides. */
+.lm-contact-link { color:inherit; text-decoration:underline; text-decoration-color:currentColor; text-underline-offset:4px; }
+.lm-contact-link:hover { color:var(--color-accent, #009cce); }
+.lm-contact-link:focus-visible,.lm-contact-whatsapp:focus-visible { outline:3px solid #22b8e6; outline-offset:4px; border-radius:4px; }
+.lm-contact-whatsapp { display:inline-flex; align-items:center; gap:12px; padding:12px 16px; margin:4px 0 16px; border:1px solid #b6decb; border-radius:10px; background:#edf8f2; color:#126c42; font-size:14px; font-weight:700; text-decoration:none; }
+.lm-contact-whatsapp:hover { background:#dcf2e6; color:#0c5131; }
+.lm-contact-whatsapp small { display:block; margin-top:3px; font-size:12px; font-weight:400; }
+.lm-contact-whatsapp svg { flex-shrink:0; }
+footer .lm-contact-whatsapp { background:#123e3d; color:#d5fbe5; border-color:#397566; }
+footer .lm-contact-whatsapp:hover { background:#18524b; color:#fff; }
