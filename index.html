@@ -78,8 +78,8 @@
     // single frame can show -- the only thing worth controlling is whether the
     // bar tells the truth about it. Must match HERO_VIDEO() in the page below.
     var src=matchMedia('(max-width: 760px)').matches
-      ? 'uploads/merged16-scrub-mobile.mp4'
-      : 'uploads/merged16-scrub-1600-g8.mp4';
+      ? 'uploads/merged16-nologo-mobile-c0c731bf.mp4'
+      : 'uploads/merged16-nologo-1600-g8-c0c731bf.mp4';
     // Streamed against Content-Length so the hero's loading bar can show this
     // download -- it is the only thing between arriving and the tour starting,
     // and this preloader, not the component, is what normally fetches it.
@@ -361,7 +361,7 @@
             </div>
             <div ref="{{ heroLoadPctRef }}" style="font:600 10px/1 var(--font-mono);letter-spacing:.18em;color:rgba(232,242,251,.55)">Preparing 0%</div>
           </div>
-          <img class="lm-hero-media" ref="{{ heroPhotoRef }}" src="uploads/frames/f10-1920.jpg" srcset="uploads/frames/f10-960.webp 960w, uploads/frames/f10-1280.webp 1280w, uploads/frames/f10-1920.webp 1920w" sizes="100vw" alt="Aerial view of the completed DAY ONE data centre" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:opacity,transform"/>
+          <img class="lm-hero-media" ref="{{ heroPhotoRef }}" src="uploads/frames/f10-nologo-c0c731bf-1920.jpg" srcset="uploads/frames/f10-nologo-c0c731bf-960.webp 960w, uploads/frames/f10-nologo-c0c731bf-1280.webp 1280w, uploads/frames/f10-nologo-c0c731bf-1920.webp 1920w" sizes="100vw" alt="Aerial view of the completed data centre" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:opacity,transform"/>
           
           <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,36,72,.6) 0%,rgba(7,36,72,0) 15%,rgba(7,36,72,0) 85%,rgba(7,36,72,.6) 100%),linear-gradient(180deg,rgba(7,36,72,.6) 0%,rgba(7,36,72,0) 15%,rgba(7,36,72,0) 85%,rgba(7,36,72,.6) 100%);pointer-events:none"></div>
           
@@ -1133,8 +1133,8 @@ const HERO_PCT=()=>Math.max(
 // exactly that. It costs about five seconds on this connection (measured: 9.07MB
 // in 5.03s), and the host serves no ranges so it has to arrive whole regardless.
 const HERO_VIDEO=()=> (typeof matchMedia!=='undefined'&&matchMedia('(max-width: 760px)').matches)
-  ? 'uploads/merged16-scrub-mobile.mp4'
-  : 'uploads/merged16-scrub-1600-g8.mp4';
+  ? 'uploads/merged16-nologo-mobile-c0c731bf.mp4'
+  : 'uploads/merged16-nologo-1600-g8-c0c731bf.mp4';
 // THE SCRUB CURVE, in one place. _mapScrub maps track position to sequence
 // position and the auto-tour inverts it; they were two hand-written copies of the
 // same two numbers and they drifted the moment one was tuned.
