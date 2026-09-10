@@ -33,7 +33,7 @@ function field(formData, name) {
 }
 
 export async function onRequestPost({ request, env }) {
-  const missingEnvironment = ['RESEND_API_KEY', 'CONTACT_TO', 'CONTACT_FROM']
+  const missingEnvironment = ['RESEND_API_KEY', 'CONTACT_FROM']
     .filter((name) => !env[name]);
   if (missingEnvironment.length > 0) {
     console.error('Missing contact-form environment variables:', missingEnvironment.join(', '));
@@ -150,7 +150,8 @@ export async function onRequestPost({ request, env }) {
 
   const payload = {
     from: env.CONTACT_FROM,
-    to: [env.CONTACT_TO],
+    // Route by the validated form type, never a shared deployment recipient.
+    to: [isCareers ? 'humanresource@longmotive.com' : 'info@longmotive.com'],
     reply_to: email,
     subject: isCareers
       ? `[Job Application] ${jobTitle} — ${name}`
