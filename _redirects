@@ -12,11 +12,16 @@
 # that path. 200 is a REWRITE: the URL stays as typed and index.html answers.
 # A 301 here would bounce the visitor back to / and undo the whole point.
 #
+# The target is "/", NOT "/index.html". Pages normalises /index.html to /
+# with a 308, so a rewrite aimed at /index.html gets caught by that and the
+# visitor is bounced to the homepage -- measured: /about, /projects and
+# /contact all returned 308 Location: / on both the domain and pages.dev.
+#
 # "/" needs no rule; it resolves to index.html on its own.
 
-/about        /index.html   200
-/projects     /index.html   200
-/contact      /index.html   200
+/about        /   200
+/projects     /   200
+/contact      /   200
 
 # --- 2. THE OLD CMS URLS ---------------------------------------------------
 #
