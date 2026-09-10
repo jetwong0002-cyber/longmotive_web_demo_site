@@ -485,7 +485,7 @@
             </div>
           </div>
           <div class="lm-work-showcase">
-            <div class="lm-project-rail" ref="{{ railWrapRef }}" onMouseEnter="{{ railEnter }}" onMouseLeave="{{ railLeave }}" onFocus="{{ railFocus }}" onBlur="{{ railBlur }}" onPointerDown="{{ railPointerDown }}" onPointerUp="{{ railPointerUp }}" role="region" aria-label="Selected projects, completed installations and coordinated designs">
+            <div class="lm-project-rail" ref="{{ railWrapRef }}" onMouseEnter="{{ railEnter }}" onMouseLeave="{{ railLeave }}" onFocus="{{ railFocus }}" onBlur="{{ railBlur }}" onPointerDown="{{ railPointerDown }}" onPointerUp="{{ railPointerUp }}" onPointerCancel="{{ railPointerUp }}" onScroll="{{ railScroll }}" role="region" aria-label="Selected projects, completed installations and coordinated designs">
               <div class="lm-project-track">
                 <sc-for list="{{ railCards }}" as="c" hint-placeholder-count="20">
                   <article class="lm-rail-card" role="button" data-design-open="{{ c.designOpen }}" aria-pressed="{{ c.designOpen }}" onClick="{{ c.onToggle }}" onKeyDown="{{ c.onKeyDown }}" tabindex="{{ c.tabIndex }}" aria-hidden="{{ c.ariaHidden }}" aria-label="{{ c.accessibleLabel }}">
@@ -2296,6 +2296,7 @@ class Component extends DCLogic {
     this._stopHeroLoop();
     this._railStop();
     clearTimeout(this._railRestartTimer);
+    clearTimeout(this._railResumeTimer);
     document.removeEventListener('visibilitychange',this._railVisibility);
     if(this._railObserver)this._railObserver.disconnect();
   }
@@ -2455,12 +2456,31 @@ class Component extends DCLogic {
     this._railLast=now;
     this._railRaf=requestAnimationFrame(this._railTick);
   };
-  _railEnter=()=>{ this._railHover=true; this._railStop(); };
+  _railTouchMode=()=>this._railTouch||window.matchMedia('(hover:none), (pointer:coarse), (max-width:760px)').matches;
+  _railEnter=()=>{ if(this._railTouchMode())return; this._railHover=true; this._railStop(); };
   _railLeave=()=>{ this._railHover=false; this._railDragging=false; this._railStart(); };
-  _railFocus=()=>{ this._railFocused=true; this._railStop(); };
+  _railFocus=()=>{ if(this._railTouchMode())return; this._railFocused=true; this._railStop(); };
   _railBlur=(e)=>{ if(!e.currentTarget.contains(e.relatedTarget)){ this._railFocused=false; this._railStart(); } };
-  _railPointerDown=()=>{ this._railDragging=true; this._railStop(); };
-  _railPointerUp=()=>{ this._railDragging=false; this._railStart(); };
+  _railScheduleResume=()=>{
+    clearTimeout(this._railResumeTimer);
+    if(!this._railAutoPaused||this._railManualPaused||this._railDragging)return;
+    this._railResumeTimer=setTimeout(()=>{
+      this._railAutoPaused=false;
+      this.setState({railPaused:false},this._railStart);
+    },5000);
+  };
+  _railScroll=()=>{ if(this._railAutoPaused)this._railScheduleResume(); };
+  _railPointerDown=(e)=>{
+    this._railTouch=!!(e&&e.pointerType&&e.pointerType!=='mouse');
+    if(this._railTouchMode()){this._railHover=false;this._railFocused=false;}
+    clearTimeout(this._railResumeTimer);
+    this._railDragging=true; this._railStop();
+    if(!this._railManualPaused&&!this._reduce){
+      this._railAutoPaused=true;
+      this.setState({railPaused:true});
+    }
+  };
+  _railPointerUp=()=>{ this._railDragging=false; if(this._railAutoPaused)this._railScheduleResume();else this._railStart(); };
   _railNudge=(direction)=>{
     const rail=this._rail;
     if(!rail) return;
@@ -2478,7 +2498,11 @@ class Component extends DCLogic {
   _railPrev=()=>this._railNudge(-1);
   _railNext=()=>this._railNudge(1);
   _railSelect=(title)=>this.setState(s=>({railSelected:s.railSelected===title?null:title}));
-  _railToggle=()=>this.setState(s=>({railPaused:!s.railPaused}),()=>this.state.railPaused?this._railStop():this._railStart());
+  _railToggle=()=>{
+    clearTimeout(this._railResumeTimer);this._railAutoPaused=false;
+    this._railManualPaused=!this.state.railPaused;
+    this.setState({railPaused:this._railManualPaused},()=>this.state.railPaused?this._railStop():this._railStart());
+  };
   _railVisibility=()=>{ if(document.hidden)this._railStop(); else this._railStart(); };
   submitEnquiry(e){ return this._submitContact(e,'enquiry'); }
   submitCareers(e){ return this._submitContact(e,'careers'); }
@@ -2630,7 +2654,7 @@ class Component extends DCLogic {
       railCards, railWrapRef:this._railWrapRef,
       railEnter:this._railEnter, railLeave:this._railLeave,
       railFocus:this._railFocus, railBlur:this._railBlur,
-      railPointerDown:this._railPointerDown, railPointerUp:this._railPointerUp,
+      railPointerDown:this._railPointerDown, railPointerUp:this._railPointerUp, railScroll:this._railScroll,
       railPrev:this._railPrev, railNext:this._railNext, railToggle:this._railToggle,
       railPauseText:this.state.railPaused?'Resume':'Pause',
       railPauseLabel:this.state.railPaused?'Resume automatic project scroll':'Pause automatic project scroll',
