@@ -2439,8 +2439,13 @@ class Component extends DCLogic {
     const half=this._railSeed();
     if(this._railLast){
       const dt=Math.min(48,now-this._railLast);
-      this._rail.scrollLeft-=dt*.018;
-      if(half>0&&this._rail.scrollLeft<=0) this._rail.scrollLeft+=half;
+      // Keep fractional travel outside scrollLeft: desktop browsers may round each write.
+      this._railPosition-=dt*.018;
+      if(half>0&&this._railPosition<=0) this._railPosition+=half;
+      this._rail.scrollLeft=this._railPosition;
+    }else{
+      // Rebase after hover, focus, dragging or an arrow-button nudge.
+      this._railPosition=this._rail.scrollLeft;
     }
     this._railLast=now;
     this._railRaf=requestAnimationFrame(this._railTick);
