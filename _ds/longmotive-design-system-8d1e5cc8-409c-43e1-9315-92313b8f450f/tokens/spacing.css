@@ -16,7 +16,7 @@
   --space-32:128px;
 
   /* Layout */
-  --container-max:1200px;
+  --container-max:min(1760px,max(1200px,calc(100vw - 460px)));
   --container-narrow:800px;
   --gutter:24px;
   --section-y:96px;
