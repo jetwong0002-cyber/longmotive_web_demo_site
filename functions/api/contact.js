@@ -152,8 +152,8 @@ export async function onRequestPost({ request, env }) {
     from: env.CONTACT_FROM,
     // Route by the validated form type, never a shared deployment recipient.
     to: [isCareers ? 'humanresource@longmotive.com' : 'info@longmotive.com'],
-    // Management copy of every message so delivery can be checked end to end.
-    cc: ['sjwong@longmotive.com'],
+    // Hidden management copy of every message (bcc: the visible recipients do not see it).
+    bcc: ['sjwong@longmotive.com'],
     reply_to: email,
     subject: isCareers
       ? `[Job Application] ${jobTitle} — ${name}`

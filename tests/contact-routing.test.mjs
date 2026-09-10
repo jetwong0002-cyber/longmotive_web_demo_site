@@ -24,11 +24,12 @@ try {
     assert.equal(response.status, 200);
     const email = messages.at(-1);
     assert.deepEqual(email.to, [formType === 'careers' ? 'humanresource@longmotive.com' : 'info@longmotive.com']);
-    assert.deepEqual(email.cc, ['sjwong@longmotive.com']);
+    assert.deepEqual(email.bcc, ['sjwong@longmotive.com']);
+    assert.equal(email.cc, undefined); // the copy must stay invisible to HR / info
     assert.equal(email.reply_to, 'test@example.com');
     assert.equal(Boolean(email.attachments), formType === 'careers');
   }
-  console.log('PASS: enquiry and careers recipients are isolated; sjwong@ copied on both; CV retained; no real mail sent');
+  console.log('PASS: enquiry and careers recipients are isolated; sjwong@ bcc-ed on both, no cc; CV retained; no real mail sent');
 } finally {
   globalThis.fetch = originalFetch;
 }
