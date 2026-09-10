@@ -9,6 +9,12 @@
 # not separate documents, and the homepage exposes no id anchors to aim at.
 # "/" is therefore the honest target for all of them.
 #
+# A splat does NOT match its own bare path: /mobile/* matches /mobile/ and
+# anything below it, but leaves /mobile a 404. That is not hypothetical -- the
+# top Google result for "longmotive" was https://www.longmotive-m.com/mobile,
+# and it 404'd for two days because only the splat was listed. Every prefix
+# below therefore gets both forms.
+#
 # /data/* is deliberately absent: those are old CMS media files. A 404 is a
 # truer answer for a missing image than a 301 to an HTML page.
 
@@ -18,13 +24,18 @@
 /projects             /  301
 /our-certifications   /  301
 
+/gal                  /  301
 /gal/*                /  301
+/cont                 /  301
 /cont/*               /  301
+/usr                  /  301
 /usr/*                /  301
 
 # The whole /prod/ tree was placeholder content -- category-01..03/021..023 and
 # testing-product-1..12. Nothing there was ever real.
+/prod                 /  301
 /prod/*               /  301
 
 # The CMS served a parallel mobile site at /mobile/<same paths>.
+/mobile               /  301
 /mobile/*             /  301
