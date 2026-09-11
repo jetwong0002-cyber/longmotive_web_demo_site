@@ -1,7 +1,7 @@
 /* Contextual contact shortcut: no timer tied to video duration. */
 (() => {
-  const link = document.querySelector('.lm-whatsapp');
-  if (!link) return;
+  const links = document.querySelectorAll('.lm-whatsapp');
+  if (!links.length) return;
   let frame = 0;
   function update() {
     frame = 0;
@@ -14,7 +14,7 @@
     const show = ['Home', 'About', 'Projects'].includes(screen)
       && page.getAttribute('data-whatsapp-menu') !== 'true'
       && !inHero && !inFooter;
-    link.hidden = !show;
+    links.forEach(link => { link.hidden = !show; });
   }
   const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
   window.addEventListener('scroll', schedule, {passive:true});

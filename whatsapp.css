@@ -62,3 +62,8 @@
 .lm-contact-whatsapp svg { flex-shrink:0; }
 footer .lm-contact-whatsapp { background:#123e3d; color:#d5fbe5; border-color:#397566; }
 footer .lm-contact-whatsapp:hover { background:#18524b; color:#fff; }
+
+/* Brochure sits 12px above the 56px WhatsApp control. */
+.lm-brochure { bottom:calc(max(24px, env(safe-area-inset-bottom)) + 68px); }
+.lm-brochure .lm-whatsapp__icon { background:#0f52a0; }
+@media(max-width:600px) { .lm-brochure { bottom:calc(max(16px, env(safe-area-inset-bottom)) + 68px); } }
