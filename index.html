@@ -239,7 +239,7 @@
      down a 10-screen page. The button and panel below replace it. */
   .lm-menubtn,.lm-menupanel{display:none}
   @media(max-width:640px){.lm-nav{display:none!important}.lm-menubtn{display:inline-flex}.lm-menupanel{display:block}}
-  @media(max-width:600px){.lm-g3,.lm-g4{grid-template-columns:1fr!important}}
+  @media(max-width:600px){.lm-g3,.lm-g4{grid-template-columns:1fr!important}}@media(max-width:600px){.lm-g3{grid-template-columns:1fr 1fr!important;gap:10px!important}.lm-g3>div{padding:12px!important}.lm-g3>div>p{display:none}.lm-g3>div>h3{font-size:15px!important;line-height:1.25}.lm-g3>div>span{width:30px!important;height:30px!important;margin-bottom:8px!important}.lm-statsband{margin-top:24px!important;padding-top:26px!important;padding-bottom:22px!important}}@media(max-width:600px){.lm-hero-stage{--band-h:min(78vw,38svh)!important}.lm-hero-copy{padding-top:calc(var(--band-top) + var(--band-h) + 34px)!important}.lm-hero-caps{top:calc(var(--band-top) + var(--band-h) + 34px)!important}}
 
   /* --- project card: the "has a 3D viewer" affordance ---------------------
      Two parts doing two jobs. The BADGE sits on the thumbnail and answers
@@ -466,7 +466,7 @@
 
       <section class="lm-project-section">
         <sc-if value="{{ isStats }}" hint-placeholder-val="{{ true }}">
-        <div style="background:var(--lm-blue-700);margin:calc(-1 * clamp(76px,9vw,124px)) calc(-1 * var(--gutter)) clamp(38px,5vw,64px);padding:calc(72px + clamp(12px,2vh,18px)) var(--gutter) clamp(14px,2vh,20px)">
+        <div class="lm-statsband" style="background:var(--lm-blue-700);margin:calc(-1 * clamp(76px,9vw,124px)) calc(-1 * var(--gutter)) clamp(38px,5vw,64px);padding:calc(72px + clamp(12px,2vh,18px)) var(--gutter) clamp(14px,2vh,20px)">
           <div class="lm-g4" style="max-width:var(--container-max);margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:24px">
             <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
               <div data-reveal="{{ $index }}" style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
