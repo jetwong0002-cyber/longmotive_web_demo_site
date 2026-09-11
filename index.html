@@ -2431,7 +2431,7 @@ class Component extends DCLogic {
   _railBlocked(){ return !this._rail||!this._rail.isConnected||this._reduce||this.state.railPaused||((this._railHover||this._railFocused)&&!this._railResumeOverride)||this._railDragging||this._railVisible===false||(typeof document!=='undefined'&&document.hidden); }
   _railSeed(){
     const half=this._rail?this._rail.scrollWidth/2:0;
-    if(!this._railSeeded&&half>0){ this._rail.scrollLeft=half; this._railSeeded=true; }
+    if(!this._railSeeded&&half>0){ this._rail.scrollLeft=0; this._railSeeded=true; }
     return half;
   }
   _railStart=()=>{
@@ -2450,8 +2450,8 @@ class Component extends DCLogic {
     if(this._railLast){
       const dt=Math.min(48,now-this._railLast);
       // Keep fractional travel outside scrollLeft: desktop browsers may round each write.
-      this._railPosition-=dt*this._railPixelsPerMs;
-      if(half>0&&this._railPosition<=0) this._railPosition+=half;
+      this._railPosition+=dt*this._railPixelsPerMs;
+      if(half>0&&this._railPosition>=half) this._railPosition-=half;
       this._rail.scrollLeft=this._railPosition;
     }else{
       // Rebase after hover, focus, dragging or an arrow-button nudge.
