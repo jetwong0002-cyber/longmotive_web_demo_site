@@ -68,13 +68,13 @@ export async function onRequestPost({ request, env }) {
 
   const errors = [];
   if (!name) errors.push('Name is required');
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('Valid email is required');
+  if (!/^[^\s@]+@[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)*\.com$/i.test(email)) errors.push('A valid .com email address is required');
   if (name.length > 120) errors.push('Name is too long');
   if (email.length > 254) errors.push('Email is too long');
+  if (!contact) errors.push('Contact No. is required');
   if (contact.length > 60) errors.push('Contact No. is too long');
 
   if (isCareers) {
-    if (!contact) errors.push('Contact No. is required');
     if (!salutation) errors.push('Salutation is required');
     if (!jobTitle) errors.push('Position / Area of Interest is required');
     if (jobTitle.length > 120) errors.push('Position / Area of Interest is too long');

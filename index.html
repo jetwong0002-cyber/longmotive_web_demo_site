@@ -749,11 +749,11 @@
               </div>
               <div style="display:flex;flex-direction:column;gap:6px">
                 <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Email <span style="color:var(--lm-danger)">*</span></label>
-                <input type="email" name="email" value="{{ enquiry.email }}" onChange="{{ setEnquiryEmail }}" autocomplete="email" placeholder="Email" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
+                <input type="email" name="email" required="{{ true }}" pattern="[^\s@]+@[^\s@]+\.[cC][oO][mM]" title="Enter a complete .com email address, e.g. name@example.com" value="{{ enquiry.email }}" onChange="{{ setEnquiryEmail }}" autocomplete="email" placeholder="Email" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
               </div>
               <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
-                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Contact No. <span style="font-weight:400;color:var(--text-muted);text-transform:none;letter-spacing:0">(optional)</span></label>
-                <input name="contact" value="{{ enquiry.contact }}" onChange="{{ setEnquiryContact }}" autocomplete="tel" placeholder="Contact No." style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
+                <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Contact No. <span style="color:var(--lm-danger)">*</span></label>
+                <input type="tel" required="{{ true }}" name="contact" value="{{ enquiry.contact }}" onChange="{{ setEnquiryContact }}" autocomplete="tel" placeholder="Contact No." style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
               </div>
               <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
                 <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Subject <span style="color:var(--lm-danger)">*</span></label>
@@ -789,7 +789,7 @@
               </div>
               <div style="display:flex;flex-direction:column;gap:6px">
                 <label style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Email <span style="color:var(--lm-danger)">*</span></label>
-                <input type="email" name="email" value="{{ form.email }}" onChange="{{ setEmail }}" placeholder="Email" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
+                <input type="email" name="email" required="{{ true }}" pattern="[^\s@]+@[^\s@]+\.[cC][oO][mM]" title="Enter a complete .com email address, e.g. name@example.com" value="{{ form.email }}" onChange="{{ setEmail }}" placeholder="Email" style="width:100%;padding:11px 13px;border:1px solid var(--border-default);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;color:var(--text-strong);background:#fff"/>
               </div>
               <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
                 <label for="career-interest" style="font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-strong)">Position / Area of Interest <span style="color:var(--lm-danger)">*</span></label>
@@ -2513,10 +2513,14 @@ class Component extends DCLogic {
     const isEnquiry=formType==='enquiry';
     const f=isEnquiry?this.state.enquiry:this.state.form;
     const invalid=isEnquiry
-      ?(!f.name||!f.email||!f.subject||!f.message)
+      ?(!f.name||!f.email||!String(f.contact||'').trim()||!f.subject||!f.message)
       :(!f.name||!f.email||!f.contact||f.salutation==='~ Please select one. ~'||f.jobTitle==='~ Please select one. ~'||!f.cv);
     if(invalid){
       this.setState({err:true,sent:false,submitting:false,errorMessage:'Please complete all mandatory fields.'});
+      return;
+    }
+    if(!/^[^\s@]+@[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)*\.com$/i.test(String(f.email||'').trim())){
+      this.setState({err:true,sent:false,submitting:false,errorMessage:'Enter a valid .com email address, e.g. name@example.com.'});
       return;
     }
     const body=new FormData();
