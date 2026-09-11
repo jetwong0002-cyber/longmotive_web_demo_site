@@ -2273,7 +2273,9 @@ class Component extends DCLogic {
     if(this._reduce) this.setState({railPaused:true});
     if(typeof IntersectionObserver!=='undefined'){
       this._railObserver=new IntersectionObserver(entries=>{
-        this._railVisible=!!(entries[0]&&entries[0].isIntersecting);
+        const entry=entries.find(e=>e.target===this._rail);
+        if(!entry||!this._rail||!this._rail.isConnected)return;
+        this._railVisible=entry.isIntersecting;
         if(this._railVisible)this._railStart(); else this._railStop();
       },{threshold:.08});
       requestAnimationFrame(()=>{ if(this._rail)this._railObserver.observe(this._rail); });
@@ -2308,6 +2310,7 @@ class Component extends DCLogic {
     const returnToSeenHero=n==='Home'&&this._heroSeen();
     this._logoSeq=true; this._heroFree=true;
     const next={screen:n,navRevealed:true,logoStage:3,sent:false,err:false,errorMessage:'',menuOpen:false};
+    if(n==='Home') next.railPaused=!!(this._railManualPaused||this._reduce);
     if(n==='Contact') next.contactTab=contactTab||'careers';
     SYNC_URL(n,!noPush);
     this.setState(next,()=>{
@@ -2427,7 +2430,18 @@ class Component extends DCLogic {
   };
   /* ---- Project rail: a seamless, self-pausing loop. The browser scrolls a
      duplicated track, while hover/focus tells the story inside each card. ---- */
-  _railWrapRef=(el)=>{ if(el!==this._rail)this._railSeeded=false; this._rail=el; if(el) requestAnimationFrame(this._railStart); };
+  _railWrapRef=(el)=>{
+    if(el===this._rail)return;
+    if(this._rail&&this._railObserver)this._railObserver.unobserve(this._rail);
+    this._railStop();clearTimeout(this._railResumeTimer);clearTimeout(this._railRestartTimer);
+    this._rail=el;this._railSeeded=false;this._railHover=false;this._railFocused=false;
+    this._railDragging=false;this._railAutoPaused=false;this._railResumeOverride=false;
+    this._railVisible=!this._railObserver;
+    if(el){
+      if(this._railObserver)this._railObserver.observe(el);
+      else requestAnimationFrame(this._railStart);
+    }
+  };
   _railBlocked(){ return !this._rail||!this._rail.isConnected||this._reduce||this.state.railPaused||((this._railHover||this._railFocused)&&!this._railResumeOverride)||this._railDragging||this._railVisible===false||(typeof document!=='undefined'&&document.hidden); }
   _railSeed(){
     const half=this._rail?this._rail.scrollWidth/2:0;

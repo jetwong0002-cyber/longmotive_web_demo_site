@@ -1,0 +1,11 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const html=fs.readFileSync(require('node:path').join(__dirname,'../index.html'),'utf8');
+const code=html.slice(html.indexOf('  _railWrapRef='),html.indexOf('  _railBlocked()'));
+const C=vm.runInNewContext('class C{'+code+'};C',{clearTimeout:()=>{},requestAnimationFrame:f=>f()});
+const c=new C(),observed=new Set();c._railObserver={observe:e=>observed.add(e),unobserve:e=>observed.delete(e)};c._railStop=()=>{};
+const old={isConnected:true},fresh={isConnected:true};c._railWrapRef(old);assert.ok(observed.has(old));
+c._railHover=true;c._railFocused=true;c._railDragging=true;c._railAutoPaused=true;c._railWrapRef(null);assert.equal(observed.size,0);
+c._railWrapRef(fresh);assert.ok(observed.has(fresh));assert.equal(observed.size,1);assert.equal(c._railHover,false);assert.equal(c._railFocused,false);assert.equal(c._railDragging,false);assert.equal(c._railAutoPaused,false);
+assert.match(html,/entries\.find\(e=>e\.target===this\._rail\)/);
+assert.match(html,/if\(n==='Home'\) next\.railPaused=!!\(this\._railManualPaused\|\|this\._reduce\)/);
+console.log('PASS: home remount observes the new rail and clears transient interaction state while retaining manual Pause');
