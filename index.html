@@ -2465,10 +2465,15 @@ class Component extends DCLogic {
     this._railRaf=requestAnimationFrame(this._railTick);
   };
   _railTouchMode=()=>this._railTouch||window.matchMedia('(hover:none), (pointer:coarse), (max-width:760px)').matches;
-  _railEnter=()=>{ if(this._railTouchMode())return; this._railResumeOverride=false; this._railHover=true; this._railStop(); };
+  _railEnter=()=>{ if(this._railTouchMode())return; this._railResumeOverride=false; this._railHover=true; this._railStop(); this._railInspectPause(); };
   _railLeave=()=>{ this._railHover=false; this._railDragging=false; this._railStart(); };
-  _railFocus=()=>{ if(this._railTouchMode())return; this._railResumeOverride=false; this._railFocused=true; this._railStop(); };
+  _railFocus=()=>{ if(this._railTouchMode())return; this._railResumeOverride=false; this._railFocused=true; this._railStop(); this._railInspectPause(); };
   _railBlur=(e)=>{ if(!e.currentTarget.contains(e.relatedTarget)){ this._railFocused=false; this._railStart(); } };
+  _railInspectPause=()=>{
+    if(this._railManualPaused||this._reduce)return;
+    this._railAutoPaused=true;
+    this.setState({railPaused:true},this._railScheduleResume);
+  };
   _railScheduleResume=()=>{
     clearTimeout(this._railResumeTimer);
     if(!this._railAutoPaused||this._railManualPaused||this._railDragging)return;

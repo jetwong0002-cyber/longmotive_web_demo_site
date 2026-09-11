@@ -14,3 +14,7 @@ c._rail={isConnected:true};c._reduce=false;c._railVisible=true;c._railManualPaus
 c._railPointerDown({pointerType:'mouse'});c._railPointerUp();c._railHover=true;c._railFocused=true;
 assert.equal(blocked.call(c),true);advance(5000);assert.equal(blocked.call(c),false,'Desktop must resume even with pointer and focus left on the card');
 console.log('PASS: interaction pause, five-second idle resume, momentum delay, immediate Resume, manual Pause and cancel wiring');
+c._railTouchMode=()=>false;c._railFocused=false;c._railHover=false;c._railManualPaused=false;c.state.railPaused=false;
+c._railEnter();assert.equal(c.state.railPaused,true,'Hover must show Resume, not silently freeze');
+advance(5000);assert.equal(c.state.railPaused,false);assert.equal(blocked.call(c),false,'Hover alone expires after five seconds without requiring a click');
+console.log('PASS: hover-only pause displays its state and expires with the pointer still over the rail');
