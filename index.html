@@ -2424,7 +2424,7 @@ class Component extends DCLogic {
   /* ---- Project rail: a seamless, self-pausing loop. The browser scrolls a
      duplicated track, while hover/focus tells the story inside each card. ---- */
   _railWrapRef=(el)=>{ if(el!==this._rail)this._railSeeded=false; this._rail=el; if(el) requestAnimationFrame(this._railStart); };
-  _railBlocked(){ return !this._rail||!this._rail.isConnected||this._reduce||this.state.railPaused||this._railHover||this._railFocused||this._railDragging||this._railVisible===false||(typeof document!=='undefined'&&document.hidden); }
+  _railBlocked(){ return !this._rail||!this._rail.isConnected||this._reduce||this.state.railPaused||((this._railHover||this._railFocused)&&!this._railResumeOverride)||this._railDragging||this._railVisible===false||(typeof document!=='undefined'&&document.hidden); }
   _railSeed(){
     const half=this._rail?this._rail.scrollWidth/2:0;
     if(!this._railSeeded&&half>0){ this._rail.scrollLeft=half; this._railSeeded=true; }
@@ -2446,31 +2446,36 @@ class Component extends DCLogic {
     if(this._railLast){
       const dt=Math.min(48,now-this._railLast);
       // Keep fractional travel outside scrollLeft: desktop browsers may round each write.
-      this._railPosition-=dt*.018;
+      this._railPosition-=dt*this._railPixelsPerMs;
       if(half>0&&this._railPosition<=0) this._railPosition+=half;
       this._rail.scrollLeft=this._railPosition;
     }else{
       // Rebase after hover, focus, dragging or an arrow-button nudge.
       this._railPosition=this._rail.scrollLeft;
+      const cards=this._rail.querySelectorAll('.lm-rail-card');
+      const step=cards.length>1?Math.abs(cards[1].getBoundingClientRect().left-cards[0].getBoundingClientRect().left):340;
+      // One card every 12 seconds on every screen, rather than fixed pixels/second.
+      this._railPixelsPerMs=(step||340)/12000;
     }
     this._railLast=now;
     this._railRaf=requestAnimationFrame(this._railTick);
   };
   _railTouchMode=()=>this._railTouch||window.matchMedia('(hover:none), (pointer:coarse), (max-width:760px)').matches;
-  _railEnter=()=>{ if(this._railTouchMode())return; this._railHover=true; this._railStop(); };
+  _railEnter=()=>{ if(this._railTouchMode())return; this._railResumeOverride=false; this._railHover=true; this._railStop(); };
   _railLeave=()=>{ this._railHover=false; this._railDragging=false; this._railStart(); };
-  _railFocus=()=>{ if(this._railTouchMode())return; this._railFocused=true; this._railStop(); };
+  _railFocus=()=>{ if(this._railTouchMode())return; this._railResumeOverride=false; this._railFocused=true; this._railStop(); };
   _railBlur=(e)=>{ if(!e.currentTarget.contains(e.relatedTarget)){ this._railFocused=false; this._railStart(); } };
   _railScheduleResume=()=>{
     clearTimeout(this._railResumeTimer);
     if(!this._railAutoPaused||this._railManualPaused||this._railDragging)return;
     this._railResumeTimer=setTimeout(()=>{
-      this._railAutoPaused=false;
+      this._railAutoPaused=false;this._railResumeOverride=true;
       this.setState({railPaused:false},this._railStart);
     },5000);
   };
   _railScroll=()=>{ if(this._railAutoPaused)this._railScheduleResume(); };
   _railPointerDown=(e)=>{
+    this._railResumeOverride=false;
     this._railTouch=!!(e&&e.pointerType&&e.pointerType!=='mouse');
     if(this._railTouchMode()){this._railHover=false;this._railFocused=false;}
     clearTimeout(this._railResumeTimer);
@@ -2501,6 +2506,7 @@ class Component extends DCLogic {
   _railToggle=()=>{
     clearTimeout(this._railResumeTimer);this._railAutoPaused=false;
     this._railManualPaused=!this.state.railPaused;
+    this._railResumeOverride=!this._railManualPaused;
     this.setState({railPaused:this._railManualPaused},()=>this.state.railPaused?this._railStop():this._railStart());
   };
   _railVisibility=()=>{ if(document.hidden)this._railStop(); else this._railStart(); };

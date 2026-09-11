@@ -57,7 +57,7 @@ assert.equal(
 assert.match(html, /_railStart/);
 assert.match(html, /_railStop/);
 assert.match(html, /this\._rail\.scrollLeft=half/, 'idle rail must seed at the seamless midpoint');
-assert.match(html, /this\._railPosition-=dt\*\.018/, 'idle rail must retain fractional travel while drifting gently');
+assert.match(html, /this\._railPosition-=dt\*this\._railPixelsPerMs/, 'idle rail must retain fractional travel at screen-scaled speed');
 assert.match(html, /this\._railPosition<=0/, 'left-to-right loop must wrap without a visible end');
 assert.match(html, /IntersectionObserver/);
 assert.match(html, /document\.hidden/);

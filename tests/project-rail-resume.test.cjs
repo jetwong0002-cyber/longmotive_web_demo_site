@@ -9,4 +9,8 @@ c._railPointerUp();advance(4000);c._railScroll();advance(4999);assert.equal(star
 c._railPointerDown({pointerType:'touch'});c._railPointerUp();c._railToggle();assert.equal(c.state.railPaused,false,'Resume button works immediately');advance(6000);assert.equal(starts,2,'Cancelled timer must not restart again');
 c._railToggle();assert.equal(c.state.railPaused,true);c._railPointerDown({pointerType:'touch'});c._railPointerUp();advance(6000);assert.equal(c.state.railPaused,true,'Explicit Pause is persistent');
 assert.match(html,/onPointerCancel="\{\{ railPointerUp \}\}"/);assert.match(html,/onScroll="\{\{ railScroll \}\}"/);
+const blocked=vm.runInNewContext('(function(){'+html.match(/  _railBlocked\(\){([^\n]+)}/)[1]+'})',{document:{hidden:false}});
+c._rail={isConnected:true};c._reduce=false;c._railVisible=true;c._railManualPaused=false;c.state.railPaused=false;
+c._railPointerDown({pointerType:'mouse'});c._railPointerUp();c._railHover=true;c._railFocused=true;
+assert.equal(blocked.call(c),true);advance(5000);assert.equal(blocked.call(c),false,'Desktop must resume even with pointer and focus left on the card');
 console.log('PASS: interaction pause, five-second idle resume, momentum delay, immediate Resume, manual Pause and cancel wiring');
